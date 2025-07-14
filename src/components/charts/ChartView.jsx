@@ -12,7 +12,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   ReferenceLine,
   ReferenceArea,
@@ -29,41 +28,28 @@ import {
   Radio,
   Zap,
   Layers,
-  EyeOff,
   Shield,
   TrendingUp,
   Target,
   AlertTriangle,
-  CheckCircle,
   Activity,
-  Eye,
-  Info,
   Fuel,
   Navigation,
   Waves,
   Maximize2,
   Minimize2,
   MessageCircle,
-  Plus,
   Anchor,
   CloudRain,
   Wrench,
   Flag,
   Edit3,
-  Save,
   Calendar,
-  Clock,
-  User,
-  Zap as ZapIcon,
-  Gauge,
-  CheckSquare,
-  Minus,
   WifiOff,
   XCircle,
   AlertCircle,
   Database,
-  SignalHigh,
-  SignalLow,
+  Gauge,
   BarChart2,
 } from 'lucide-react';
 
@@ -629,9 +615,9 @@ const DataQualityCards = ({
   };
 
   return (
-    <div className={`space-y-4 ${compactMode ? 'mb-2' : 'mb-4'}`}>
+    <div className={`space-y-3 ${compactMode ? 'mb-1' : 'mb-2'}`}>
       {/* Main Quality Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Fleet Health Score Card */}
         <Card
           gradient="health"
@@ -641,17 +627,17 @@ const DataQualityCards = ({
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
-                  <Gauge className="w-4 h-4 text-cyan-400" />
+                <div className="p-1 rounded-md bg-cyan-500/20 border border-cyan-500/30">
+                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
                 </div>
                 <div>
                   <span className="text-xs font-medium text-slate-200 block">
                     Fleet Health
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[9px] text-slate-400">
                     Overall Score
                   </span>
                 </div>
@@ -663,21 +649,21 @@ const DataQualityCards = ({
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-xl font-bold text-white">
                   {fleetMetrics.overallHealth}%
                 </div>
                 <QualityDistributionChart data={fleetMetrics} type="health" />
               </div>
 
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[9px] text-slate-400">
                 {fleetMetrics.healthyVessels} excellent •{' '}
                 {fleetMetrics.averageVessels} good • {fleetMetrics.poorVessels}{' '}
                 attention needed
               </div>
 
-              <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
                 <div className="h-full flex">
                   <div
                     className="bg-emerald-500 transition-all duration-1000 ease-out"
@@ -723,17 +709,17 @@ const DataQualityCards = ({
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                  <Database className="w-4 h-4 text-emerald-400" />
+                <div className="p-1 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+                  <Database className="w-3.5 h-3.5 text-emerald-400" />
                 </div>
                 <div>
                   <span className="text-xs font-medium text-slate-200 block">
                     Completeness
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[9px] text-slate-400">
                     Data Coverage
                   </span>
                 </div>
@@ -745,19 +731,19 @@ const DataQualityCards = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-white">
+            <div className="space-y-1.5">
+              <div className="text-xl font-bold text-white">
                 {fleetMetrics.avgCompleteness}%
               </div>
 
-              <div className="flex items-center gap-1.5 text-[10px]">
-                <WifiOff className="w-3 h-3 text-orange-400" />
+              <div className="flex items-center gap-1 text-[9px]">
+                <WifiOff className="w-2.5 h-2.5 text-orange-400" />
                 <span className="text-slate-400">
                   {fleetMetrics.totalMissingIssues} missing data points
                 </span>
               </div>
 
-              <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
                     fleetMetrics.avgCompleteness >= 85
@@ -782,17 +768,17 @@ const DataQualityCards = ({
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-purple-500/20 border border-purple-500/30">
-                  <Target className="w-4 h-4 text-purple-400" />
+                <div className="p-1 rounded-md bg-purple-500/20 border border-purple-500/30">
+                  <Target className="w-3.5 h-3.5 text-purple-400" />
                 </div>
                 <div>
                   <span className="text-xs font-medium text-slate-200 block">
                     Correctness
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[9px] text-slate-400">
                     Data Accuracy
                   </span>
                 </div>
@@ -804,19 +790,19 @@ const DataQualityCards = ({
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-white">
+            <div className="space-y-1.5">
+              <div className="text-xl font-bold text-white">
                 {fleetMetrics.avgCorrectness}%
               </div>
 
-              <div className="flex items-center gap-1.5 text-[10px]">
-                <XCircle className="w-3 h-3 text-red-400" />
+              <div className="flex items-center gap-1 text-[9px]">
+                <XCircle className="w-2.5 h-2.5 text-red-400" />
                 <span className="text-slate-400">
                   {fleetMetrics.totalIncorrectIssues} incorrect data points
                 </span>
               </div>
 
-              <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
                     fleetMetrics.avgCorrectness >= 85
@@ -841,26 +827,26 @@ const DataQualityCards = ({
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-orange-500/20 border border-orange-500/30">
-                  <AlertTriangle className="w-4 h-4 text-orange-400" />
+                <div className="p-1 rounded-md bg-orange-500/20 border border-orange-500/30">
+                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
                 </div>
                 <div>
                   <span className="text-xs font-medium text-slate-200 block">
                     Active Issues
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[9px] text-slate-400">
                     Quality Alerts
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 {fleetMetrics.criticalIssues > 0 && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                    <AlertCircle className="w-2.5 h-2.5 text-red-400" />
-                    <span className="text-[10px] text-red-400 font-medium">
+                  <div className="flex items-center gap-0.5 px-1 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full">
+                    <AlertCircle className="w-2 h-2 text-red-400" />
+                    <span className="text-[9px] text-red-400 font-medium">
                       {fleetMetrics.criticalIssues}
                     </span>
                   </div>
@@ -868,9 +854,9 @@ const DataQualityCards = ({
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-baseline gap-2">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-xl font-bold text-white">
                   {fleetMetrics.totalIssues}
                 </div>
                 {fleetMetrics.criticalIssues > 0 && (
@@ -880,22 +866,22 @@ const DataQualityCards = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+              <div className="grid grid-cols-2 gap-1 text-[9px]">
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
                   <span className="text-slate-400">
                     {fleetMetrics.totalMissingIssues} missing
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                <div className="flex items-center gap-0.5">
+                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
                   <span className="text-slate-400">
                     {fleetMetrics.totalIncorrectIssues} incorrect
                   </span>
                 </div>
               </div>
 
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[9px] text-slate-400">
                 Across {fleetMetrics.totalVessels} vessels
               </div>
             </div>
@@ -909,21 +895,21 @@ const DataQualityCards = ({
           gradient="default"
           className="transition-all duration-500 ease-out"
         >
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-cyan-400" />
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-cyan-400" />
                 KPI Reliability Analysis
               </h3>
               <button
                 onClick={() => setShowDetails(false)}
-                className="p-1.5 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-700/50"
+                className="p-1 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-700/50"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
               {[
                 {
                   key: 'speed',
@@ -973,20 +959,20 @@ const DataQualityCards = ({
                 }) => (
                   <div
                     key={key}
-                    className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-3 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]"
+                    className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-2 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]"
                     style={{
                       boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
                     }}
                   >
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 mb-1.5">
                       <div
-                        className="p-1.5 rounded-md"
+                        className="p-1 rounded-md"
                         style={{
                           backgroundColor: `${color}20`,
                           border: `1px solid ${color}40`,
                         }}
                       >
-                        <Icon className="w-4 h-4" style={{ color }} />
+                        <Icon className="w-3.5 h-3.5" style={{ color }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-white">
@@ -999,8 +985,8 @@ const DataQualityCards = ({
                       <QualityMeter score={reliability} size="sm" type={key} />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div className="space-y-1.5">
+                      <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all duration-1000 ease-out ${
                             reliability >= 85
@@ -1018,7 +1004,7 @@ const DataQualityCards = ({
                           {issues} issues found
                         </span>
                         <span
-                          className={`px-1.5 py-0.5 rounded-full font-medium ${
+                          className={`px-1 py-0.5 rounded-full font-medium ${
                             status === 'excellent'
                               ? 'bg-emerald-500/20 text-emerald-400'
                               : status === 'good'
@@ -1375,39 +1361,39 @@ const QualityDot = ({
         <circle
           cx={cx}
           cy={cy}
-          r="5"
+          r="4"
           fill="none"
           stroke="#ef4444"
-          strokeWidth="1.5"
-          strokeDasharray="2,1.5"
-          opacity={0.9}
+          strokeWidth="2"
+          strokeDasharray="2,1"
+          opacity={0.95}
           style={{
-            filter: 'drop-shadow(0 1px 3px rgba(239, 68, 68, 0.3))',
+            filter: 'drop-shadow(0 1px 3px rgba(239, 68, 68, 0.4))',
           }}
         />
-        <g stroke="#ef4444" strokeWidth="1.5" opacity={0.9}>
-          <line x1={cx - 2.5} y1={cy - 2.5} x2={cx + 2.5} y2={cy + 2.5} />
-          <line x1={cx - 2.5} y1={cy + 2.5} x2={cx + 2.5} y2={cy - 2.5} />
+        <g stroke="#ef4444" strokeWidth="2" opacity={0.95}>
+          <line x1={cx - 2} y1={cy - 2} x2={cx + 2} y2={cy + 2} />
+          <line x1={cx - 2} y1={cy + 2} x2={cx + 2} y2={cy - 2} />
         </g>
-        {/* Subtle pulsing animation */}
+        {/* Pulsing animation */}
         <circle
           cx={cx}
           cy={cy}
-          r="7"
+          r="6"
           fill="none"
           stroke="#ef4444"
-          strokeWidth="0.5"
-          opacity={0.3}
+          strokeWidth="0.8"
+          opacity={0.4}
         >
           <animate
             attributeName="r"
-            values="5;9;5"
+            values="4;8;4"
             dur="2s"
             repeatCount="indefinite"
           />
           <animate
             attributeName="opacity"
-            values="0.3;0.1;0.3"
+            values="0.4;0.1;0.4"
             dur="2s"
             repeatCount="indefinite"
           />
@@ -1428,7 +1414,7 @@ const QualityDot = ({
 
     return (
       <g>
-        {/* Warning triangle with gradient */}
+        {/* Warning triangle with enhanced gradient */}
         <defs>
           <linearGradient
             id={`warningGradient-${cx}-${cy}`}
@@ -1437,11 +1423,11 @@ const QualityDot = ({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor={color} stopOpacity="0.9" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.6" />
+            <stop offset="0%" stopColor={color} stopOpacity="1" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.8" />
           </linearGradient>
           <filter id={`glow-${cx}-${cy}`}>
-            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -1450,40 +1436,44 @@ const QualityDot = ({
         </defs>
 
         <polygon
-          points={`${cx},${cy - 4} ${cx - 4},${cy + 3} ${cx + 4},${cy + 3}`}
+          points={`${cx},${cy - 5} ${cx - 4.5},${cy + 3.5} ${cx + 4.5},${
+            cy + 3.5
+          }`}
           fill={`url(#warningGradient-${cx}-${cy})`}
           stroke="#fff"
-          strokeWidth="0.5"
+          strokeWidth="1"
           style={{
             filter: `url(#glow-${cx}-${cy})`,
           }}
         />
 
         {/* Exclamation mark */}
-        <g fill="#ffffff" fontSize="7" textAnchor="middle" fontWeight="bold">
-          <text x={cx} y={cy - 0.5} style={{ fontSize: '9px' }}>
+        <g fill="#ffffff" fontSize="8" textAnchor="middle" fontWeight="bold">
+          <text x={cx} y={cy} style={{ fontSize: '10px' }}>
             !
           </text>
         </g>
 
-        {/* Subtle pulsing for high severity */}
+        {/* Enhanced pulsing for high severity */}
         {severity === 'high' && (
           <polygon
-            points={`${cx},${cy - 5} ${cx - 5},${cy + 4} ${cx + 5},${cy + 4}`}
+            points={`${cx},${cy - 6} ${cx - 5.5},${cy + 4.5} ${cx + 5.5},${
+              cy + 4.5
+            }`}
             fill="none"
             stroke={color}
-            strokeWidth="0.8"
-            opacity={0.4}
+            strokeWidth="1.2"
+            opacity={0.5}
           >
             <animate
               attributeName="stroke-width"
-              values="0.8;2.5;0.8"
+              values="1.2;3;1.2"
               dur="1.5s"
               repeatCount="indefinite"
             />
             <animate
               attributeName="opacity"
-              values="0.4;0.1;0.4"
+              values="0.5;0.1;0.5"
               dur="1.5s"
               repeatCount="indefinite"
             />
@@ -1499,25 +1489,38 @@ const QualityDot = ({
       <circle
         cx={cx}
         cy={cy}
-        r="3.5"
+        r="4"
         fill={stroke}
         stroke="#fff"
-        strokeWidth="1.5"
+        strokeWidth="2"
         style={{
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))',
         }}
       />
       {/* Quality confidence ring */}
       <circle
         cx={cx}
         cy={cy}
-        r="5.5"
+        r="6"
         fill="none"
         stroke="#10b981"
-        strokeWidth="0.8"
-        opacity={0.5}
-        strokeDasharray="1.5,1.5"
-      />
+        strokeWidth="1"
+        opacity={0.6}
+        strokeDasharray="2,2"
+      >
+        <animate
+          attributeName="r"
+          values="6;7;6"
+          dur="1.5s"
+          repeatCount="indefinite"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.6;0.3;0.6"
+          dur="1.5s"
+          repeatCount="indefinite"
+        />
+      </circle>
     </g>
   );
 };
@@ -1564,15 +1567,15 @@ const QualityLine = ({ points, stroke, strokeWidth, dataKey, data }) => {
           x2="100%"
           y2="0%"
         >
-          <stop offset="0%" stopColor={stroke} stopOpacity="0.8" />
-          <stop offset="100%" stopColor={stroke} stopOpacity="0.4" />
+          <stop offset="0%" stopColor={stroke} stopOpacity="1" />
+          <stop offset="100%" stopColor={stroke} stopOpacity="0.6" />
         </linearGradient>
         <filter id={`lineShadow-${dataKey}`}>
           <feDropShadow
             dx="0"
-            dy="1.5"
-            stdDeviation="2"
-            floodColor="rgba(0,0,0,0.2)"
+            dy="2"
+            stdDeviation="3"
+            floodColor="rgba(0,0,0,0.3)"
           />
         </filter>
       </defs>
@@ -1591,7 +1594,7 @@ const QualityLine = ({ points, stroke, strokeWidth, dataKey, data }) => {
             d={pathData}
             fill="none"
             stroke={`url(#lineGradient-${dataKey})`}
-            strokeWidth={strokeWidth + 0.25}
+            strokeWidth={strokeWidth + 0.5}
             style={{
               filter: `url(#lineShadow-${dataKey})`,
             }}
@@ -1617,19 +1620,19 @@ const CustomTooltip = ({
 
     return (
       <div
-        className="relative bg-slate-800/95 border border-white/20 rounded-lg p-3 shadow-xl backdrop-blur-sm"
+        className="relative bg-slate-800/98 border border-white/25 rounded-lg p-3 shadow-2xl backdrop-blur-md"
         style={{
           background:
             'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
           boxShadow: `
-            0 15px 30px rgba(0, 0, 0, 0.3),
-            inset 0 0.5px 0 rgba(255, 255, 255, 0.08),
-            0 0 15px rgba(76, 201, 240, 0.15)
+            0 20px 40px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 20px rgba(76, 201, 240, 0.2)
           `,
         }}
       >
         {/* Header */}
-        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-white/10">
+        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-white/15">
           <Calendar className="w-3.5 h-3.5 text-cyan-400" />
           <p className="text-xs font-semibold text-white">
             {new Date(label).toLocaleDateString('en-US', {
@@ -1656,12 +1659,12 @@ const CustomTooltip = ({
 
             return (
               <div key={`item-${index}`} className="group">
-                <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/30 hover:bg-slate-700/50 transition-colors">
+                <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
                   <div className="flex items-center gap-2">
                     {/* Enhanced Quality Indicator */}
                     <div className="relative">
                       {entry.value === null ? (
-                        <div className="w-3.5 h-3.5 border border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
+                        <div className="w-3.5 h-3.5 border-2 border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
                           <WifiOff className="w-2 h-2 text-red-400" />
                         </div>
                       ) : hasIssue && qualityType === 'incorrect' ? (
@@ -1677,13 +1680,13 @@ const CustomTooltip = ({
                       ) : (
                         <div className="relative">
                           <div
-                            className="w-3.5 h-3.5 rounded-full border border-white/20"
+                            className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
                             style={{
                               backgroundColor: entry.color,
-                              boxShadow: `0 0 6px ${entry.color}30`,
+                              boxShadow: `0 0 8px ${entry.color}40`,
                             }}
                           />
-                          <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full border border-white/50"></div>
+                          <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full border border-white/60"></div>
                         </div>
                       )}
                     </div>
@@ -1815,12 +1818,12 @@ const AnnotationMarker = ({ annotation, onEdit, onDelete }) => {
       onMouseLeave={() => setShowTooltip(false)}
     >
       <div
-        className="relative w-5 h-5 rounded-full border-1.5 flex items-center justify-center transition-all duration-300 hover:scale-125"
+        className="relative w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 hover:scale-125"
         style={{
           backgroundColor: category?.bgColor,
           borderColor: category?.borderColor,
           color: category?.color,
-          boxShadow: `0 3px 10px ${category?.color}30, 0 0 15px ${category?.color}15`,
+          boxShadow: `0 4px 12px ${category?.color}40, 0 0 20px ${category?.color}20`,
         }}
       >
         <Icon className="w-3.5 h-3.5" />
@@ -1830,7 +1833,7 @@ const AnnotationMarker = ({ annotation, onEdit, onDelete }) => {
           className="absolute inset-0 rounded-full animate-ping"
           style={{
             backgroundColor: category?.color,
-            opacity: 0.2,
+            opacity: 0.3,
           }}
         />
       </div>
@@ -2024,7 +2027,7 @@ const ControlsBar = ({
         boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
       }}
     >
-      <div className="flex items-center justify-between w-full p-3">
+      <div className="flex items-center justify-between w-full p-1">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
@@ -2032,10 +2035,6 @@ const ControlsBar = ({
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">Fleet Analytics</h3>
-              {/* <div className="flex items-center gap-1.5 mt-0.5">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-slate-400">Live Data Stream</span>
-              </div> */}
             </div>
           </div>
         </div>
@@ -2056,9 +2055,9 @@ const ControlsBar = ({
                 className="absolute right-0 top-full mt-2 w-80 rounded-lg shadow-xl z-50 overflow-hidden"
                 style={{
                   background:
-                    'linear-gradient(145deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%)', // Increased opacity
-                  border: '1px solid rgba(255, 255, 255, 0.3)', // Increased border opacity
-                  backdropFilter: 'blur(10px)', // Increased blur for better visibility
+                    'linear-gradient(145deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  backdropFilter: 'blur(10px)',
                 }}
               >
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -2210,9 +2209,7 @@ const ChartView = () => {
   });
 
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
-  // qualityVisible is now always true
   const qualityVisible = true;
-  // annotationsVisible and qualityOverlayVisible are now always false
   const annotationsVisible = false;
   const qualityOverlayVisible = false;
   const [isExporting, setIsExporting] = useState(false);
@@ -2301,65 +2298,44 @@ const ChartView = () => {
       />
 
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          {' '}
-          {/* Reduced padding */}
+        <div className="p-1">
           <DataQualityCards
             data={chartData}
             qualityVisible={qualityVisible}
-            // Removed onToggleQuality prop as qualityVisible is always true
             selectedVessels={chartFilters.selectedVessels}
             selectedKPIs={chartFilters.selectedKPIs}
             chartData={chartData}
             annotationsVisible={annotationsVisible}
-            // Removed onToggleAnnotations prop as annotationsVisible is always false
             qualityOverlayVisible={qualityOverlayVisible}
-            // Removed onToggleQualityOverlay prop as qualityOverlayVisible is always false
             viewMode="charts"
             compactMode={true}
           />
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="px-1 pb-1">
           {chartFilters.selectedKPIs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-56 text-center">
-              {' '}
-              {/* Reduced height */}
-              <BarChart3 className="w-10 h-10 text-slate-500 mb-3" />{' '}
-              {/* Reduced icon size */}
-              <h3 className="text-base font-semibold text-white mb-1.5">
-                {' '}
-                {/* Reduced font size */}
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <BarChart3 className="w-8 h-8 text-slate-500 mb-2" />
+              <h3 className="text-sm font-semibold text-white mb-1">
                 No KPIs Selected
               </h3>
-              <p className="text-sm text-slate-400">
-                {' '}
-                {/* Reduced font size */}
+              <p className="text-xs text-slate-400">
                 Please select at least one KPI to display charts.
               </p>
             </div>
           ) : chartData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-56 text-center">
-              {' '}
-              {/* Reduced height */}
-              <TrendingUp className="w-10 h-10 text-slate-500 mb-3" />{' '}
-              {/* Reduced icon size */}
-              <h3 className="text-base font-semibold text-white mb-1.5">
-                {' '}
-                {/* Reduced font size */}
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <TrendingUp className="w-8 h-8 text-slate-500 mb-2" />
+              <h3 className="text-sm font-semibold text-white mb-1">
                 No Data Available
               </h3>
-              <p className="text-sm text-slate-400">
-                {' '}
-                {/* Reduced font size */}
+              <p className="text-xs text-slate-400">
                 No data available for the selected filters. Try adjusting your
                 date range or vessel selection.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {' '}
-              {/* Reduced gap */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {chartFilters.selectedKPIs.map((kpiId) => {
                 const kpiMeta = getKPIById(kpiId, chartFilters.dataType);
                 if (!kpiMeta) return null;
@@ -2425,198 +2401,144 @@ const ChartView = () => {
                     key={kpiId}
                     style={{
                       background:
-                        'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-                      borderRadius: '12px' /* Reduced border radius */,
+                        'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
+                      borderRadius: '10px',
                       boxShadow: `
-                        0 15px 30px rgba(0, 0, 0, 0.3),
-                        inset 0 0.5px 0 rgba(255, 255, 255, 0.08),
-                        0 6px 12px rgba(0, 0, 0, 0.25)
+                        0 12px 25px rgba(0, 0, 0, 0.35),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                        0 5px 10px rgba(0, 0, 0, 0.3)
                       `,
-                      border:
-                        '1px solid rgba(255, 255, 255, 0.08)' /* Reduced border opacity */,
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
                       transform: 'translateZ(0)',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform =
-                        'translateY(-3px) translateZ(0) scale(1.01)'; /* Reduced hover effect */
+                        'translateY(-2px) translateZ(0) scale(1.005)';
                       e.currentTarget.style.boxShadow = `
-                        0 20px 40px rgba(0, 0, 0, 0.4),
-                        inset 0 0.8px 0 rgba(255, 255, 255, 0.12),
-                        0 10px 20px rgba(0, 0, 0, 0.35),
-                        0 0 30px ${kpiMeta.color}15
+                        0 18px 35px rgba(0, 0, 0, 0.45),
+                        inset 0 1.5px 0 rgba(255, 255, 255, 0.15),
+                        0 8px 16px rgba(0, 0, 0, 0.4),
+                        0 0 25px ${kpiMeta.color}20
                       `;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform =
                         'translateY(0) translateZ(0) scale(1)';
                       e.currentTarget.style.boxShadow = `
-                        0 15px 30px rgba(0, 0, 0, 0.3),
-                        inset 0 0.5px 0 rgba(255, 255, 255, 0.08),
-                        0 6px 12px rgba(0, 0, 0, 0.25)
+                        0 12px 25px rgba(0, 0, 0, 0.35),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+                        0 5px 10px rgba(0, 0, 0, 0.3)
                       `;
                     }}
                   >
                     {/* Subtle gradient overlay for 3D effect */}
                     <div
-                      className="absolute inset-0 rounded-xl opacity-50 pointer-events-none" /* Reduced opacity */
+                      className="absolute inset-0 rounded-lg opacity-60 pointer-events-none"
                       style={{
                         background:
-                          'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(0,0,0,0.08) 100%)' /* Reduced opacity */,
+                          'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)',
                       }}
                     />
 
                     {/* Animated glow effect */}
                     <div
-                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-15 transition-opacity duration-400 pointer-events-none" /* Reduced opacity and duration */
+                      className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"
                       style={{
-                        background: `radial-gradient(circle at center, ${kpiMeta.color}30 0%, transparent 70%)` /* Reduced opacity */,
+                        background: `radial-gradient(circle at center, ${kpiMeta.color}40 0%, transparent 70%)`,
                       }}
                     />
 
-                    <div className="relative p-4">
-                      {' '}
-                      {/* Reduced padding */}
+                    <div className="relative p-3">
                       {/* Enhanced Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        {' '}
-                        {/* Reduced margin-bottom */}
+                      <div className="flex items-center justify-between mb-3">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            {' '}
-                            {/* Reduced gap and margin-bottom */}
+                          <div className="flex items-center gap-2 mb-1">
                             <div
-                              className="p-1.5 rounded-md border" /* Reduced padding and border radius */
+                              className="p-1 rounded-md border"
                               style={{
-                                backgroundColor: `${kpiMeta.color}20`,
-                                borderColor: `${kpiMeta.color}40`,
+                                backgroundColor: `${kpiMeta.color}25`,
+                                borderColor: `${kpiMeta.color}50`,
                               }}
                             >
                               {kpiMeta.category === 'performance' && (
                                 <TrendingUp
-                                  className="w-4 h-4" /* Reduced icon size */
+                                  className="w-3.5 h-3.5"
                                   style={{ color: kpiMeta.color }}
                                 />
                               )}
                               {kpiMeta.category === 'fuel' && (
                                 <Fuel
-                                  className="w-4 h-4" /* Reduced icon size */
+                                  className="w-3.5 h-3.5"
                                   style={{ color: kpiMeta.color }}
                                 />
                               )}
                               {kpiMeta.category === 'weather' && (
                                 <Waves
-                                  className="w-4 h-4" /* Reduced icon size */
+                                  className="w-3.5 h-3.5"
                                   style={{ color: kpiMeta.color }}
                                 />
                               )}
                             </div>
                             <div>
-                              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                                {' '}
-                                {/* Reduced font size and gap */}
+                              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
                                 {kpiMeta.name}
-                                <span className="text-sm text-slate-400 font-normal">
+                                <span className="text-xs text-slate-400 font-normal">
                                   ({kpiMeta.unit || 'N/A'})
                                 </span>
                               </h3>
 
-                              <div className="flex items-center gap-2 mt-0.5">
-                                {' '}
-                                {/* Reduced gap and margin-top */}
+                              <div className="flex items-center gap-1.5 mt-0.5">
                                 <span
-                                  className={`text-xs px-1.5 py-0.5 rounded-full border flex items-center gap-1 ${
-                                    /* Reduced padding and gap */
+                                  className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 ${
                                     kpiMeta.source === 'LF'
                                       ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
                                       : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
                                   }`}
                                 >
                                   {kpiMeta.source === 'LF' && (
-                                    <Radio className="w-2.5 h-2.5" /> /* Reduced icon size */
+                                    <Radio className="w-2 h-2" />
                                   )}
                                   {kpiMeta.source === 'HF' && (
-                                    <Zap className="w-2.5 h-2.5" /> /* Reduced icon size */
+                                    <Zap className="w-2 h-2" />
                                   )}
                                   {kpiMeta.source}
                                 </span>
-                                <span className="text-xs text-slate-400 capitalize bg-slate-700/50 px-1.5 py-0.5 rounded-full">
-                                  {' '}
-                                  {/* Reduced padding */}
+                                <span className="text-xs text-slate-400 capitalize bg-slate-700/50 px-1 py-0.5 rounded-full">
                                   {kpiMeta.category}
                                 </span>
                               </div>
                             </div>
                           </div>
                         </div>
-                        {/* Quality Indicators */}
-                        <div className="flex items-center gap-1.5">
-                          {' '}
-                          {/* Reduced gap */}
-                          {qualityVisible && (
-                            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs border border-white/10">
-                              {' '}
-                              {/* Reduced padding and border radius */}
-                              <Shield className="w-3.5 h-3.5 text-emerald-400" />{' '}
-                              {/* Reduced icon size */}
-                              <span className="text-emerald-400 font-medium">
-                                Quality
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                        {/* Quality Indicators - moved to a more subtle bar */}
+                        {qualityVisible && qualityIssues > 0 && (
+                          <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-700/40 border border-white/10 text-xs">
+                            <Shield className="w-3 h-3 text-emerald-400" />
+                            <span className="text-slate-300">
+                              {qualityIssues} Issues:
+                            </span>
+                            <span className="flex items-center gap-0.5 text-orange-400">
+                              <WifiOff className="w-2.5 h-2.5" />
+                              {missingIssues}
+                            </span>
+                            <span className="flex items-center gap-0.5 text-red-400">
+                              <XCircle className="w-2.5 h-2.5" />
+                              {incorrectIssues}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      {/* Quality Summary Bar */}
-                      {qualityVisible && qualityIssues > 0 && (
-                        <div className="mb-3 p-2.5 rounded-md bg-slate-700/30 border border-white/10">
-                          {' '}
-                          {/* Reduced padding and border radius */}
-                          <div className="flex items-center justify-between mb-1.5">
-                            {' '}
-                            {/* Reduced margin-bottom */}
-                            <span className="text-xs font-medium text-slate-300">
-                              Data Quality Issues
-                            </span>
-                            <span className="text-xs text-slate-400">
-                              {qualityIssues} total
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2.5 text-xs">
-                            {' '}
-                            {/* Reduced gap */}
-                            <div className="flex items-center gap-1.5">
-                              {' '}
-                              {/* Reduced gap */}
-                              <WifiOff className="w-2.5 h-2.5 text-orange-400" />{' '}
-                              {/* Reduced icon size */}
-                              <span className="text-slate-400">
-                                {missingIssues} missing
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {' '}
-                              {/* Reduced gap */}
-                              <XCircle className="w-2.5 h-2.5 text-red-400" />{' '}
-                              {/* Reduced icon size */}
-                              <span className="text-slate-400">
-                                {incorrectIssues} incorrect
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                       {/* Enhanced Chart Container */}
                       <div className="relative">
-                        <ResponsiveContainer width="100%" height={280}>
-                          {' '}
-                          {/* Reduced height */}
+                        <ResponsiveContainer width="100%" height={220}>
                           <LineChart
                             data={chartData}
                             margin={{
-                              top: 10 /* Reduced margin */,
-                              right: 10,
-                              left: 10,
-                              bottom: 10,
+                              top: -5,
+                              right: 5,
+                              left: 5,
+                              bottom: -5,
                             }}
                           >
                             <defs>
@@ -2631,7 +2553,7 @@ const ChartView = () => {
                                 <stop
                                   offset="5%"
                                   stopColor={kpiMeta.color}
-                                  stopOpacity={0.8}
+                                  stopOpacity={0.9}
                                 />
                                 <stop
                                   offset="95%"
@@ -2649,7 +2571,7 @@ const ChartView = () => {
                                 height="200%"
                               >
                                 <feGaussianBlur
-                                  stdDeviation="2.5" /* Reduced stdDeviation */
+                                  stdDeviation="3"
                                   result="coloredBlur"
                                 />
                                 <feMerge>
@@ -2667,9 +2589,9 @@ const ChartView = () => {
                               >
                                 <feDropShadow
                                   dx="0"
-                                  dy="2.5" /* Reduced dy */
-                                  stdDeviation="5" /* Reduced stdDeviation */
-                                  floodColor="rgba(0,0,0,0.35)" /* Adjusted floodColor */
+                                  dy="3"
+                                  stdDeviation="6"
+                                  floodColor="rgba(0,0,0,0.4)"
                                 />
                               </filter>
 
@@ -2678,19 +2600,19 @@ const ChartView = () => {
                                 <pattern
                                   id={`qualityPattern-${kpiId}`}
                                   patternUnits="userSpaceOnUse"
-                                  width="15" /* Reduced width */
-                                  height="15" /* Reduced height */
+                                  width="20"
+                                  height="20"
                                 >
                                   <rect
-                                    width="15"
-                                    height="15"
-                                    fill="rgba(76, 201, 240, 0.04)" /* Reduced opacity */
+                                    width="20"
+                                    height="20"
+                                    fill="rgba(76, 201, 240, 0.05)"
                                   />
                                   <circle
-                                    cx="7.5" /* Adjusted cx */
-                                    cy="7.5" /* Adjusted cy */
-                                    r="0.8" /* Reduced radius */
-                                    fill="rgba(76, 201, 240, 0.15)" /* Reduced opacity */
+                                    cx="10"
+                                    cy="10"
+                                    r="1"
+                                    fill="rgba(76, 201, 240, 0.2)"
                                   />
                                 </pattern>
                               )}
@@ -2704,14 +2626,14 @@ const ChartView = () => {
                                 width="100%"
                                 height="100%"
                                 fill={`url(#qualityPattern-${kpiId})`}
-                                opacity="0.25" /* Reduced opacity */
+                                opacity="0.3"
                               />
                             )}
 
                             <CartesianGrid
-                              strokeDasharray="2 5" /* Adjusted strokeDasharray */
-                              stroke="rgba(255, 255, 255, 0.07)" /* Reduced opacity */
-                              strokeWidth={0.4} /* Reduced strokeWidth */
+                              strokeDasharray="3 6"
+                              stroke="rgba(255, 255, 255, 0.1)"
+                              strokeWidth={0.6}
                             />
 
                             {/* Range annotations */}
@@ -2728,9 +2650,9 @@ const ChartView = () => {
                                     x2={annotation.endDate}
                                     fill={category?.bgColor}
                                     stroke={category?.borderColor}
-                                    strokeWidth={0.8} /* Reduced strokeWidth */
-                                    strokeDasharray="5 3" /* Adjusted strokeDasharray */
-                                    fillOpacity={0.25} /* Reduced fillOpacity */
+                                    strokeWidth={1}
+                                    strokeDasharray="6 4"
+                                    fillOpacity={0.3}
                                   />
                                 );
                               })}
@@ -2747,9 +2669,9 @@ const ChartView = () => {
                                     key={`point-annotation-${index}`}
                                     x={annotation.date}
                                     stroke={category?.color}
-                                    strokeWidth={1.5} /* Reduced strokeWidth */
-                                    strokeDasharray="7 3" /* Adjusted strokeDasharray */
-                                    opacity={0.7} /* Reduced opacity */
+                                    strokeWidth={2}
+                                    strokeDasharray="8 4"
+                                    opacity={0.8}
                                   />
                                 );
                               })}
@@ -2763,41 +2685,37 @@ const ChartView = () => {
                                 })
                               }
                               tick={{
-                                fill: '#aab8c8' /* Brighter fill */,
-                                fontSize: 10 /* Reduced font size */,
+                                fill: '#cbd5e1',
+                                fontSize: 11,
                                 fontWeight: 500,
                               }}
                               axisLine={{
-                                stroke:
-                                  'rgba(255, 255, 255, 0.12)' /* Reduced opacity */,
-                                strokeWidth: 0.8 /* Reduced strokeWidth */,
+                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                strokeWidth: 1,
                               }}
                               tickLine={{
-                                stroke:
-                                  'rgba(255, 255, 255, 0.12)' /* Reduced opacity */,
-                                strokeWidth: 0.8 /* Reduced strokeWidth */,
+                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                strokeWidth: 1,
                               }}
-                              height={25} /* Reduced height */
+                              height={30}
                             />
 
                             <YAxis
                               domain={kpiMeta.yAxisRange || ['auto', 'auto']}
                               tick={{
-                                fill: '#aab8c8' /* Brighter fill */,
-                                fontSize: 10 /* Reduced font size */,
+                                fill: '#cbd5e1',
+                                fontSize: 11,
                                 fontWeight: 500,
                               }}
                               axisLine={{
-                                stroke:
-                                  'rgba(255, 255, 255, 0.12)' /* Reduced opacity */,
-                                strokeWidth: 0.8 /* Reduced strokeWidth */,
+                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                strokeWidth: 1,
                               }}
                               tickLine={{
-                                stroke:
-                                  'rgba(255, 255, 255, 0.12)' /* Reduced opacity */,
-                                strokeWidth: 0.8 /* Reduced strokeWidth */,
+                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                strokeWidth: 1,
                               }}
-                              width={45} /* Reduced width */
+                              width={50}
                             />
 
                             <Tooltip
@@ -2809,10 +2727,9 @@ const ChartView = () => {
                               }
                               cursor={{
                                 stroke: kpiMeta.color,
-                                strokeWidth: 1.5 /* Reduced strokeWidth */,
-                                strokeDasharray:
-                                  '3 3' /* Adjusted strokeDasharray */,
-                                strokeOpacity: 0.7 /* Reduced opacity */,
+                                strokeWidth: 2,
+                                strokeDasharray: '4 4',
+                                strokeOpacity: 0.8,
                               }}
                             />
 
@@ -2833,7 +2750,7 @@ const ChartView = () => {
                                     type="monotone"
                                     dataKey={`${vesselId}_${kpiId}`}
                                     stroke={getVesselColor(vesselId)}
-                                    strokeWidth={2.5} /* Reduced strokeWidth */
+                                    strokeWidth={3}
                                     dot={(props) => (
                                       <QualityDot
                                         {...props}
@@ -2843,8 +2760,8 @@ const ChartView = () => {
                                       />
                                     )}
                                     activeDot={{
-                                      r: 7 /* Reduced radius */,
-                                      strokeWidth: 2.5 /* Reduced strokeWidth */,
+                                      r: 8,
+                                      strokeWidth: 3,
                                       fill: getVesselColor(vesselId),
                                       stroke: '#fff',
                                       style: {
@@ -2862,108 +2779,68 @@ const ChartView = () => {
                           </LineChart>
                         </ResponsiveContainer>
 
-                        {/* Enhanced Legend */}
-                        <div className="absolute bottom-2.5 left-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-md p-2.5">
-                          {' '}
-                          {/* Reduced padding and border radius */}
-                          <div className="text-xs font-medium text-white mb-1.5">
-                            {' '}
-                            {/* Reduced margin-bottom */}
-                            Vessel Legend
-                          </div>
-                          <div className="grid grid-cols-1 gap-1 text-xs max-h-20 overflow-y-auto">
-                            {' '}
-                            {/* Reduced max-height */}
-                            {chartFilters.selectedVessels.map(
-                              (vesselId, index) => {
-                                const vessel = sampleVessels.find(
-                                  (v) => v.id === vesselId
-                                );
-                                const vesselQuality =
-                                  staticQualityData[
-                                    index % staticQualityData.length
-                                  ];
-                                return (
-                                  <div
-                                    key={vesselId}
-                                    className="flex items-center gap-1.5" /* Reduced gap */
-                                  >
-                                    <div
-                                      className="w-2.5 h-2.5 rounded-full border border-white/20" /* Reduced size and border */
-                                      style={{
-                                        backgroundColor:
-                                          getVesselColor(vesselId),
-                                      }}
-                                    />
-                                    <span className="text-slate-300 truncate flex-1">
-                                      {vessel?.name || vesselId}
-                                    </span>
-                                    {qualityVisible && vesselQuality && (
-                                      <span className="text-slate-400">
-                                        Q{vesselQuality.overallScore}%
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              }
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Quality Legend */}
+                        {/* Quality Legend - moved to top, more subtle */}
                         {qualityVisible && (
-                          <div className="absolute bottom-2.5 right-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-md p-2.5">
-                            {' '}
-                            {/* Reduced padding and border radius */}
-                            <div className="text-xs font-medium text-white mb-1.5">
-                              {' '}
-                              {/* Reduced margin-bottom */}
-                              Data Quality
+                          <div className="absolute top-0 left-0 right-0 flex items-center justify-end gap-3 text-[10px] p-1.5">
+                            <div className="flex items-center gap-0.5">
+                              <div className="w-2 h-2 rounded-full bg-emerald-400 border border-white/30"></div>
+                              <span className="text-slate-300">Normal</span>
                             </div>
-                            <div className="flex flex-col gap-1.5 text-xs">
-                              {' '}
-                              {/* Reduced gap */}
-                              <div className="flex items-center gap-1.5">
-                                {' '}
-                                {/* Reduced gap */}
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-white/20"></div>{' '}
-                                {/* Reduced size and border */}
-                                <span className="text-slate-300">Normal</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                {' '}
-                                {/* Reduced gap */}
-                                <div
-                                  className="w-2.5 h-2.5 bg-yellow-400" /* Reduced size */
-                                  style={{
-                                    clipPath:
-                                      'polygon(50% 0%, 0% 100%, 100% 100%)',
-                                  }}
-                                ></div>
-                                <span className="text-slate-300">
-                                  Incorrect
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                {' '}
-                                {/* Reduced gap */}
-                                <div className="w-2.5 h-2.5 border-1.5 border-red-400 border-dashed rounded-full bg-transparent relative">
-                                  {' '}
-                                  {/* Reduced size and border */}
-                                  <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className="text-red-400 text-xs leading-none">
-                                      ×
-                                    </span>
-                                  </div>
+                            <div className="flex items-center gap-0.5">
+                              <div
+                                className="w-2 h-2 bg-yellow-400"
+                                style={{
+                                  clipPath:
+                                    'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                }}
+                              ></div>
+                              <span className="text-slate-300">Incorrect</span>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                              <div className="w-2 h-2 border-2 border-red-400 border-dashed rounded-full bg-transparent relative">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="text-red-400 text-[9px] leading-none">
+                                    ×
+                                  </span>
                                 </div>
-                                <span className="text-slate-300">Missing</span>
                               </div>
+                              <span className="text-slate-300">Missing</span>
                             </div>
                           </div>
                         )}
 
-                        {/* Enhanced overlay info */}
-                        {/* Removed the quality overlay and annotations overlay info */}
+                        {/* Enhanced Vessel Legend - horizontal, two rows if needed */}
+                        <div className="mt-2 p-1.5">
+                          {/* <div className="text-[10px] font-medium text-white mb-1">
+                            Vessels
+                          </div> */}
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] justify-center">
+                            {chartFilters.selectedVessels.map((vesselId) => {
+                              const vessel = sampleVessels.find(
+                                (v) => v.id === vesselId
+                              );
+                              return (
+                                <div
+                                  key={vesselId}
+                                  className="flex items-center gap-1"
+                                >
+                                  <div
+                                    className="w-2 h-2 rounded-full border border-white/30"
+                                    style={{
+                                      backgroundColor: getVesselColor(vesselId),
+                                      boxShadow: `0 0 4px ${getVesselColor(
+                                        vesselId
+                                      )}40`,
+                                    }}
+                                  />
+                                  <span className="text-slate-300">
+                                    {vessel?.name || vesselId}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
