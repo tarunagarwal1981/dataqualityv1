@@ -652,18 +652,24 @@ const DataQualityCards = ({
             </div>
 
             <div className="space-y-2">
+              <div className="text-2xl font-bold text-white">
+                {fleetMetrics.overallHealth}%
+              </div>
+
               <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-white">
-                  {fleetMetrics.overallHealth}%
+                <div className="text-[10px] text-slate-400">
+                  {fleetMetrics.healthyVessels} excellent •{' '}
+                  {fleetMetrics.averageVessels} good •{' '}
+                  {fleetMetrics.poorVessels} attention needed
                 </div>
                 <QualityDistributionChart data={fleetMetrics} type="health" />
               </div>
 
-              <div className="text-[10px] text-slate-400">
+              {/* <div className="text-[10px] text-slate-400">
                 {fleetMetrics.healthyVessels} excellent •{' '}
                 {fleetMetrics.averageVessels} good • {fleetMetrics.poorVessels}{' '}
                 attention needed
-              </div>
+              </div> */}
 
               <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
                 <div className="h-full flex">
