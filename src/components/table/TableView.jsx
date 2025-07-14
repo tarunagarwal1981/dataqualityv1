@@ -1041,7 +1041,7 @@ const DataQualityCards = ({
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleQuality}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
               qualityVisible
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 : 'bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700'
@@ -1056,7 +1056,7 @@ const DataQualityCards = ({
           </button>
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700"
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700"
           >
             <BarChart2 className="w-3 h-3" />
             {showDetails ? 'Hide' : 'Show'} KPI Details
@@ -1239,7 +1239,7 @@ const ControlsBar = ({
                   </button>
                 </div>
 
-                <div className="p-4 border-b border-white/10">
+                <div className="p-2 border-b border-white/10">
                   <label className="text-xs font-medium text-slate-300 mb-2 block">
                     Data Source
                   </label>
@@ -1248,7 +1248,7 @@ const ControlsBar = ({
                       <button
                         key={type}
                         onClick={() => handleDataTypeChange(type)}
-                        className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                        className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
                           localFilters.dataType === type
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                             : 'bg-slate-700/50 text-slate-300 border border-white/10 hover:bg-slate-700'
@@ -1308,13 +1308,13 @@ const ControlsBar = ({
                 <div className="p-4 border-t border-white/10 flex justify-end gap-2">
                   <button
                     onClick={handleApply}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
                   >
                     Apply
                   </button>
                   <button
                     onClick={() => setShowKPIDropdown(false)}
-                    className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors"
+                    className="px-2 py-1.5 text-xs font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors"
                   >
                     Done
                   </button>
@@ -1608,7 +1608,7 @@ const TableView = ({ className = '' }) => {
       <ControlsBar onExport={handleExport} isExporting={isExporting} />
 
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
+        <div className="p-2">
           <DataQualityCards
             data={sampleData}
             qualityVisible={qualityVisible}
@@ -1628,13 +1628,13 @@ const TableView = ({ className = '' }) => {
               <table className="w-full">
                 <thead className="bg-slate-800/70 border-b border-white/10">
                   <tr>
-                    <th className="w-8 px-3 py-3 text-left">
+                    <th className="w-8 px-2 py-1 text-left">
                       <input
                         type="checkbox"
                         className="rounded bg-slate-700 border-slate-600"
                       />
                     </th>
-                    <th className="w-40 px-3 py-3 text-left">
+                    <th className="w-40 px-2 py-1 text-left">
                       <button
                         onClick={() => handleSort('vesselName')}
                         className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
@@ -1643,7 +1643,7 @@ const TableView = ({ className = '' }) => {
                         {getSortIcon('vesselName')}
                       </button>
                     </th>
-                    <th className="w-28 px-3 py-3 text-left">
+                    <th className="w-28 px-2 py-1 text-left">
                       <button
                         onClick={() => handleSort('date')}
                         className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
@@ -1653,7 +1653,7 @@ const TableView = ({ className = '' }) => {
                       </button>
                     </th>
                     {qualityVisible && (
-                      <th className="w-20 px-3 py-3 text-center">
+                      <th className="w-20 px-2 py-1 text-center">
                         <button
                           onClick={() => handleSort('quality')}
                           className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors group mx-auto"
@@ -1664,7 +1664,7 @@ const TableView = ({ className = '' }) => {
                       </th>
                     )}
                     {currentKPIs.map((kpi) => (
-                      <th key={kpi.id} className="w-24 px-3 py-3 text-center">
+                      <th key={kpi.id} className="w-24 px-2 py-1 text-center">
                         <button
                           onClick={() => handleSort(kpi.id)}
                           className="flex flex-col items-center gap-1 text-slate-300 hover:text-white transition-colors group w-full"
@@ -1685,7 +1685,7 @@ const TableView = ({ className = '' }) => {
                         </button>
                       </th>
                     ))}
-                    <th className="w-8 px-3 py-3 text-center">
+                    <th className="w-8 px-2 py-1 text-center">
                       <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto" />
                     </th>
                   </tr>
@@ -1696,13 +1696,13 @@ const TableView = ({ className = '' }) => {
                       key={item.id}
                       className="hover:bg-slate-800/30 transition-colors"
                     >
-                      <td className="px-3 py-3">
+                      <td className="px-2 py-1">
                         <input
                           type="checkbox"
                           className="rounded bg-slate-700 border-slate-600"
                         />
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2 py-1">
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-white text-sm truncate">
                             {item.vesselName}
@@ -1721,7 +1721,7 @@ const TableView = ({ className = '' }) => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2 py-1">
                         <div className="text-center">
                           <div className="text-sm text-white font-medium">
                             {new Date(item.date).toLocaleDateString('en-US', {
@@ -1739,7 +1739,7 @@ const TableView = ({ className = '' }) => {
                         </div>
                       </td>
                       {qualityVisible && (
-                        <td className="px-3 py-3 text-center">
+                        <td className="px-2 py-1 text-center">
                           <EnhancedQualityIndicator
                             completeness={item.quality.completeness}
                             correctness={item.quality.correctness}
@@ -1749,11 +1749,11 @@ const TableView = ({ className = '' }) => {
                         </td>
                       )}
                       {currentKPIs.map((kpi) => (
-                        <td key={kpi.id} className="px-3 py-3 text-center">
+                        <td key={kpi.id} className="px-2 py-1 text-center">
                           {getValueDisplay(item, kpi.id)}
                         </td>
                       ))}
-                      <td className="px-3 py-3 text-center">
+                      <td className="px-2 py-1 text-center">
                         <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto cursor-pointer hover:text-white transition-colors" />
                       </td>
                     </tr>
