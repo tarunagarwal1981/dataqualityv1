@@ -281,7 +281,7 @@ const App = () => {
         )} */}
 
         {/* Main Content */}
-        <div className="flex-1 p-6 space-y-6">
+        <div className="flex-1 p-2 space-y-6">
           {/* Data Quality Panel */}
           {/* {filters.qualityVisible && (
             <DataQualityPanel
