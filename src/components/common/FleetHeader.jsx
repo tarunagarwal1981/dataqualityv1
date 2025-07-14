@@ -99,7 +99,7 @@ export default function FleetHeader() {
               Aux Systems Performance
             </button>
             <button className="text-[12px] text-blue-400 border-b-2 border-blue-400 pb-2">
-              Fuel Monitoring Dashboard
+              Data Quality Dashboard
             </button>
           </div>
         </div>
