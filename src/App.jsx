@@ -25,6 +25,9 @@ import {
 const App = () => {
   // State for UI controls
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  
+  // State for vessel navigation
+  const [selectedVesselForCharts, setSelectedVesselForCharts] = useState(null);
 
   // Initialize custom hooks
   const {
@@ -167,11 +170,24 @@ const App = () => {
   // Function to handle navigation to chart view
   const handleNavigateToCharts = () => {
     updateFilter('viewMode', VIEW_MODES.CHART);
+    // Clear selected vessel when navigating to charts normally
+    setSelectedVesselForCharts(null);
   };
 
   // Function to handle navigation to table view
   const handleNavigateToTable = () => {
     updateFilter('viewMode', VIEW_MODES.TABLE);
+    // Clear selected vessel when going back to table
+    setSelectedVesselForCharts(null);
+  };
+
+  // NEW: Handle vessel click from table view
+  const handleVesselClick = (vesselId) => {
+    console.log('Vessel clicked:', vesselId);
+    // Set the selected vessel for charts
+    setSelectedVesselForCharts(vesselId);
+    // Navigate to chart view
+    updateFilter('viewMode', VIEW_MODES.CHART);
   };
 
   // Render error state
@@ -241,6 +257,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <FleetHeader />
+      
       {/* Controls Bar */}
       <ControlsBar
         filters={filters}
@@ -259,6 +276,7 @@ const App = () => {
         onNavigateToTable={handleNavigateToTable}
         currentView={filters.viewMode} // Pass the current view mode
       />
+      
       <div className="flex">
         {/* Sidebar */}
         {/* {sidebarVisible && (
@@ -309,6 +327,7 @@ const App = () => {
               onFilterChange={handleFilterChange}
               qualityVisible={filters.qualityVisible}
               onExport={handleExport}
+              onVesselClick={handleVesselClick} // NEW: Pass vessel click handler
               performanceSummary={getKPIPerformanceSummary(
                 filters,
                 filters.selectedKPIs
@@ -322,6 +341,7 @@ const App = () => {
               filters={filters}
               onFilterChange={handleFilterChange}
               isValidForCharts={isValidForCharts}
+              initialVesselId={selectedVesselForCharts} // NEW: Pass selected vessel
               performanceSummary={getKPIPerformanceSummary(
                 filters,
                 filters.selectedKPIs
@@ -354,6 +374,7 @@ const App = () => {
           )}
         </div>
       </div>
+      
       {/* Global notifications for critical alerts */}
       {hasCriticalIssues && (
         <div className="fixed bottom-4 right-4 z-50">
@@ -427,4 +448,4 @@ export default function AppWithErrorBoundary() {
       <App />
     </ErrorBoundary>
   );
-}
+}    

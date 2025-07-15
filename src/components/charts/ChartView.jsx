@@ -1228,83 +1228,66 @@ const ControlsBar = ({
             </button>
 
             {showKPIDropdown && (
-              <div
-                className="absolute right-0 top-full mt-2 w-80 rounded-lg shadow-xl z-50 overflow-hidden"
-                style={{
-                  background:
-                    'linear-gradient(145deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  backdropFilter: 'blur(10px)',
-                }}
-              >
+              <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-white/10 rounded-lg shadow-xl z-50">
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
-                  <h4 className="text-base font-semibold text-white">
+                  <h4 className="text-sm font-semibold text-white">
                     Configure KPIs
                   </h4>
                   <button onClick={() => setShowKPIDropdown(false)}>
-                    <X className="w-4 h-4 text-slate-400 hover:text-white transition-colors" />
+                    <X className="w-4 h-4 text-slate-400 hover:text-white" />
                   </button>
                 </div>
 
-                <div className="p-4 border-b border-white/10">
+                <div className="p-2 border-b border-white/10">
                   <label className="text-xs font-medium text-slate-300 mb-2 block">
                     Data Source
                   </label>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="flex gap-2">
                     {['LF', 'HF', 'COMBINED'].map((type) => (
                       <button
                         key={type}
                         onClick={() => handleDataTypeChange(type)}
-                        className={`flex flex-col items-center gap-1.5 px-3 py-2.5 text-xs font-medium rounded-md transition-all duration-300 ${
+                        className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
                           localFilters.dataType === type
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 scale-105'
-                            : 'bg-slate-700/50 text-slate-300 border border-white/10 hover:bg-slate-700 hover:scale-105'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-slate-700/50 text-slate-300 border border-white/10 hover:bg-slate-700'
                         }`}
                       >
-                        <div className="flex items-center justify-center">
-                          {type === 'LF' && <Radio className="w-4 h-4" />}
-                          {type === 'HF' && <Zap className="w-4 h-4" />}
+                        <div className="flex items-center justify-center gap-1">
+                          {type === 'LF' && <Radio className="w-3 h-3" />}
+                          {type === 'HF' && <Zap className="w-3 h-3" />}
                           {type === 'COMBINED' && (
-                            <Layers className="w-4 h-4" />
+                            <Layers className="w-3 h-3" />
                           )}
+                          {type}
                         </div>
-                        <span>{type}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="p-4 max-h-64 overflow-y-auto">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-medium text-slate-300">
-                      Select KPIs
-                    </label>
-                    <span className="text-[10px] text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded">
-                      {localFilters.selectedKPIs?.length || 0} selected
-                    </span>
-                  </div>
-
+                  <label className="text-xs font-medium text-slate-300 mb-3 block">
+                    Select KPIs ({localFilters.selectedKPIs?.length || 0}{' '}
+                    selected)
+                  </label>
                   <div className="space-y-2">
                     {(localFilters.dataType === 'COMBINED'
-                      ? [...ALL_KPIS.LF, ...ALL_KPIS.HF]
+                      ? [...ALL_KPIS.LF, ...ALL_KPIS.LF]
                       : ALL_KPIS[localFilters.dataType.toUpperCase()]
                     ).map((kpi) => (
                       <label
                         key={`${kpi.id}-${kpi.source}`}
-                        className="group flex items-center gap-3 p-2.5 rounded-md hover:bg-slate-700/30 cursor-pointer transition-all duration-300"
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-700/30 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={localFilters.selectedKPIs?.includes(kpi.id)}
                           onChange={() => handleKPISelection(kpi.id)}
-                          className="w-3.5 h-3.5 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-1"
-                        />
-                        <div
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: kpi.color }}
+                          className="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-white truncate">
                               {kpi.name}
                             </span>
@@ -1312,7 +1295,7 @@ const ControlsBar = ({
                           </div>
                           {kpi.unit && (
                             <span className="text-xs text-slate-400">
-                              Unit: {kpi.unit}
+                              ({kpi.unit})
                             </span>
                           )}
                         </div>
@@ -1321,18 +1304,18 @@ const ControlsBar = ({
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-white/10 flex justify-end gap-2.5">
-                  <button
-                    onClick={() => setShowKPIDropdown(false)}
-                    className="px-3.5 py-1.5 text-sm font-medium text-slate-300 bg-slate-700/50 rounded-md hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
+                <div className="p-4 border-t border-white/10 flex justify-end gap-2">
                   <button
                     onClick={handleApply}
-                    className="px-3.5 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
                   >
-                    Apply Changes
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => setShowKPIDropdown(false)}
+                    className="px-2 py-1.5 text-xs font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors"
+                  >
+                    Done
                   </button>
                 </div>
               </div>
@@ -1372,24 +1355,45 @@ const ControlsBar = ({
 };
 
 // Main ChartView Component
-const ChartView = () => {
-  const [chartFilters, setChartFilters] = useState({
-    dataType: DATA_TYPES.LF,
-    selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-    selectedVessels: defaultSelectedVessels.map((v) => v.id),
-    dateRange: (() => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
-      return { startDate, endDate };
-    })(),
-  });
+const ChartView = ({ 
+  initialVesselId = null, // New prop for initial vessel selection
+  className = ''
+}) => {
+  const getInitialFilters = () => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    // If initialVesselId is provided, use only that vessel
+    // Otherwise, use default selected vessels
+    const selectedVessels = initialVesselId 
+      ? [initialVesselId] 
+      : defaultSelectedVessels.map((v) => v.id);
 
+    return {
+      dataType: DATA_TYPES.LF,
+      selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
+      selectedVessels: selectedVessels,
+      dateRange: { startDate, endDate },
+    };
+  };
+
+  const [chartFilters, setChartFilters] = useState(getInitialFilters());
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
   const qualityVisible = true;
   const annotationsVisible = false;
   const qualityOverlayVisible = false;
   const [isExporting, setIsExporting] = useState(false);
+
+  // Update filters when initialVesselId changes
+  useEffect(() => {
+    if (initialVesselId) {
+      setChartFilters(prev => ({
+        ...prev,
+        selectedVessels: [initialVesselId]
+      }));
+    }
+  }, [initialVesselId]);
 
   const handleApplyFilters = (newFilters) => {
     setIsApplyingFilters(true);
@@ -1400,18 +1404,7 @@ const ChartView = () => {
   };
 
   const handleResetFilters = () => {
-    const initialDateRange = (() => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
-      return { startDate, endDate };
-    })();
-    const resetFilters = {
-      dataType: DATA_TYPES.LF,
-      selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-      selectedVessels: defaultSelectedVessels.map((v) => v.id),
-      dateRange: initialDateRange,
-    };
+    const resetFilters = getInitialFilters();
     setChartFilters(resetFilters);
   };
 
