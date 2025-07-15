@@ -15,9 +15,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ReferenceArea,
-  Cell,
-  PieChart,
-  Pie,
 } from 'recharts';
 import {
   Download,
@@ -48,12 +45,12 @@ import {
   WifiOff,
   XCircle,
   AlertCircle,
-  Database,
-  Gauge,
-  BarChart2,
 } from 'lucide-react';
 
-// Mock data and constants
+// Import the shared DataQualityCards component
+import DataQualityCards, { staticQualityData } from '../table/DataQualityCards';
+
+// Constants and Data Types
 const DATA_TYPES = {
   COMBINED: 'combined',
   LF: 'lf',
@@ -73,7 +70,7 @@ const sampleVessels = [
   { id: 'vessel_10', name: 'MV Deepwater Voyager' },
 ];
 
-// Use same 5 vessels consistently across all charts
+// Default selected vessels (first 5)
 const defaultSelectedVessels = sampleVessels.slice(0, 5);
 
 // Annotation Categories
@@ -128,922 +125,7 @@ const ANNOTATION_CATEGORIES = {
   },
 };
 
-// Enhanced static quality data with actual issue counts
-const staticQualityData = (() => {
-  const vessels = [
-    'MV Atlantic Pioneer',
-    'MV Pacific Navigator',
-    'MV Ocean Explorer',
-    'MV Global Trader',
-    'MV Northern Star',
-    'MV Southern Cross',
-    'MV Eastern Horizon',
-    'MV Western Seeker',
-    'MV Coastal Guardian',
-    'MV Deepwater Voyager',
-  ];
-
-  return vessels.map((name, index) => {
-    // Generate specific number of quality issues
-    const issues = [];
-    const kpiIssues = {};
-
-    // Create predictable issue patterns for demo
-    const issuePatterns = [
-      { missing: 2, incorrect: 3 }, // Atlantic Pioneer: 5 total
-      { missing: 1, incorrect: 1 }, // Pacific Navigator: 2 total
-      { missing: 3, incorrect: 2 }, // Ocean Explorer: 5 total
-      { missing: 0, incorrect: 4 }, // Global Trader: 4 total
-      { missing: 1, incorrect: 2 }, // Northern Star: 3 total
-      { missing: 2, incorrect: 1 }, // Southern Cross: 3 total
-      { missing: 1, incorrect: 3 }, // Eastern Horizon: 4 total
-      { missing: 0, incorrect: 2 }, // Western Seeker: 2 total
-      { missing: 2, incorrect: 2 }, // Coastal Guardian: 4 total
-      { missing: 1, incorrect: 1 }, // Deepwater Voyager: 2 total
-    ];
-
-    const pattern = issuePatterns[index];
-
-    // Add missing data issues
-    const kpiList = [
-      'wind_force',
-      'me_power',
-      'rpm',
-      'me_consumption',
-      'obs_speed',
-    ];
-    for (let i = 0; i < pattern.missing; i++) {
-      const kpi = kpiList[i % kpiList.length];
-      kpiIssues[`${kpi}_missing_${i}`] = {
-        type: 'missing',
-        severity: 'medium',
-        kpi,
-      };
-      issues.push({
-        type: 'completeness',
-        kpi,
-        message: 'Sensor data unavailable',
-        severity: 'medium',
-      });
-    }
-
-    // Add incorrect data issues
-    for (let i = 0; i < pattern.incorrect; i++) {
-      const kpi = kpiList[i % kpiList.length];
-      const severity = i === 0 ? 'high' : i === 1 ? 'medium' : 'low';
-      kpiIssues[`${kpi}_incorrect_${i}`] = {
-        type: 'incorrect',
-        severity,
-        kpi,
-        originalValue: i === 0 ? -2.5 : i === 1 ? 45.8 : 250,
-      };
-      issues.push({
-        type: 'correctness',
-        kpi,
-        message:
-          i === 0
-            ? 'Negative speed detected'
-            : i === 1
-            ? 'Consumption spike detected'
-            : 'RPM-speed correlation warning',
-        severity,
-      });
-    }
-
-    // Calculate quality scores
-    const totalKPIs = 8;
-    const issueCount = issues.length;
-    const highSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'high'
-    ).length;
-    const mediumSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'medium'
-    ).length;
-
-    const completeness = Math.max(
-      40,
-      100 - (pattern.missing / totalKPIs) * 100 - Math.random() * 5
-    );
-    const severityPenalty =
-      highSeverityIssues * 30 +
-      mediumSeverityIssues * 15 +
-      pattern.incorrect * 5;
-    const correctness = Math.max(30, 100 - severityPenalty - Math.random() * 5);
-
-    return {
-      id: index + 1,
-      name,
-      completeness: Math.round(completeness),
-      correctness: Math.round(correctness),
-      overallScore: Math.round((completeness + correctness) / 2),
-      issues: issues,
-      kpiIssues: kpiIssues,
-      issueCount: issues.length,
-      criticalIssues: highSeverityIssues,
-      lastUpdate: `${Math.floor(Math.random() * 30) + 1} mins ago`,
-      confidence: Math.round((completeness + correctness + 85) / 3),
-      missingCount: pattern.missing,
-      incorrectCount: pattern.incorrect,
-      kpiHealth: {
-        speed: Math.round(80 + index * 2),
-        fuel: Math.round(70 + index * 3),
-        engine: Math.round(75 + index * 2.5),
-        weather: Math.round(85 + index * 1.5),
-      },
-    };
-  });
-})();
-
-// Generate mock annotations data
-const generateMockAnnotations = (chartData, selectedVessels, selectedKPIs) => {
-  const annotations = [];
-  const sampleEvents = [
-    { type: 'port', text: 'Departed from Hamburg', vessel: 'vessel_1' },
-    { type: 'weather', text: 'Heavy weather conditions', vessel: 'vessel_2' },
-    {
-      type: 'maintenance',
-      text: 'Engine maintenance completed',
-      vessel: 'vessel_3',
-    },
-    {
-      type: 'alert',
-      text: 'Fuel consumption spike detected',
-      vessel: 'vessel_1',
-    },
-    { type: 'performance', text: 'Optimal speed achieved', vessel: 'vessel_4' },
-    { type: 'port', text: 'Arrived at Rotterdam', vessel: 'vessel_2' },
-    { type: 'weather', text: 'Fog conditions', vessel: 'vessel_5' },
-    { type: 'custom', text: 'Crew change completed', vessel: 'vessel_3' },
-  ];
-
-  // Add point annotations
-  chartData.forEach((dataPoint, index) => {
-    if (index % 3 === 0 && annotations.length < 8) {
-      const event = sampleEvents[annotations.length % sampleEvents.length];
-      const vesselId =
-        selectedVessels[Math.floor(Math.random() * selectedVessels.length)];
-      const kpiId =
-        selectedKPIs[Math.floor(Math.random() * selectedKPIs.length)];
-
-      annotations.push({
-        id: `annotation-${annotations.length}`,
-        type: 'point',
-        category: event.type,
-        date: dataPoint.date,
-        vesselId: vesselId,
-        kpiId: kpiId,
-        text: event.text,
-        author: 'Fleet Operator',
-        timestamp: new Date().toISOString(),
-        x: dataPoint.date,
-        y: dataPoint[`${vesselId}_${kpiId}`] || 0,
-      });
-    }
-  });
-
-  // Add range annotations
-  if (chartData.length > 5) {
-    annotations.push({
-      id: 'range-1',
-      type: 'range',
-      category: 'weather',
-      startDate: chartData[2].date,
-      endDate: chartData[4].date,
-      text: 'Storm period - reduced speed',
-      author: 'Weather Team',
-      timestamp: new Date().toISOString(),
-    });
-
-    annotations.push({
-      id: 'range-2',
-      type: 'range',
-      category: 'maintenance',
-      startDate: chartData[Math.floor(chartData.length * 0.6)].date,
-      endDate: chartData[Math.floor(chartData.length * 0.8)].date,
-      text: 'Scheduled maintenance window',
-      author: 'Chief Engineer',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  return annotations;
-};
-
-// Generate quality zones data
-const generateQualityZones = (chartData) => {
-  const zones = [];
-  let currentZoneStart = 0;
-
-  chartData.forEach((_, index) => {
-    if (index > 0 && (index % 3 === 0 || index === chartData.length - 1)) {
-      const confidence = 60 + Math.random() * 40;
-      zones.push({
-        id: `zone-${zones.length}`,
-        startDate: chartData[currentZoneStart].date,
-        endDate: chartData[index].date,
-        confidence: Math.round(confidence),
-        issues: confidence < 70 ? ['Data gaps', 'Sensor drift'] : [],
-      });
-      currentZoneStart = index;
-    }
-  });
-
-  return zones;
-};
-
-// Reusable Data Quality Cards Component
-const DataQualityCards = ({
-  data = [],
-  onQualityFilter,
-  qualityVisible = true,
-  onToggleQuality,
-  selectedVessels = [],
-  selectedKPIs = [],
-  chartData = [],
-  annotationsVisible = true,
-  onToggleAnnotations,
-  qualityOverlayVisible = false,
-  onToggleQualityOverlay,
-  viewMode = 'charts', // 'charts' or 'table'
-  compactMode = false,
-}) => {
-  const [showDetails, setShowDetails] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState(null);
-
-  // Calculate fleet metrics
-  const fleetMetrics = useMemo(() => {
-    const totalVessels = staticQualityData.length;
-    const avgCompleteness =
-      staticQualityData.reduce((sum, v) => sum + v.completeness, 0) /
-      totalVessels;
-    const avgCorrectness =
-      staticQualityData.reduce((sum, v) => sum + v.correctness, 0) /
-      totalVessels;
-    const totalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.issueCount,
-      0
-    );
-    const criticalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.criticalIssues,
-      0
-    );
-    const totalMissingIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.missingCount,
-      0
-    );
-    const totalIncorrectIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.incorrectCount,
-      0
-    );
-    const healthyVessels = staticQualityData.filter(
-      (v) => v.overallScore >= 85
-    ).length;
-    const averageVessels = staticQualityData.filter(
-      (v) => v.overallScore >= 70 && v.overallScore < 85
-    ).length;
-    const poorVessels = staticQualityData.filter(
-      (v) => v.overallScore < 70
-    ).length;
-
-    const overallHealth = Math.round((avgCompleteness + avgCorrectness) / 2);
-    const dataPoints =
-      chartData.length * selectedVessels.length * selectedKPIs.length;
-    const estimatedMissingPoints = Math.round(
-      dataPoints * (1 - avgCompleteness / 100)
-    );
-
-    return {
-      totalVessels,
-      avgCompleteness: Math.round(avgCompleteness),
-      avgCorrectness: Math.round(avgCorrectness),
-      overallHealth,
-      totalIssues,
-      criticalIssues,
-      totalMissingIssues,
-      totalIncorrectIssues,
-      healthyVessels,
-      averageVessels,
-      poorVessels,
-      dataPoints,
-      estimatedMissingPoints,
-      chartReliability: Math.round((overallHealth + 85) / 2),
-      timeSeriesHealth: Math.round(85 + Math.random() * 15),
-    };
-  }, [selectedVessels, selectedKPIs, chartData]);
-
-  const QualityMeter = ({ score, size = 'sm', type = 'overall' }) => {
-    const radius = size === 'sm' ? 14 : size === 'md' ? 18 : 22;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDasharray = circumference;
-    const strokeDashoffset = circumference - (score / 100) * circumference;
-
-    const getColor = () => {
-      if (type === 'completeness')
-        return score >= 85 ? '#10b981' : score >= 70 ? '#f59e0b' : '#ef4444';
-      if (type === 'correctness')
-        return score >= 85 ? '#8b5cf6' : score >= 70 ? '#f59e0b' : '#ef4444';
-      return score >= 85 ? '#06b6d4' : score >= 70 ? '#f59e0b' : '#ef4444';
-    };
-
-    return (
-      <div
-        className={`relative ${
-          size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : 'w-12 h-12'
-        }`}
-      >
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
-          <defs>
-            <filter id={`glow-${type}-${size}`}>
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <linearGradient
-              id={`gradient-${type}-${size}`}
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor={getColor()} stopOpacity="1" />
-              <stop offset="100%" stopColor={getColor()} stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          <circle
-            cx="20"
-            cy="20"
-            r={radius}
-            stroke="rgba(71, 85, 105, 0.5)"
-            strokeWidth="2"
-            fill="none"
-          />
-          <circle
-            cx="20"
-            cy="20"
-            r={radius}
-            stroke={`url(#gradient-${type}-${size})`}
-            strokeWidth="2"
-            fill="none"
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            className="transition-all duration-1000 ease-out"
-            filter={`url(#glow-${type}-${size})`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className={`font-bold ${
-              size === 'sm'
-                ? 'text-xs'
-                : size === 'md'
-                ? 'text-sm'
-                : 'text-base'
-            } text-white drop-shadow-sm`}
-          >
-            {score}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
-  const QualityDistributionChart = ({ data, type }) => {
-    const COLORS = {
-      excellent: '#10b981',
-      good: '#f59e0b',
-      poor: '#ef4444',
-    };
-
-    const chartData = [
-      {
-        name: 'Excellent',
-        value: data.healthyVessels,
-        color: COLORS.excellent,
-      },
-      { name: 'Good', value: data.averageVessels, color: COLORS.good },
-      { name: 'Needs Attention', value: data.poorVessels, color: COLORS.poor },
-    ];
-
-    return (
-      <div className="w-16 h-16">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={20}
-              outerRadius={30}
-              paddingAngle={2}
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    );
-  };
-
-  const Card = ({
-    children,
-    className = '',
-    onClick,
-    onHover,
-    style,
-    gradient = 'default',
-  }) => {
-    const gradients = {
-      default:
-        'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-      health:
-        'linear-gradient(145deg, rgba(6, 182, 212, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      completeness:
-        'linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      correctness:
-        'linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      issues:
-        'linear-gradient(145deg, rgba(251, 146, 60, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-    };
-
-    return (
-      <div
-        className={`relative overflow-hidden rounded-xl border transition-all duration-300 ease-out cursor-pointer ${className}`}
-        onClick={onClick}
-        onMouseEnter={onHover}
-        style={{
-          background: gradients[gradient],
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          boxShadow: `
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 4px 8px rgba(0, 0, 0, 0.2)
-          `,
-          transform: 'translateZ(0)',
-          ...style,
-        }}
-        onMouseLeave={() => setHoveredCard(null)}
-      >
-        {/* Subtle gradient overlay */}
-        <div
-          className="absolute inset-0 opacity-50 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)',
-          }}
-        />
-
-        {/* Animated glow effect on hover */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-300 pointer-events-none ${
-            hoveredCard === gradient ? 'opacity-20' : 'opacity-0'
-          }`}
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(76, 201, 240, 0.3) 0%, transparent 70%)',
-          }}
-        />
-
-        <div className="relative z-10">{children}</div>
-      </div>
-    );
-  };
-
-  return (
-    <div className={`space-y-3 ${compactMode ? 'mb-1' : 'mb-2'}`}>
-      {/* Main Quality Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Fleet Health Score Card */}
-        <Card
-          gradient="health"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('health')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-cyan-500/20 border border-cyan-500/30">
-                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Fleet Health
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Overall Score
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.overallHealth}
-                size="sm"
-                type="overall"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-white">
-                {fleetMetrics.overallHealth}%
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400">
-                  {fleetMetrics.healthyVessels} excellent •{' '}
-                  {fleetMetrics.averageVessels} good •{' '}
-                  {fleetMetrics.poorVessels} attention needed
-                </div>
-                <QualityDistributionChart data={fleetMetrics} type="health" />
-              </div>
-
-              {/* <div className="text-[9px] text-slate-400">
-                {fleetMetrics.healthyVessels} excellent •{' '}
-                {fleetMetrics.averageVessels} good • {fleetMetrics.poorVessels}{' '}
-                attention needed
-              </div> */}
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div className="h-full flex">
-                  <div
-                    className="bg-emerald-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.healthyVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                  <div
-                    className="bg-yellow-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.averageVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                  <div
-                    className="bg-red-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.poorVessels / fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Data Completeness Card */}
-        <Card
-          gradient="completeness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('completeness')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                  <Database className="w-3.5 h-3.5 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Completeness
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Data Coverage
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.avgCompleteness}
-                size="sm"
-                type="completeness"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-xl font-bold text-white">
-                {fleetMetrics.avgCompleteness}%
-              </div>
-
-              <div className="flex items-center gap-1 text-[9px]">
-                <WifiOff className="w-2.5 h-2.5 text-orange-400" />
-                <span className="text-slate-400">
-                  {fleetMetrics.totalMissingIssues} missing data points
-                </span>
-              </div>
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-1000 ease-out ${
-                    fleetMetrics.avgCompleteness >= 85
-                      ? 'bg-emerald-500'
-                      : fleetMetrics.avgCompleteness >= 70
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${fleetMetrics.avgCompleteness}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Data Correctness Card */}
-        <Card
-          gradient="correctness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('correctness')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-purple-500/20 border border-purple-500/30">
-                  <Target className="w-3.5 h-3.5 text-purple-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Correctness
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Data Accuracy
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.avgCorrectness}
-                size="sm"
-                type="correctness"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-xl font-bold text-white">
-                {fleetMetrics.avgCorrectness}%
-              </div>
-
-              <div className="flex items-center gap-1 text-[9px]">
-                <XCircle className="w-2.5 h-2.5 text-red-400" />
-                <span className="text-slate-400">
-                  {fleetMetrics.totalIncorrectIssues} incorrect data points
-                </span>
-              </div>
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-1000 ease-out ${
-                    fleetMetrics.avgCorrectness >= 85
-                      ? 'bg-purple-500'
-                      : fleetMetrics.avgCorrectness >= 70
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${fleetMetrics.avgCorrectness}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Active Issues Card */}
-        <Card
-          gradient="issues"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('issues')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-orange-500/20 border border-orange-500/30">
-                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Active Issues
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Quality Alerts
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                {fleetMetrics.criticalIssues > 0 && (
-                  <div className="flex items-center gap-0.5 px-1 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                    <AlertCircle className="w-2 h-2 text-red-400" />
-                    <span className="text-[9px] text-red-400 font-medium">
-                      {fleetMetrics.criticalIssues}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-baseline gap-2">
-                <div className="text-xl font-bold text-white">
-                  {fleetMetrics.totalIssues}
-                </div>
-                {fleetMetrics.criticalIssues > 0 && (
-                  <div className="text-sm font-medium text-red-400">
-                    {fleetMetrics.criticalIssues} critical
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-1 text-[9px]">
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
-                  <span className="text-slate-400">
-                    {fleetMetrics.totalMissingIssues} missing
-                  </span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                  <span className="text-slate-400">
-                    {fleetMetrics.totalIncorrectIssues} incorrect
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-[9px] text-slate-400">
-                Across {fleetMetrics.totalVessels} vessels
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Enhanced KPI Details Panel */}
-      {showDetails && (
-        <Card
-          gradient="default"
-          className="transition-all duration-500 ease-out"
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-cyan-400" />
-                KPI Reliability Analysis
-              </h3>
-              <button
-                onClick={() => setShowDetails(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-700/50"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-              {[
-                {
-                  key: 'speed',
-                  label: 'Speed Data',
-                  icon: Navigation,
-                  color: '#4dc3ff',
-                  reliability: 85,
-                  issues: 3,
-                  status: 'good',
-                },
-                {
-                  key: 'fuel',
-                  label: 'Fuel Data',
-                  icon: Fuel,
-                  color: '#2ee086',
-                  reliability: 78,
-                  issues: 5,
-                  status: 'average',
-                },
-                {
-                  key: 'engine',
-                  label: 'Engine Data',
-                  icon: Activity,
-                  color: '#ffd426',
-                  reliability: 92,
-                  issues: 1,
-                  status: 'excellent',
-                },
-                {
-                  key: 'weather',
-                  label: 'Weather Data',
-                  icon: Waves,
-                  color: '#42a5f5',
-                  reliability: 88,
-                  issues: 2,
-                  status: 'good',
-                },
-              ].map(
-                ({
-                  key,
-                  label,
-                  icon: Icon,
-                  color,
-                  reliability,
-                  issues,
-                  status,
-                }) => (
-                  <div
-                    key={key}
-                    className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-2 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]"
-                    style={{
-                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <div
-                        className="p-1 rounded-md"
-                        style={{
-                          backgroundColor: `${color}20`,
-                          border: `1px solid ${color}40`,
-                        }}
-                      >
-                        <Icon className="w-3.5 h-3.5" style={{ color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-white">
-                          {label}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {reliability}% reliable
-                        </div>
-                      </div>
-                      <QualityMeter score={reliability} size="sm" type={key} />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-1000 ease-out ${
-                            reliability >= 85
-                              ? 'bg-emerald-500'
-                              : reliability >= 70
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${reliability}%` }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400">
-                          {issues} issues found
-                        </span>
-                        <span
-                          className={`px-1 py-0.5 rounded-full font-medium ${
-                            status === 'excellent'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : status === 'good'
-                              ? 'bg-cyan-500/20 text-cyan-400'
-                              : status === 'average'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}
-                        >
-                          {status}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Subtle gradient overlay */}
-                    <div
-                      className="absolute inset-0 opacity-20 pointer-events-none"
-                      style={{
-                        background: `radial-gradient(circle at top right, ${color}30, transparent 50%)`,
-                      }}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-// Define KPIs with data source information and chart properties
+// KPI Definitions with Chart Properties
 const ALL_KPIS = {
   LF: [
     {
@@ -1159,7 +241,7 @@ const ALL_KPIS = {
   ],
 };
 
-// Vessel colors for consistency
+// Vessel Colors for Chart Lines
 const VESSEL_COLORS = [
   '#8884d8',
   '#82ca9d',
@@ -1173,10 +255,9 @@ const VESSEL_COLORS = [
   '#87ceeb',
 ];
 
-// Helper to get KPI by ID
+// Helper Functions
 const getKPIById = (kpiId, dataType) => {
   const kpisForType = ALL_KPIS[dataType.toUpperCase()] || [];
-  // Also check in the other data type if not found in the primary one for COMBINED
   if (dataType === DATA_TYPES.COMBINED) {
     const combinedKpis = [...ALL_KPIS.LF, ...ALL_KPIS.HF];
     return combinedKpis.find((kpi) => kpi.id === kpiId);
@@ -1184,13 +265,107 @@ const getKPIById = (kpiId, dataType) => {
   return kpisForType.find((kpi) => kpi.id === kpiId);
 };
 
-// Get vessel color
 const getVesselColor = (vesselId) => {
   const index = sampleVessels.findIndex((v) => v.id === vesselId);
   return VESSEL_COLORS[index % VESSEL_COLORS.length];
 };
 
-// Generate mock chart data with quality issues aligned to quality cards
+// Mock Data Generation Functions
+const generateMockAnnotations = (chartData, selectedVessels, selectedKPIs) => {
+  const annotations = [];
+  const sampleEvents = [
+    { type: 'port', text: 'Departed from Hamburg', vessel: 'vessel_1' },
+    { type: 'weather', text: 'Heavy weather conditions', vessel: 'vessel_2' },
+    {
+      type: 'maintenance',
+      text: 'Engine maintenance completed',
+      vessel: 'vessel_3',
+    },
+    {
+      type: 'alert',
+      text: 'Fuel consumption spike detected',
+      vessel: 'vessel_1',
+    },
+    { type: 'performance', text: 'Optimal speed achieved', vessel: 'vessel_4' },
+    { type: 'port', text: 'Arrived at Rotterdam', vessel: 'vessel_2' },
+    { type: 'weather', text: 'Fog conditions', vessel: 'vessel_5' },
+    { type: 'custom', text: 'Crew change completed', vessel: 'vessel_3' },
+  ];
+
+  // Add point annotations
+  chartData.forEach((dataPoint, index) => {
+    if (index % 3 === 0 && annotations.length < 8) {
+      const event = sampleEvents[annotations.length % sampleEvents.length];
+      const vesselId =
+        selectedVessels[Math.floor(Math.random() * selectedVessels.length)];
+      const kpiId =
+        selectedKPIs[Math.floor(Math.random() * selectedKPIs.length)];
+
+      annotations.push({
+        id: `annotation-${annotations.length}`,
+        type: 'point',
+        category: event.type,
+        date: dataPoint.date,
+        vesselId: vesselId,
+        kpiId: kpiId,
+        text: event.text,
+        author: 'Fleet Operator',
+        timestamp: new Date().toISOString(),
+        x: dataPoint.date,
+        y: dataPoint[`${vesselId}_${kpiId}`] || 0,
+      });
+    }
+  });
+
+  // Add range annotations
+  if (chartData.length > 5) {
+    annotations.push({
+      id: 'range-1',
+      type: 'range',
+      category: 'weather',
+      startDate: chartData[2].date,
+      endDate: chartData[4].date,
+      text: 'Storm period - reduced speed',
+      author: 'Weather Team',
+      timestamp: new Date().toISOString(),
+    });
+
+    annotations.push({
+      id: 'range-2',
+      type: 'range',
+      category: 'maintenance',
+      startDate: chartData[Math.floor(chartData.length * 0.6)].date,
+      endDate: chartData[Math.floor(chartData.length * 0.8)].date,
+      text: 'Scheduled maintenance window',
+      author: 'Chief Engineer',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return annotations;
+};
+
+const generateQualityZones = (chartData) => {
+  const zones = [];
+  let currentZoneStart = 0;
+
+  chartData.forEach((_, index) => {
+    if (index > 0 && (index % 3 === 0 || index === chartData.length - 1)) {
+      const confidence = 60 + Math.random() * 40;
+      zones.push({
+        id: `zone-${zones.length}`,
+        startDate: chartData[currentZoneStart].date,
+        endDate: chartData[index].date,
+        confidence: Math.round(confidence),
+        issues: confidence < 70 ? ['Data gaps', 'Sensor drift'] : [],
+      });
+      currentZoneStart = index;
+    }
+  });
+
+  return zones;
+};
+
 const generateMockChartData = (
   selectedVesselIds,
   selectedKPIs,
@@ -1210,7 +385,7 @@ const generateMockChartData = (
         const kpiMeta = getKPIById(kpiId, dataType);
         if (!kpiMeta) return;
 
-        // Get vessel quality data to determine issues - this aligns with quality cards
+        // Get vessel quality data to determine issues - aligned with quality cards
         const vesselQuality =
           staticQualityData[vesselIndex % staticQualityData.length];
 
@@ -1342,7 +517,7 @@ const generateMockChartData = (
   return data;
 };
 
-// Enhanced Custom Dot Component with better visual indicators
+// Chart Components
 const QualityDot = ({
   cx,
   cy,
@@ -1360,7 +535,7 @@ const QualityDot = ({
   const issueDetails = payload[issueDetailsKey];
   const value = payload[dataKey];
 
-  // Missing data indicator - enhanced visibility
+  // Missing data indicator
   if (value === null || value === undefined) {
     return (
       <g>
@@ -1408,7 +583,7 @@ const QualityDot = ({
     );
   }
 
-  // Incorrect data indicator - enhanced warning triangle
+  // Incorrect data indicator
   if (hasIssue && qualityType === 'incorrect') {
     const severity = issueDetails?.severity || 'medium';
     const severityColors = {
@@ -1420,7 +595,6 @@ const QualityDot = ({
 
     return (
       <g>
-        {/* Warning triangle with enhanced gradient */}
         <defs>
           <linearGradient
             id={`warningGradient-${cx}-${cy}`}
@@ -1489,7 +663,7 @@ const QualityDot = ({
     );
   }
 
-  // Normal data dot with enhanced quality indication
+  // Normal data dot
   return (
     <g>
       <circle
@@ -1531,7 +705,6 @@ const QualityDot = ({
   );
 };
 
-// Enhanced Custom Line Component
 const QualityLine = ({ points, stroke, strokeWidth, dataKey, data }) => {
   const segments = [];
   let currentSegment = [];
@@ -1611,7 +784,6 @@ const QualityLine = ({ points, stroke, strokeWidth, dataKey, data }) => {
   );
 };
 
-// Enhanced Custom Tooltip with quality information
 const CustomTooltip = ({
   active,
   payload,
@@ -1667,7 +839,7 @@ const CustomTooltip = ({
               <div key={`item-${index}`} className="group">
                 <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
                   <div className="flex items-center gap-2">
-                    {/* Enhanced Quality Indicator */}
+                    {/* Quality Indicator */}
                     <div className="relative">
                       {entry.value === null ? (
                         <div className="w-3.5 h-3.5 border-2 border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
@@ -1811,7 +983,6 @@ const CustomTooltip = ({
   return null;
 };
 
-// Enhanced Annotation Marker Component
 const AnnotationMarker = ({ annotation, onEdit, onDelete }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const category = ANNOTATION_CATEGORIES[annotation.category.toUpperCase()];
@@ -1920,7 +1091,7 @@ const AnnotationMarker = ({ annotation, onEdit, onDelete }) => {
   );
 };
 
-// Enhanced ControlsBar Component
+// Controls Bar Component
 const ControlsBar = ({
   filters = {
     dataType: DATA_TYPES.LF,
@@ -1986,7 +1157,7 @@ const ControlsBar = ({
       dataType: type,
       selectedKPIs: ALL_KPIS[type.toUpperCase()]
         ? ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id)
-        : [], // Handle COMBINED case or empty
+        : [],
     }));
   };
 
@@ -2517,7 +1688,7 @@ const ChartView = () => {
                             </div>
                           </div>
                         </div>
-                        {/* Quality Indicators - moved to a more subtle bar */}
+                        {/* Quality Indicators */}
                         {qualityVisible && qualityIssues > 0 && (
                           <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-700/40 border border-white/10 text-xs">
                             <Shield className="w-3 h-3 text-emerald-400" />
@@ -2535,6 +1706,7 @@ const ChartView = () => {
                           </div>
                         )}
                       </div>
+
                       {/* Enhanced Chart Container */}
                       <div className="relative">
                         <ResponsiveContainer width="100%" height={220}>
@@ -2785,7 +1957,7 @@ const ChartView = () => {
                           </LineChart>
                         </ResponsiveContainer>
 
-                        {/* Quality Legend - moved to top, more subtle */}
+                        {/* Quality Legend */}
                         {qualityVisible && (
                           <div className="absolute top-0 left-0 right-0 flex items-center justify-end gap-3 text-[10px] p-1.5">
                             <div className="flex items-center gap-0.5">
@@ -2815,11 +1987,8 @@ const ChartView = () => {
                           </div>
                         )}
 
-                        {/* Enhanced Vessel Legend - horizontal, two rows if needed */}
+                        {/* Vessel Legend */}
                         <div className="mt-2 p-1.5">
-                          {/* <div className="text-[10px] font-medium text-white mb-1">
-                            Vessels
-                          </div> */}
                           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] justify-center">
                             {chartFilters.selectedVessels.map((vesselId) => {
                               const vessel = sampleVessels.find(
