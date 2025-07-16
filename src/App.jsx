@@ -8,26 +8,32 @@ import { useDataQuality } from './hooks/useDataQuality.js';
 
 // Import components
 import FleetHeader from './components/common/FleetHeader.jsx';
-import Sidebar from './components/common/Sidebar.jsx';
-import ControlsBar from './components/dashboard/ControlsBar.jsx'; // This is your SleekControlsBar
-import DataQualityPanel from './components/dashboard/DataQualityPanel.jsx';
+import ControlsBar, { VIEW_MODES } from './components/dashboard/ControlsBar.jsx'; // Updated ControlsBar
 import TableView from './components/table/TableView.jsx';
 import ChartView from './components/charts/ChartView.jsx';
+import FuelAnomalyView from './components/fuel-anomaly/FuelAnomalyView.jsx'; // NEW: Fuel Anomaly View
 import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 
 // Import constants
 import {
-  VIEW_MODES,
   LOADING_STATES,
   ERROR_MESSAGES,
 } from './utils/constants.js';
 
 const App = () => {
-  // State for UI controls
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  
   // State for vessel navigation
   const [selectedVesselForCharts, setSelectedVesselForCharts] = useState(null);
+
+  // NEW: Fuel Anomaly specific state
+  const [fuelAnomalyConfig, setFuelAnomalyConfig] = useState({
+    selectedVessel: 'vessel_1', // Default to MV Atlantic Pioneer
+    sisterVessel: 'vessel_2',   // Default to MV Pacific Navigator
+    analysisConfig: {
+      period: 'last_6_months',
+      sensitivity: 'medium',
+      enabledLevels: ['lf_vs_hf', 'physics', 'benchmark']
+    }
+  });
 
   // Initialize custom hooks
   const {
@@ -91,13 +97,21 @@ const App = () => {
             event.preventDefault();
             refreshData();
             break;
-          case 'f':
-            event.preventDefault();
-            setSidebarVisible((prev) => !prev);
-            break;
           case 'q':
             event.preventDefault();
             updateFilter('qualityVisible', !filters.qualityVisible);
+            break;
+          case 'a': // NEW: Shortcut for fuel anomaly
+            event.preventDefault();
+            updateFilter('viewMode', VIEW_MODES.FUEL_ANOMALY);
+            break;
+          case '1': // Shortcut for table view
+            event.preventDefault();
+            updateFilter('viewMode', VIEW_MODES.TABLE);
+            break;
+          case '2': // Shortcut for chart view
+            event.preventDefault();
+            updateFilter('viewMode', VIEW_MODES.CHART);
             break;
           default:
             break;
@@ -131,9 +145,39 @@ const App = () => {
     }
   };
 
+  // NEW: Handle fuel anomaly configuration changes
+  const handleFuelAnomalyConfigChange = (key, value) => {
+    setFuelAnomalyConfig(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
   // Handle export operations
   const handleExport = async (format) => {
     try {
+      if (filters.viewMode === VIEW_MODES.FUEL_ANOMALY) {
+        // Generate fuel anomaly specific export
+        console.log('Exporting fuel anomaly report...', {
+          vessel: fuelAnomalyConfig.selectedVessel,
+          sisterVessel: fuelAnomalyConfig.sisterVessel,
+          config: fuelAnomalyConfig.analysisConfig,
+          format
+        });
+        
+        // Create investigation report
+        const reportData = {
+          vesselName: vessels?.find(v => v.id === fuelAnomalyConfig.selectedVessel)?.name || 'Unknown',
+          sisterVesselName: vessels?.find(v => v.id === fuelAnomalyConfig.sisterVessel)?.name || 'Unknown',
+          analysisDate: new Date().toISOString(),
+          config: fuelAnomalyConfig.analysisConfig,
+          // Add more report data as needed
+        };
+        
+        downloadJSON(reportData, 'fuel-anomaly-report');
+        return;
+      }
+
       const exportData = getExportData(filters, format);
 
       if (format === 'csv') {
@@ -150,17 +194,18 @@ const App = () => {
   const downloadCSV = (exportData) => {
     // Implementation would convert data to CSV format
     console.log('CSV export:', exportData);
+    // For now, just log - implement actual CSV generation as needed
   };
 
   // JSON download helper
-  const downloadJSON = (exportData) => {
+  const downloadJSON = (exportData, filename = 'maritime-data') => {
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `maritime-data-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `${filename}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -181,13 +226,30 @@ const App = () => {
     setSelectedVesselForCharts(null);
   };
 
-  // NEW: Handle vessel click from table view
+  // NEW: Function to handle navigation to fuel anomaly view
+  const handleNavigateToFuelAnomaly = () => {
+    updateFilter('viewMode', VIEW_MODES.FUEL_ANOMALY);
+    // Clear selected vessel for charts when switching to fuel anomaly
+    setSelectedVesselForCharts(null);
+  };
+
+  // Handle vessel click from table view
   const handleVesselClick = (vesselId) => {
     console.log('Vessel clicked:', vesselId);
     // Set the selected vessel for charts
     setSelectedVesselForCharts(vesselId);
     // Navigate to chart view
     updateFilter('viewMode', VIEW_MODES.CHART);
+  };
+
+  // NEW: Handle vessel click from fuel anomaly view (if needed)
+  const handleFuelAnomalyVesselClick = (vesselId) => {
+    console.log('Fuel anomaly vessel clicked:', vesselId);
+    // Update the primary vessel in fuel anomaly config
+    setFuelAnomalyConfig(prev => ({
+      ...prev,
+      selectedVessel: vesselId
+    }));
   };
 
   // Render error state
@@ -203,7 +265,10 @@ const App = () => {
             An unexpected error occurred. Please refresh the page or contact
             support.
           </p>
-          <button onClick={resetComponentError} className="btn-primary">
+          <button 
+            onClick={resetComponentError} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
             Try Again
           </button>
         </div>
@@ -240,7 +305,7 @@ const App = () => {
             <button
               onClick={refreshData}
               disabled={isRefreshing}
-              className="btn-primary flex items-center gap-2 mx-auto"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
             >
               <RefreshCw
                 className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
@@ -253,12 +318,13 @@ const App = () => {
     );
   }
 
+  // Render main application
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <FleetHeader />
       
-      {/* Controls Bar */}
+      {/* Enhanced Controls Bar with Fuel Anomaly Support */}
       <ControlsBar
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -267,116 +333,116 @@ const App = () => {
         onDatePresetChange={setDatePreset}
         onResetFilters={resetFilters}
         onExport={handleExport}
-        onToggleSidebar={() => setSidebarVisible(!sidebarVisible)}
         validationErrors={validationErrors}
         warnings={warnings}
         isValidForCharts={isValidForCharts}
         hasPerformanceWarning={hasPerformanceWarning}
         onNavigateToCharts={handleNavigateToCharts}
         onNavigateToTable={handleNavigateToTable}
-        currentView={filters.viewMode} // Pass the current view mode
+        onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly} // NEW
+        currentView={filters.viewMode}
+        // NEW: Fuel anomaly specific props
+        fuelAnomalyConfig={fuelAnomalyConfig}
+        onFuelAnomalyConfigChange={handleFuelAnomalyConfigChange}
+        vessels={vessels || []}
+        isApplyingFilters={isLoading}
+        isExporting={false}
       />
       
-      <div className="flex">
-        {/* Sidebar */}
-        {/* {sidebarVisible && (
-          <Sidebar
+      {/* Main Content - Single container, no sidebar */}
+      <div className="flex-1 p-2 space-y-6">
+        {/* Main View Rendering */}
+        {filters.viewMode === VIEW_MODES.TABLE ? (
+          <TableView
+            data={filteredData}
             vessels={vessels || []}
             kpis={kpis}
             filters={filters}
-            onVesselToggle={toggleVessel}
-            onKPIToggle={toggleKPI}
             onFilterChange={handleFilterChange}
-            onSelectAllVessels={() =>
-              updateFilter(
-                'selectedVessels',
-                vessels.map((v) => v.id)
-              )
-            }
-            onClearVessels={() => updateFilter('selectedVessels', [])}
-            filterSummary={filterSummary}
+            qualityVisible={filters.qualityVisible}
+            onExport={handleExport}
+            onVesselClick={handleVesselClick}
+            performanceSummary={getKPIPerformanceSummary(
+              filters,
+              filters.selectedKPIs
+            )}
           />
-        )} */}
+        ) : filters.viewMode === VIEW_MODES.CHART ? (
+          <ChartView
+            data={getChartData(filters, filters.selectedKPIs)}
+            vessels={vessels || []}
+            kpis={kpis}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            isValidForCharts={isValidForCharts}
+            initialVesselId={selectedVesselForCharts}
+            performanceSummary={getKPIPerformanceSummary(
+              filters,
+              filters.selectedKPIs
+            )}
+          />
+        ) : filters.viewMode === VIEW_MODES.FUEL_ANOMALY ? (
+          // NEW: Fuel Anomaly View
+          <FuelAnomalyView
+            selectedVessel={fuelAnomalyConfig.selectedVessel}
+            sisterVessel={fuelAnomalyConfig.sisterVessel}
+            analysisConfig={fuelAnomalyConfig.analysisConfig}
+            onVesselClick={handleFuelAnomalyVesselClick}
+            onConfigChange={handleFuelAnomalyConfigChange}
+            onExport={handleExport}
+            vessels={vessels || []}
+          />
+        ) : (
+          // Fallback to table view
+          <TableView
+            data={filteredData}
+            vessels={vessels || []}
+            kpis={kpis}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            qualityVisible={filters.qualityVisible}
+            onExport={handleExport}
+            onVesselClick={handleVesselClick}
+            performanceSummary={getKPIPerformanceSummary(
+              filters,
+              filters.selectedKPIs
+            )}
+          />
+        )}
 
-        {/* Main Content */}
-        <div className="flex-1 p-2 space-y-6">
-          {/* Data Quality Panel */}
-          {/* {filters.qualityVisible && (
-            <DataQualityPanel
-              qualityMetrics={qualityMetrics}
-              qualityTrends={qualityTrends}
-              alerts={alerts}
-              qualitySettings={qualitySettings}
-              onUpdateSettings={updateQualitySettings}
-              onDismissAlert={dismissAlert}
-              onClearAllAlerts={clearAllAlerts}
-              dataType={filters.dataType}
-              hasQualityIssues={hasQualityIssues}
-              hasCriticalIssues={hasCriticalIssues}
-              isQualityImproving={isQualityImproving}
-            />
-          )} */}
-
-          {/* Main View */}
-          {filters.viewMode === VIEW_MODES.TABLE ? (
-            <TableView
-              data={filteredData}
-              vessels={vessels || []}
-              kpis={kpis}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              qualityVisible={filters.qualityVisible}
-              onExport={handleExport}
-              onVesselClick={handleVesselClick} // NEW: Pass vessel click handler
-              performanceSummary={getKPIPerformanceSummary(
-                filters,
-                filters.selectedKPIs
-              )}
-            />
-          ) : (
-            <ChartView
-              data={getChartData(filters, filters.selectedKPIs)}
-              vessels={vessels || []}
-              kpis={kpis}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              isValidForCharts={isValidForCharts}
-              initialVesselId={selectedVesselForCharts} // NEW: Pass selected vessel
-              performanceSummary={getKPIPerformanceSummary(
-                filters,
-                filters.selectedKPIs
-              )}
-            />
-          )}
-
-          {/* No Data State */}
-          {filteredData.length === 0 && hasData && (
-            <div className="card text-center py-16">
-              <div className="w-20 h-20 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-10 h-10 text-slate-400" />
-              </div>
-              <h3 className="text-xl font-medium text-slate-300 mb-2">
-                No Data Found
-              </h3>
-              <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                No data matches your current filter criteria. Try adjusting your
-                vessel selection, date range, or search terms.
-              </p>
-              <div className="flex items-center justify-center gap-4">
-                <button onClick={resetFilters} className="btn-secondary">
-                  Reset Filters
-                </button>
-                <button onClick={refreshData} className="btn-primary">
-                  Refresh Data
-                </button>
-              </div>
+        {/* No Data State - Only for Table/Chart views */}
+        {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
+          <div className="bg-slate-800/50 border border-white/10 rounded-lg p-16 text-center">
+            <div className="w-20 h-20 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-10 h-10 text-slate-400" />
             </div>
-          )}
-        </div>
+            <h3 className="text-xl font-medium text-slate-300 mb-2">
+              No Data Found
+            </h3>
+            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+              No data matches your current filter criteria. Try adjusting your
+              vessel selection, date range, or search terms.
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <button 
+                onClick={resetFilters} 
+                className="px-4 py-2 bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 transition-colors"
+              >
+                Reset Filters
+              </button>
+              <button 
+                onClick={refreshData} 
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Refresh Data
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       
-      {/* Global notifications for critical alerts */}
-      {hasCriticalIssues && (
+      {/* Global notifications for critical alerts - Enhanced for fuel anomaly */}
+      {hasCriticalIssues && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
         <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-red-600 border border-red-500 rounded-xl p-4 shadow-xl max-w-sm">
             <div className="flex items-center gap-3">
@@ -388,6 +454,25 @@ const App = () => {
                 <p className="text-red-100 text-sm">
                   {alerts.filter((a) => a.severity === 'critical').length}{' '}
                   critical issues detected
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Fuel Anomaly Alert Notification */}
+      {filters.viewMode === VIEW_MODES.FUEL_ANOMALY && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="bg-orange-600 border border-orange-500 rounded-xl p-4 shadow-xl max-w-sm">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-white flex-shrink-0" />
+              <div>
+                <h4 className="text-white font-medium">
+                  Fuel Anomaly Detection
+                </h4>
+                <p className="text-orange-100 text-sm">
+                  Monitoring {vessels?.find(v => v.id === fuelAnomalyConfig.selectedVessel)?.name || 'vessel'} for suspicious patterns
                 </p>
               </div>
             </div>
@@ -428,7 +513,7 @@ class ErrorBoundary extends React.Component {
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="btn-primary"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               Refresh Page
             </button>
@@ -448,4 +533,4 @@ export default function AppWithErrorBoundary() {
       <App />
     </ErrorBoundary>
   );
-}    
+}
