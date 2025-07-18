@@ -99,7 +99,7 @@ const App = () => {
             break;
           case 'q':
             event.preventDefault();
-            updateFilter('qualityVisible', !filters.qualityVisible);
+            handleQualityToggle(!filters.qualityVisible);
             break;
           case 'a': // NEW: Shortcut for fuel anomaly
             event.preventDefault();
@@ -145,6 +145,12 @@ const App = () => {
     }
   };
 
+  // NEW: Handle quality toggle
+  const handleQualityToggle = (qualityVisible) => {
+    console.log('Quality toggle changed:', qualityVisible);
+    updateFilter('qualityVisible', qualityVisible);
+  };
+
   // NEW: Handle fuel anomaly configuration changes
   const handleFuelAnomalyConfigChange = (key, value) => {
     setFuelAnomalyConfig(prev => ({
@@ -171,6 +177,7 @@ const App = () => {
           sisterVesselName: vessels?.find(v => v.id === fuelAnomalyConfig.sisterVessel)?.name || 'Unknown',
           analysisDate: new Date().toISOString(),
           config: fuelAnomalyConfig.analysisConfig,
+          qualityEnabled: filters.qualityVisible,
           // Add more report data as needed
         };
         
@@ -178,7 +185,13 @@ const App = () => {
         return;
       }
 
-      const exportData = getExportData(filters, format);
+      // For table and chart exports, include quality state
+      const exportData = {
+        ...getExportData(filters, format),
+        qualityEnabled: filters.qualityVisible,
+        exportDate: new Date().toISOString(),
+        viewMode: filters.viewMode
+      };
 
       if (format === 'csv') {
         downloadCSV(exportData);
@@ -324,7 +337,7 @@ const App = () => {
       {/* Header */}
       <FleetHeader />
       
-      {/* Enhanced Controls Bar with Fuel Anomaly Support */}
+      {/* Enhanced Controls Bar with Data Quality Toggle and Fuel Anomaly Support */}
       <ControlsBar
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -341,6 +354,8 @@ const App = () => {
         onNavigateToTable={handleNavigateToTable}
         onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly} // NEW
         currentView={filters.viewMode}
+        // NEW: Quality toggle handler
+        onQualityToggle={handleQualityToggle}
         // NEW: Fuel anomaly specific props
         fuelAnomalyConfig={fuelAnomalyConfig}
         onFuelAnomalyConfigChange={handleFuelAnomalyConfigChange}
@@ -359,7 +374,8 @@ const App = () => {
             kpis={kpis}
             filters={filters}
             onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible}
+            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
+            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
             onExport={handleExport}
             onVesselClick={handleVesselClick}
             performanceSummary={getKPIPerformanceSummary(
@@ -376,13 +392,15 @@ const App = () => {
             onFilterChange={handleFilterChange}
             isValidForCharts={isValidForCharts}
             initialVesselId={selectedVesselForCharts}
+            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
+            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
             performanceSummary={getKPIPerformanceSummary(
               filters,
               filters.selectedKPIs
             )}
           />
         ) : filters.viewMode === VIEW_MODES.FUEL_ANOMALY ? (
-          // NEW: Fuel Anomaly View
+          // NEW: Fuel Anomaly View - Quality toggle not applicable here
           <FuelAnomalyView
             selectedVessel={fuelAnomalyConfig.selectedVessel}
             sisterVessel={fuelAnomalyConfig.sisterVessel}
@@ -400,7 +418,8 @@ const App = () => {
             kpis={kpis}
             filters={filters}
             onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible}
+            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
+            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
             onExport={handleExport}
             onVesselClick={handleVesselClick}
             performanceSummary={getKPIPerformanceSummary(
@@ -441,8 +460,10 @@ const App = () => {
         )}
       </div>
       
-      {/* Global notifications for critical alerts - Enhanced for fuel anomaly */}
-      {hasCriticalIssues && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
+      {/* Global notifications for critical alerts - Enhanced for fuel anomaly and quality toggle */}
+      {hasCriticalIssues && 
+       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && 
+       filters.qualityVisible && ( // NEW: Only show when quality is visible
         <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-red-600 border border-red-500 rounded-xl p-4 shadow-xl max-w-sm">
             <div className="flex items-center gap-3">
@@ -456,6 +477,32 @@ const App = () => {
                   critical issues detected
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NEW: Data Quality Status Notification - When quality is disabled */}
+      {!filters.qualityVisible && 
+       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <div className="bg-blue-600 border border-blue-500 rounded-xl p-4 shadow-xl max-w-sm">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-white flex-shrink-0" />
+              <div>
+                <h4 className="text-white font-medium">
+                  Quality Analysis Disabled
+                </h4>
+                <p className="text-blue-100 text-sm">
+                  Data quality indicators are hidden. Toggle quality to see issues.
+                </p>
+              </div>
+              <button
+                onClick={() => handleQualityToggle(true)}
+                className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-400 transition-colors"
+              >
+                Enable
+              </button>
             </div>
           </div>
         </div>
@@ -479,6 +526,14 @@ const App = () => {
           </div>
         </div>
       )}
+
+      {/* NEW: Keyboard Shortcuts Help (shown on Ctrl+/) */}
+      <div className="fixed bottom-4 right-4 z-40 opacity-0 hover:opacity-100 transition-opacity">
+        <div className="bg-slate-800/90 border border-white/20 rounded-lg p-3 text-xs text-slate-300">
+          <div className="font-semibold mb-1">Keyboard Shortcuts:</div>
+          <div>Ctrl+Q: Toggle Quality • Ctrl+1: Table • Ctrl+2: Charts • Ctrl+A: Fuel Anomaly</div>
+        </div>
+      </div>
     </div>
   );
 };
