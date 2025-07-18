@@ -15,7 +15,10 @@ import {
   Settings,
   Radio,
   Zap,
-  Layers
+  Layers,
+  Shield,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 // Mock data and constants
@@ -25,7 +28,7 @@ const DATA_TYPES = {
   HF: 'hf',
 };
 
-// View modes including our new Fuel Anomaly view
+// View modes including our fuel anomaly view
 const VIEW_MODES = {
   TABLE: 'table',
   CHART: 'chart',
@@ -53,6 +56,7 @@ const ControlsBar = ({
     selectedVessels: [],
     dateRange: { startDate: null, endDate: null },
     viewMode: VIEW_MODES.TABLE,
+    qualityVisible: true, // NEW: Default to true to maintain current behavior
   },
   onFilterChange = () => {},
   kpis = {},
@@ -64,9 +68,11 @@ const ControlsBar = ({
   isExporting = false,
   onNavigateToCharts = () => {},
   onNavigateToTable = () => {},
-  onNavigateToFuelAnomaly = () => {}, // NEW: Navigation to fuel anomaly view
+  onNavigateToFuelAnomaly = () => {},
   currentView = VIEW_MODES.TABLE,
-  // NEW: Fuel anomaly specific props
+  // NEW: Quality toggle handler
+  onQualityToggle = () => {},
+  // Fuel anomaly specific props
   fuelAnomalyConfig = {
     selectedVessel: 'vessel_1',
     sisterVessel: 'vessel_2',
@@ -96,6 +102,7 @@ const ControlsBar = ({
         ? filters.dateRange
         : getInitialDateRange(),
     viewMode: filters.viewMode || VIEW_MODES.TABLE,
+    qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Quality toggle state
   }));
   
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
@@ -115,6 +122,7 @@ const ControlsBar = ({
           ? filters.dateRange
           : getInitialDateRange(),
       viewMode: filters.viewMode || VIEW_MODES.TABLE,
+      qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Update quality state
     }));
   }, [filters]);
 
@@ -174,11 +182,23 @@ const ControlsBar = ({
       selectedVessels: sampleVessels.map((v) => v.id),
       dateRange: getInitialDateRange(),
       viewMode: VIEW_MODES.TABLE,
+      qualityVisible: true, // NEW: Reset quality toggle to true
     }));
     onFilterChange('viewMode', VIEW_MODES.TABLE);
+    onFilterChange('qualityVisible', true); // NEW: Reset quality in parent
   };
 
-  // NEW: Handle navigation to different views
+  // NEW: Handle quality toggle
+  const handleQualityToggle = () => {
+    const newQualityState = !localFilters.qualityVisible;
+    setLocalFilters((prev) => ({
+      ...prev,
+      qualityVisible: newQualityState,
+    }));
+    onQualityToggle(newQualityState);
+  };
+
+  // Handle navigation to different views
   const handleViewChange = (viewMode) => {
     switch (viewMode) {
       case VIEW_MODES.TABLE:
@@ -195,7 +215,7 @@ const ControlsBar = ({
     }
   };
 
-  // NEW: Fuel Anomaly Configuration Panel
+  // Fuel Anomaly Configuration Panel
   const renderFuelAnomalyConfig = () => {
     if (currentView !== VIEW_MODES.FUEL_ANOMALY) return null;
 
@@ -423,9 +443,9 @@ const ControlsBar = ({
         )}
       </div>
 
-      {/* Right Section - View Toggle, Date Range & Actions */}
+      {/* Right Section - View Toggle, Data Quality Toggle, Date Range & Actions */}
       <div className="controls-right">
-        {/* Enhanced View Toggle with Fuel Anomaly */}
+        {/* View Toggle with Fuel Anomaly */}
         <div className="view-toggle-group">
           <button
             onClick={() => handleViewChange(VIEW_MODES.TABLE)}
@@ -455,6 +475,25 @@ const ControlsBar = ({
             <Fuel className="view-toggle-icon" />
           </button>
         </div>
+
+        {/* NEW: Data Quality Toggle - Only show for Table and Chart views */}
+        {currentView !== VIEW_MODES.FUEL_ANOMALY && (
+          <div className="quality-toggle-container">
+            <button
+              onClick={handleQualityToggle}
+              className={`quality-toggle-btn ${
+                localFilters.qualityVisible ? 'active' : ''
+              }`}
+              title={localFilters.qualityVisible ? 'Hide Data Quality' : 'Show Data Quality'}
+            >
+              {localFilters.qualityVisible ? (
+                <Shield className="quality-toggle-icon" />
+              ) : (
+                <Eye className="quality-toggle-icon" />
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Date Range Picker (hidden for Fuel Anomaly view as it has its own config) */}
         {currentView !== VIEW_MODES.FUEL_ANOMALY && (
@@ -524,6 +563,7 @@ const ControlsBar = ({
           --primary-accent-dark: #4488cc;
           --success-color: #28a745;
           --fuel-anomaly-color: #f97316; /* Orange for fuel anomaly */
+          --quality-color: #10b981; /* Emerald for data quality */
           --card-bg: #1a1a2e;
           --card-dark: #0f0f1a;
           --bg-gradient-1: linear-gradient(135deg, #0a0a1a, #1a1a2e);
@@ -993,6 +1033,81 @@ const ControlsBar = ({
           color: var(--fuel-anomaly-color);
         }
 
+        /* NEW: Data Quality Toggle Styles */
+        .quality-toggle-container {
+          display: flex;
+          align-items: center;
+        }
+
+        .quality-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: linear-gradient(135deg, var(--card-bg), var(--card-dark));
+          border: 1px solid var(--border-subtle);
+          border-radius: 4px;
+          cursor: pointer;
+          transition: var(--transition-fast);
+          color: var(--text-light);
+          box-shadow: var(--shadow-sm);
+          position: relative;
+          overflow: hidden;
+          transform: translateZ(0);
+        }
+
+        .quality-toggle-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          opacity: 0;
+          transition: opacity var(--transition-fast);
+        }
+
+        .quality-toggle-btn:hover::before {
+          opacity: 1;
+        }
+
+        .quality-toggle-btn:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: var(--quality-color);
+          transform: translateY(-1px) translateZ(2px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .quality-toggle-btn.active {
+          background: linear-gradient(135deg, var(--quality-color), #059669);
+          border-color: var(--quality-color);
+          color: white;
+          box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.6), var(--shadow-md);
+          transform: translateY(0) translateZ(0);
+        }
+
+        .quality-toggle-btn.active::before {
+          background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          opacity: 1;
+        }
+
+        .quality-toggle-icon {
+          width: 14px;
+          height: 14px;
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          transition: var(--transition-fast);
+        }
+
+        .quality-toggle-btn:not(.active) .quality-toggle-icon {
+          color: var(--quality-color);
+        }
+
+        .quality-toggle-btn.active .quality-toggle-icon {
+          color: white;
+        }
+
         /* Right Section */
         .controls-right {
           display: flex;
@@ -1197,6 +1312,16 @@ const ControlsBar = ({
 
           .filter-dropdown.vessel-dropdown {
             width: calc(100vw - 20px);
+          }
+
+          .quality-toggle-btn {
+            width: 28px;
+            height: 28px;
+          }
+
+          .quality-toggle-icon {
+            width: 12px;
+            height: 12px;
           }
         }
 
