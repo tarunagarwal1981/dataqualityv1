@@ -356,173 +356,342 @@ const EnhancedQualityIndicator = ({
   );
 };
 
-// NEW: KPI Summary Cards Component
-const KPISummaryCards = ({ data, selectedKPIs, selectedDataType }) => {
-  // Calculate fleet performance metrics
-  const fleetMetrics = useMemo(() => {
+// NEW: Vessel-wise Performance Charts Component
+const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
+  // Calculate vessel performance metrics
+  const vesselMetrics = useMemo(() => {
     if (!data || data.length === 0) return null;
 
     const dataKey = selectedDataType.toLowerCase();
+  
+    return data.map(vessel => {
+      const speed = vessel[dataKey]?.obs_speed || 0;
+      const consumption = vessel[dataKey]?.me_consumption || 0;
+      const ladenCondition = vessel[dataKey]?.laden_condition;
     
-    // Calculate averages across all vessels for key KPIs
-    const speedSum = data.reduce((sum, vessel) => {
-      const speed = vessel[dataKey]?.obs_speed;
-      return speed ? sum + speed : sum;
-    }, 0);
-    const avgSpeed = speedSum / data.filter(v => v[dataKey]?.obs_speed).length;
-
-    const consumptionSum = data.reduce((sum, vessel) => {
-      const consumption = vessel[dataKey]?.me_consumption;
-      return consumption ? sum + consumption : sum;
-    }, 0);
-    const avgConsumption = consumptionSum / data.filter(v => v[dataKey]?.me_consumption).length;
-
-    const powerSum = data.reduce((sum, vessel) => {
-      const power = vessel[dataKey]?.me_power;
-      return power ? sum + power : sum;
-    }, 0);
-    const avgPower = powerSum / data.filter(v => v[dataKey]?.me_power).length;
-
-    // Calculate operational status distribution
-    const statusCounts = data.reduce((acc, vessel) => {
-      const status = vessel.vesselStatus;
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {});
-
-    return {
-      avgSpeed: avgSpeed || 0,
-      avgConsumption: avgConsumption || 0,
-      avgPower: avgPower || 0,
-      statusCounts,
-      totalVessels: data.length
-    };
+      // Calculate efficiency (kg/nm) - simplified calculation
+      const efficiency = speed > 0 ? (consumption * 1000) / speed : 0;
+    
+      return {
+        vesselName: vessel.vesselName,
+        shortName: vessel.vesselName.replace('MV ', '').substring(0, 8),
+        speed: speed,
+        consumption: consumption,
+        efficiency: efficiency,
+        ladenCondition: ladenCondition === 1 ? 'Laden' : 'Ballast',
+        qualityScore: vessel.quality.overallScore,
+        completeness: vessel.quality.completeness, // Add completeness
+        correctness: vessel.quality.correctness,   // Add correctness
+        vesselId: vessel.id
+      };
+    }).filter(v => v.speed > 0 || v.consumption > 0); // Filter out vessels with no data
   }, [data, selectedDataType]);
 
-  if (!fleetMetrics) return null;
+  if (!vesselMetrics || vesselMetrics.length === 0) return null;
+
+  const maxSpeed = Math.max(...vesselMetrics.map(v => v.speed));
+  const maxConsumption = Math.max(...vesselMetrics.map(v => v.consumption));
+  const maxEfficiency = Math.max(...vesselMetrics.map(v => v.efficiency));
+
+  // Card component matching quality cards style
+  const Card = ({ children, gradient = 'default', className = '' }) => {
+    const gradients = {
+      default: 'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+      performance: 'linear-gradient(145deg, rgba(6, 182, 212, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+      efficiency: 'linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+      quality: 'linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+    };
+
+    return (
+      <div
+        className={`relative overflow-hidden rounded-xl border transition-all duration-300 ease-out ${className}`}
+        style={{
+          background: gradients[gradient],
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          boxShadow: `
+            0 8px 32px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 4px 8px rgba(0, 0, 0, 0.2)
+          `,
+          transform: 'translateZ(0)',
+        }}
+      >
+        {/* Subtle gradient overlay */}
+        <div
+          className="absolute inset-0 opacity-50 pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)',
+          }}
+        />
+        <div className="relative z-10">{children}</div>
+      </div>
+    );
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Fleet Performance Summary Card */}
-      <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-500/30 rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-blue-500/20 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-blue-400" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      {/* Performance Overview - Parallel Bar Chart with Dual Y-Axis */}
+      <Card gradient="performance" className="hover:transform hover:translateY(-2px) hover:scale-[1.01]">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
+              <BarChart2 className="w-4 h-4 text-cyan-400" />
+            </div>
+            <div>
+              <span className="text-xs font-medium text-slate-200 block">Speed & Consumption</span>
+              <span className="text-[9px] text-slate-400">Parallel comparison</span>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Fleet Performance</h3>
-            <p className="text-xs text-blue-200">Average metrics across fleet</p>
-          </div>
-        </div>
         
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-300">Avg Speed</span>
-            <span className="text-sm font-semibold text-white">
-              {fleetMetrics.avgSpeed.toFixed(1)} knts
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-300">Avg ME Consumption</span>
-            <span className="text-sm font-semibold text-white">
-              {fleetMetrics.avgConsumption.toFixed(1)} Mt
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-300">Avg ME Power</span>
-            <span className="text-sm font-semibold text-white">
-              {Math.round(fleetMetrics.avgPower).toLocaleString()} kW
-            </span>
-          </div>
-        </div>
-
-        {/* Mini trend visualization */}
-        <div className="mt-3 pt-3 border-t border-blue-500/20">
-          <div className="flex items-center gap-2">
-            <LineChart className="w-4 h-4 text-blue-400" />
-            <span className="text-xs text-blue-200">Performance trending stable</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Fuel Efficiency Overview Card */}
-      <div className="bg-gradient-to-br from-orange-600/20 to-orange-800/20 border border-orange-500/30 rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-orange-500/20 rounded-lg">
-            <Fuel className="w-5 h-5 text-orange-400" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Fuel Efficiency</h3>
-            <p className="text-xs text-orange-200">Consumption vs power analysis</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-300">Power/Consumption Ratio</span>
-            <span className="text-sm font-semibold text-white">
-              {(fleetMetrics.avgPower / fleetMetrics.avgConsumption).toFixed(0)} kW/Mt
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-slate-300">Fleet Efficiency</span>
-            <span className="text-sm font-semibold text-emerald-300">
-              Optimal
-            </span>
-          </div>
-        </div>
-
-        {/* Efficiency indicator */}
-        <div className="mt-3 pt-3 border-t border-orange-500/20">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-            <span className="text-xs text-orange-200">Above benchmark efficiency</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Operational Status Card */}
-      <div className="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 border border-emerald-500/30 rounded-lg p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-emerald-500/20 rounded-lg">
-            <Ship className="w-5 h-5 text-emerald-400" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-white">Fleet Status</h3>
-            <p className="text-xs text-emerald-200">Operational distribution</p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {Object.entries(fleetMetrics.statusCounts).map(([status, count]) => {
-            const percentage = ((count / fleetMetrics.totalVessels) * 100).toFixed(0);
-            const statusColor = status === 'At Sea' ? 'emerald' : status === 'At Port' ? 'blue' : 'orange';
+          <div className="relative h-32 bg-slate-800/30 rounded-lg p-2">
+            {/* Y-axis labels */}
+            <div className="absolute left-0 top-0 bottom-0 w-6 flex flex-col justify-between text-[8px] text-cyan-400 py-2">
+              <span>{maxSpeed.toFixed(0)}</span>
+              <span>{(maxSpeed/2).toFixed(0)}</span>
+              <span>0</span>
+            </div>
+            <div className="absolute right-0 top-0 bottom-0 w-6 flex flex-col justify-between text-[8px] text-orange-400 py-2 text-right">
+              <span>{maxConsumption.toFixed(0)}</span>
+              <span>{(maxConsumption/2).toFixed(0)}</span>
+              <span>0</span>
+            </div>
+          
+            <div className="absolute inset-0 mx-6 border-l border-b border-slate-600/50">
+              {/* Grid lines */}
+              <div className="absolute inset-0">
+                {[25, 50, 75].map(percent => (
+                  <div key={percent} 
+                    className="absolute w-full border-t border-slate-600/20" 
+                    style={{ bottom: `${percent}%` }} 
+                  />
+                ))}
+              </div>
             
-            return (
-              <div key={status} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full bg-${statusColor}-400`}></div>
-                  <span className="text-xs text-slate-300">{status}</span>
+              <div className="flex items-end justify-between h-full gap-1 px-2">
+                {vesselMetrics.slice(0, 6).map((vessel) => {
+                  const speedHeight = (vessel.speed / maxSpeed) * 85;
+                  const consumptionHeight = (vessel.consumption / maxConsumption) * 85;
+                
+                  return (
+                    <div key={vessel.vesselId} className="flex items-end gap-1 group cursor-pointer" title={`${vessel.vesselName}: ${vessel.speed.toFixed(1)} kn, ${vessel.consumption.toFixed(1)} Mt`}>
+                      {/* Speed bar (left) */}
+                      <div 
+                        className="w-2 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t transition-all duration-300 group-hover:from-cyan-500 group-hover:to-cyan-300 group-hover:w-2.5"
+                        style={{ height: `${speedHeight}px` }}
+                      />
+                      {/* Consumption bar (right) */}
+                      <div 
+                        className="w-2 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t transition-all duration-300 group-hover:from-orange-500 group-hover:to-orange-300 group-hover:w-2.5"
+                        style={{ height: `${consumptionHeight}px` }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          
+            {/* X-axis vessel labels */}
+            <div className="absolute bottom-0 left-6 right-6 flex justify-between">
+              {vesselMetrics.slice(0, 6).map((vessel) => (
+                <div key={vessel.vesselId} className="text-[7px] text-slate-400 text-center w-6 truncate">
+                  {vessel.shortName}
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">{count}</span>
-                  <span className="text-sm font-semibold text-white">{percentage}%</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-cyan-500/20">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                <span className="text-slate-300">Speed (kn)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                <span className="text-slate-300">Fuel (Mt)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Fuel Efficiency Bar Chart with Vessel Names */}
+      <Card gradient="efficiency" className="hover:transform hover:translateY(-2px) hover:scale-[1.01]">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-1.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
+              <Target className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <span className="text-xs font-medium text-slate-200 block">Fuel Efficiency</span>
+              <span className="text-[9px] text-slate-400">kg/nm by vessel</span>
+            </div>
+          </div>
+
+          <div className="relative h-32 bg-slate-800/30 rounded-lg p-2">
+            {/* Y-axis labels */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between text-[8px] text-emerald-400 py-2">
+              <span>{maxEfficiency.toFixed(0)}</span>
+              <span>{(maxEfficiency*0.66).toFixed(0)}</span>
+              <span>{(maxEfficiency*0.33).toFixed(0)}</span>
+              <span>0</span>
+            </div>
+          
+            <div className="absolute inset-0 ml-8 border-l border-b border-slate-600/50">
+              {/* Grid lines */}
+              <div className="absolute inset-0">
+                {[25, 50, 75].map(percent => (
+                  <div key={percent} 
+                    className="absolute w-full border-t border-slate-600/20" 
+                    style={{ bottom: `${percent}%` }} 
+                  />
+                ))}
+              </div>
+            
+              <div className="flex items-end justify-between h-full gap-1 px-2">
+                {vesselMetrics.slice(0, 7).map((vessel) => {
+                  const barHeight = (vessel.efficiency / maxEfficiency) * 85;
+                  const isLaden = vessel.ladenCondition === 'Laden';
+                
+                  return (
+                    <div key={vessel.vesselId} className="flex flex-col items-center group cursor-pointer" title={`${vessel.vesselName}: ${vessel.efficiency.toFixed(1)} kg/nm (${vessel.ladenCondition})`}>
+                      <div 
+                        className={`w-3 rounded-t transition-all duration-300 group-hover:w-4 ${
+                          isLaden 
+                            ? 'bg-gradient-to-t from-blue-600 to-blue-400 group-hover:from-blue-500 group-hover:to-blue-300' 
+                            : 'bg-gradient-to-t from-orange-600 to-orange-400 group-hover:from-orange-500 group-hover:to-orange-300'
+                        }`}
+                        style={{ height: `${barHeight}px` }}
+                      />
+                      {/* Loading condition indicator */}
+                      <div className={`w-2 h-1 mt-0.5 rounded-full ${
+                        isLaden ? 'bg-blue-400' : 'bg-orange-400'
+                      }`} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          
+            {/* X-axis vessel labels */}
+            <div className="absolute bottom-0 left-8 right-0 flex justify-between pr-2">
+              {vesselMetrics.slice(0, 7).map((vessel) => (
+                <div key={vessel.vesselId} className="text-[7px] text-slate-400 text-center w-4 truncate transform -rotate-45 origin-top">
+                  {vessel.shortName}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-emerald-500/20">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
+                <span className="text-slate-300">Laden</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full"></div>
+                <span className="text-slate-300">Ballast</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* NEW: Data Quality - Scatter Plot */}
+      <Card gradient="quality" className="hover:transform hover:translateY(-2px) hover:scale-[1.01]">
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-1.5 rounded-md bg-purple-500/20 border border-purple-500/30">
+              <Shield className="w-4 h-4 text-purple-400" />
+            </div>
+            <div>
+              <span className="text-xs font-medium text-slate-200 block">Data Quality</span>
+              <span className="text-[9px] text-slate-400">Completeness vs. Correctness</span>
+            </div>
+          </div>
+
+          <div className="relative h-32 bg-slate-800/30 rounded-lg p-2">
+            {/* Chart Area */}
+            <div className="absolute inset-0 p-2">
+              {/* Quadrant Lines */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute w-full h-px bg-slate-600/50" style={{ top: '50%' }}></div> {/* Horizontal line (Completeness 50%) */}
+                <div className="absolute h-full w-px bg-slate-600/50" style={{ left: '50%' }}></div> {/* Vertical line (Correctness 50%) */}
+              </div>
+
+              {/* X-axis labels (Correctness) */}
+              <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[8px] text-slate-400 px-2 pb-1">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
+              </div>
+              {/* Y-axis labels (Completeness) */}
+              <div className="absolute top-0 bottom-0 left-0 flex flex-col justify-between text-[8px] text-slate-400 py-2 pl-1">
+                <span>100%</span>
+                <span>50%</span>
+                <span>0%</span>
+              </div>
+
+              {/* Scatter Points */}
+              {vesselMetrics.map((vessel) => {
+                const xPos = (vessel.correctness / 100) * 90 + 5; // Scale to 0-100, add padding
+                const yPos = 100 - ((vessel.completeness / 100) * 90 + 5); // Scale and invert for Y-axis, add padding
+
+                let pointColor = 'bg-slate-400'; // Default
+                if (vessel.completeness >= 85 && vessel.correctness >= 85) {
+                  pointColor = 'bg-emerald-500'; // High quality
+                } else if (vessel.completeness >= 70 && vessel.correctness >= 70) {
+                  pointColor = 'bg-yellow-500'; // Medium quality
+                } else if (vessel.completeness < 70 || vessel.correctness < 70) {
+                  pointColor = 'bg-red-500'; // Low quality
+                }
+
+                return (
+                  <div
+                    key={vessel.vesselId}
+                    className={`absolute w-2 h-2 rounded-full ${pointColor} cursor-pointer transition-all duration-100 group`}
+                    style={{
+                      left: `${xPos}%`,
+                      top: `${yPos}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    title={`${vessel.vesselName}\nCompleteness: ${vessel.completeness}%\nCorrectness: ${vessel.correctness}%`}
+                  >
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-700 text-white text-xs rounded py-1 px-2 z-10 whitespace-nowrap shadow-lg">
+                      {vessel.vesselName}
+                      <br />
+                      Completeness: {vessel.completeness}%
+                      <br />
+                      Correctness: {vessel.correctness}%
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-purple-500/20">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span className="text-slate-300">High Quality</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span className="text-slate-300">Medium Quality</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-slate-300">Low Quality</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        {/* Status summary */}
-        <div className="mt-3 pt-3 border-t border-emerald-500/20">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs text-emerald-200">
-              {fleetMetrics.totalVessels} vessels actively monitored
-            </span>
+            </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
@@ -1110,8 +1279,8 @@ const TableView = ({
               compactMode={true}
             />
           ) : (
-            // Show KPI Summary Cards when quality is hidden
-            <KPISummaryCards
+            // Show Vessel Performance Charts when quality is hidden
+            <VesselPerformanceCharts
               data={sampleData}
               selectedKPIs={selectedKPIs}
               selectedDataType={selectedDataType}
