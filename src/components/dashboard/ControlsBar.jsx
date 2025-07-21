@@ -9,6 +9,16 @@ import {
   Menu,
   Check,
   X,
+  Fuel,
+  AlertTriangle,
+  Activity,
+  Settings,
+  Radio,
+  Zap,
+  Layers,
+  Shield,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 // Mock data and constants
@@ -16,6 +26,13 @@ const DATA_TYPES = {
   COMBINED: 'combined',
   LF: 'lf',
   HF: 'hf',
+};
+
+// View modes including our fuel anomaly view
+const VIEW_MODES = {
+  TABLE: 'table',
+  CHART: 'chart',
+  FUEL_ANOMALY: 'fuel_anomaly'
 };
 
 // Sample data
@@ -38,10 +55,11 @@ const ControlsBar = ({
     selectedKPIs: [],
     selectedVessels: [],
     dateRange: { startDate: null, endDate: null },
-    viewMode: 'table', // Default to table view
+    viewMode: VIEW_MODES.TABLE,
+    qualityVisible: true, // NEW: Default to true to maintain current behavior
   },
   onFilterChange = () => {},
-  kpis = {}, // KPIs are no longer directly selectable in this simplified bar
+  kpis = {},
   vessels = sampleVessels,
   onApplyFilters = () => {},
   onResetFilters = () => {},
@@ -50,7 +68,21 @@ const ControlsBar = ({
   isExporting = false,
   onNavigateToCharts = () => {},
   onNavigateToTable = () => {},
-  currentView = 'table', // Default to table view
+  onNavigateToFuelAnomaly = () => {},
+  currentView = VIEW_MODES.TABLE,
+  // NEW: Quality toggle handler
+  onQualityToggle = () => {},
+  // Fuel anomaly specific props
+  fuelAnomalyConfig = {
+    selectedVessel: 'vessel_1',
+    sisterVessel: 'vessel_2',
+    analysisConfig: {
+      period: 'last_6_months',
+      sensitivity: 'medium',
+      enabledLevels: ['lf_vs_hf', 'physics', 'benchmark']
+    }
+  },
+  onFuelAnomalyConfigChange = () => {}
 }) => {
   const getInitialDateRange = () => {
     const endDate = new Date();
@@ -69,10 +101,14 @@ const ControlsBar = ({
       filters.dateRange.startDate && filters.dateRange.endDate
         ? filters.dateRange
         : getInitialDateRange(),
-    viewMode: filters.viewMode || 'table', // Ensure viewMode is initialized, default to 'table'
+    viewMode: filters.viewMode || VIEW_MODES.TABLE,
+    qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Quality toggle state
   }));
+  
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
+  const [showFuelAnomalyConfig, setShowFuelAnomalyConfig] = useState(false);
   const vesselDropdownRef = useRef(null);
+  const fuelConfigRef = useRef(null);
 
   useEffect(() => {
     setLocalFilters((prev) => ({
@@ -85,7 +121,8 @@ const ControlsBar = ({
         filters.dateRange.startDate && filters.dateRange.endDate
           ? filters.dateRange
           : getInitialDateRange(),
-      viewMode: filters.viewMode || 'table', // Update viewMode from props
+      viewMode: filters.viewMode || VIEW_MODES.TABLE,
+      qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Update quality state
     }));
   }, [filters]);
 
@@ -96,6 +133,12 @@ const ControlsBar = ({
         !vesselDropdownRef.current.contains(event.target)
       ) {
         setShowVesselDropdown(false);
+      }
+      if (
+        fuelConfigRef.current &&
+        !fuelConfigRef.current.contains(event.target)
+      ) {
+        setShowFuelAnomalyConfig(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -136,11 +179,176 @@ const ControlsBar = ({
     setShowVesselDropdown(false);
     setLocalFilters((prev) => ({
       ...prev,
-      selectedVessels: sampleVessels.map((v) => v.id), // Reset to all vessels selected
-      dateRange: getInitialDateRange(), // Reset date range to last 7 days
-      viewMode: 'table', // Reset view mode to table
+      selectedVessels: sampleVessels.map((v) => v.id),
+      dateRange: getInitialDateRange(),
+      viewMode: VIEW_MODES.TABLE,
+      qualityVisible: true, // NEW: Reset quality toggle to true
     }));
-    onFilterChange('viewMode', 'table'); // Ensure parent state is updated
+    onFilterChange('viewMode', VIEW_MODES.TABLE);
+    onFilterChange('qualityVisible', true); // NEW: Reset quality in parent
+  };
+
+  // NEW: Handle quality toggle
+  const handleQualityToggle = () => {
+    const newQualityState = !localFilters.qualityVisible;
+    setLocalFilters((prev) => ({
+      ...prev,
+      qualityVisible: newQualityState,
+    }));
+    onQualityToggle(newQualityState);
+  };
+
+  // Handle navigation to different views
+  const handleViewChange = (viewMode) => {
+    switch (viewMode) {
+      case VIEW_MODES.TABLE:
+        onNavigateToTable();
+        break;
+      case VIEW_MODES.CHART:
+        onNavigateToCharts();
+        break;
+      case VIEW_MODES.FUEL_ANOMALY:
+        onNavigateToFuelAnomaly();
+        break;
+      default:
+        onNavigateToTable();
+    }
+  };
+
+  // Fuel Anomaly Configuration Panel
+  const renderFuelAnomalyConfig = () => {
+    if (currentView !== VIEW_MODES.FUEL_ANOMALY) return null;
+
+    return (
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-slate-400">Primary Vessel</label>
+          <select 
+            value={fuelAnomalyConfig.selectedVessel}
+            onChange={(e) => onFuelAnomalyConfigChange('selectedVessel', e.target.value)}
+            className="bg-slate-700 border border-white/20 rounded-md px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
+          >
+            {sampleVessels.map(vessel => (
+              <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-slate-400">Sister Vessel</label>
+          <select 
+            value={fuelAnomalyConfig.sisterVessel}
+            onChange={(e) => onFuelAnomalyConfigChange('sisterVessel', e.target.value)}
+            className="bg-slate-700 border border-white/20 rounded-md px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
+          >
+            {sampleVessels.filter(v => v.id !== fuelAnomalyConfig.selectedVessel).map(vessel => (
+              <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="relative" ref={fuelConfigRef}>
+          <button
+            onClick={() => setShowFuelAnomalyConfig(!showFuelAnomalyConfig)}
+            className="w-8 h-8 flex items-center justify-center bg-slate-700/50 border border-white/10 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+            title="Fuel Analysis Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+
+          {showFuelAnomalyConfig && (
+            <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-white/10 rounded-lg shadow-xl z-50">
+              <div className="flex items-center justify-between p-4 border-b border-white/10">
+                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Fuel className="w-4 h-4 text-orange-400" />
+                  Analysis Configuration
+                </h4>
+                <button onClick={() => setShowFuelAnomalyConfig(false)}>
+                  <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                </button>
+              </div>
+
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-slate-300 mb-2 block">Analysis Period</label>
+                  <select 
+                    value={fuelAnomalyConfig.analysisConfig.period}
+                    onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
+                      ...fuelAnomalyConfig.analysisConfig,
+                      period: e.target.value
+                    })}
+                    className="w-full bg-slate-700 border border-white/20 rounded-md px-3 py-2 text-sm text-white"
+                  >
+                    <option value="last_6_months">Last 6 Months</option>
+                    <option value="last_3_months">Last 3 Months</option>
+                    <option value="last_1_month">Last 1 Month</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-slate-300 mb-2 block">Detection Sensitivity</label>
+                  <select 
+                    value={fuelAnomalyConfig.analysisConfig.sensitivity}
+                    onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
+                      ...fuelAnomalyConfig.analysisConfig,
+                      sensitivity: e.target.value
+                    })}
+                    className="w-full bg-slate-700 border border-white/20 rounded-md px-3 py-2 text-sm text-white"
+                  >
+                    <option value="low">Low - Major anomalies only</option>
+                    <option value="medium">Medium - Balanced detection</option>
+                    <option value="high">High - Sensitive detection</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-slate-300 mb-2 block">Analysis Levels</label>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'lf_vs_hf', label: 'LF vs HF Sync', icon: Radio },
+                      { key: 'physics', label: 'Physics Check', icon: Zap },
+                      { key: 'benchmark', label: 'Fleet Benchmark', icon: Ship }
+                    ].map(level => {
+                      const IconComponent = level.icon;
+                      return (
+                        <label key={level.key} className="flex items-center gap-2 text-xs">
+                          <input 
+                            type="checkbox" 
+                            checked={fuelAnomalyConfig.analysisConfig.enabledLevels.includes(level.key)}
+                            onChange={(e) => {
+                              const newLevels = e.target.checked 
+                                ? [...fuelAnomalyConfig.analysisConfig.enabledLevels, level.key]
+                                : fuelAnomalyConfig.analysisConfig.enabledLevels.filter(l => l !== level.key);
+                              onFuelAnomalyConfigChange('analysisConfig', {
+                                ...fuelAnomalyConfig.analysisConfig,
+                                enabledLevels: newLevels
+                              });
+                            }}
+                            className="rounded text-orange-500 bg-slate-700 border-slate-600"
+                          />
+                          <IconComponent className="w-3 h-3 text-slate-400" />
+                          <span className="text-slate-300">{level.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+                <button
+                  onClick={() => setShowFuelAnomalyConfig(false)}
+                  className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   const renderVesselList = () => (
@@ -166,145 +374,179 @@ const ControlsBar = ({
 
   return (
     <div className="sleek-controls-bar">
-      {/* Left Section - Vessel Selection */}
+      {/* Left Section - Vessel Selection (only for Table/Chart views) */}
       <div className="controls-left">
-        {/* Vessel Selection */}
-        <div className="filter-container" ref={vesselDropdownRef}>
-          <button
-            onClick={() => setShowVesselDropdown(!showVesselDropdown)}
-            className={`nav-btn ${showVesselDropdown ? 'active' : ''}`}
-            title="Select Vessels"
-          >
-            <Menu className="nav-icon" />
-            <span className="nav-label">Vessels</span>
-            {localFilters.selectedVessels?.length > 0 && (
-              <span className="filter-badge">
-                {localFilters.selectedVessels.length}
-              </span>
-            )}
-          </button>
+        {currentView !== VIEW_MODES.FUEL_ANOMALY ? (
+          <div className="filter-container" ref={vesselDropdownRef}>
+            <button
+              onClick={() => setShowVesselDropdown(!showVesselDropdown)}
+              className={`nav-btn ${showVesselDropdown ? 'active' : ''}`}
+              title="Select Vessels"
+            >
+              <Menu className="nav-icon" />
+              <span className="nav-label">Vessels</span>
+              {localFilters.selectedVessels?.length > 0 && (
+                <span className="filter-badge">
+                  {localFilters.selectedVessels.length}
+                </span>
+              )}
+            </button>
 
-          {showVesselDropdown && (
-            <div className="filter-dropdown vessel-dropdown">
-              <div className="filter-header">
-                <div className="filter-title">
-                  <Ship className="filter-title-icon" />
-                  <span>Select Vessels</span>
+            {showVesselDropdown && (
+              <div className="filter-dropdown vessel-dropdown">
+                <div className="filter-header">
+                  <div className="filter-title">
+                    <Ship className="filter-title-icon" />
+                    <span>Select Vessels</span>
+                  </div>
+                  <button
+                    onClick={() => setShowVesselDropdown(false)}
+                    className="filter-close"
+                  >
+                    <X className="filter-close-icon" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowVesselDropdown(false)}
-                  className="filter-close"
-                >
-                  <X className="filter-close-icon" />
-                </button>
+                <div className="filter-body">{renderVesselList()}</div>
+                <div className="filter-footer">
+                  <button
+                    onClick={handleReset}
+                    className="reset-btn"
+                    disabled={isApplyingFilters}
+                  >
+                    <RefreshCw className="reset-icon" />
+                    Reset
+                  </button>
+                  <button
+                    onClick={handleApply}
+                    className={`apply-btn ${isApplyingFilters ? 'loading' : ''}`}
+                    disabled={isApplyingFilters}
+                  >
+                    {isApplyingFilters ? (
+                      <>
+                        <RefreshCw className="apply-icon spinning" />
+                        Applying...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="apply-icon" />
+                        Apply
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-              <div className="filter-body">{renderVesselList()}</div>
-              <div className="filter-footer">
-                <button
-                  onClick={handleReset}
-                  className="reset-btn"
-                  disabled={isApplyingFilters}
-                >
-                  <RefreshCw className="reset-icon" />
-                  Reset
-                </button>
-                <button
-                  onClick={handleApply}
-                  className={`apply-btn ${isApplyingFilters ? 'loading' : ''}`}
-                  disabled={isApplyingFilters}
-                >
-                  {isApplyingFilters ? (
-                    <>
-                      <RefreshCw className="apply-icon spinning" />
-                      Applying...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="apply-icon" />
-                      Apply
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          // Fuel Anomaly specific controls
+          renderFuelAnomalyConfig()
+        )}
       </div>
 
-      {/* Right Section - View Toggle, Date Range & Actions */}
+      {/* Right Section - View Toggle, Data Quality Toggle, Date Range & Actions */}
       <div className="controls-right">
-        {/* Charts/Table View Toggle - Subtle and Modern */}
+        {/* View Toggle with Fuel Anomaly */}
         <div className="view-toggle-group">
           <button
-            onClick={onNavigateToTable}
+            onClick={() => handleViewChange(VIEW_MODES.TABLE)}
             className={`view-toggle-btn ${
-              currentView === 'table' ? 'active' : ''
+              currentView === VIEW_MODES.TABLE ? 'active' : ''
             }`}
             title="Table View"
           >
             <Grid className="view-toggle-icon" />
           </button>
           <button
-            onClick={onNavigateToCharts}
+            onClick={() => handleViewChange(VIEW_MODES.CHART)}
             className={`view-toggle-btn ${
-              currentView === 'chart' ? 'active' : ''
+              currentView === VIEW_MODES.CHART ? 'active' : ''
             }`}
             title="Charts View"
           >
             <BarChart3 className="view-toggle-icon" />
           </button>
+          <button
+            onClick={() => handleViewChange(VIEW_MODES.FUEL_ANOMALY)}
+            className={`view-toggle-btn fuel-anomaly-btn ${
+              currentView === VIEW_MODES.FUEL_ANOMALY ? 'active' : ''
+            }`}
+            title="Fuel Anomaly Analysis"
+          >
+            <Fuel className="view-toggle-icon" />
+          </button>
         </div>
 
-        {/* Date Range Picker */}
-        <div className="date-section">
-          <Calendar className="date-icon" />
-          <div className="date-inputs">
-            <input
-              type="date"
-              value={
-                localFilters.dateRange?.startDate
-                  ? new Date(localFilters.dateRange.startDate)
-                      .toISOString()
-                      .split('T')[0]
-                  : ''
-              }
-              onChange={(e) =>
-                handleDateChange(
-                  'startDate',
-                  e.target.value ? new Date(e.target.value) : null
-                )
-              }
-              className="date-input"
-              placeholder="Start"
-            />
-            <span className="date-separator">–</span>
-            <input
-              type="date"
-              value={
-                localFilters.dateRange?.endDate
-                  ? new Date(localFilters.dateRange.endDate)
-                      .toISOString()
-                      .split('T')[0]
-                  : ''
-              }
-              onChange={(e) =>
-                handleDateChange(
-                  'endDate',
-                  e.target.value ? new Date(e.target.value) : null
-                )
-              }
-              className="date-input"
-              placeholder="End"
-            />
+        {/* NEW: Data Quality Toggle - Only show for Table and Chart views */}
+        {currentView !== VIEW_MODES.FUEL_ANOMALY && (
+          <div className="quality-toggle-container">
+            <button
+              onClick={handleQualityToggle}
+              className={`quality-toggle-btn ${
+                localFilters.qualityVisible ? 'active' : ''
+              }`}
+              title={localFilters.qualityVisible ? 'Hide Data Quality' : 'Show Data Quality'}
+            >
+              {localFilters.qualityVisible ? (
+                <Shield className="quality-toggle-icon" />
+              ) : (
+                <Eye className="quality-toggle-icon" />
+              )}
+            </button>
           </div>
-        </div>
+        )}
+
+        {/* Date Range Picker (hidden for Fuel Anomaly view as it has its own config) */}
+        {currentView !== VIEW_MODES.FUEL_ANOMALY && (
+          <div className="date-section">
+            <Calendar className="date-icon" />
+            <div className="date-inputs">
+              <input
+                type="date"
+                value={
+                  localFilters.dateRange?.startDate
+                    ? new Date(localFilters.dateRange.startDate)
+                        .toISOString()
+                        .split('T')[0]
+                    : ''
+                }
+                onChange={(e) =>
+                  handleDateChange(
+                    'startDate',
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
+                className="date-input"
+                placeholder="Start"
+              />
+              <span className="date-separator">–</span>
+              <input
+                type="date"
+                value={
+                  localFilters.dateRange?.endDate
+                    ? new Date(localFilters.dateRange.endDate)
+                        .toISOString()
+                        .split('T')[0]
+                    : ''
+                }
+                onChange={(e) =>
+                  handleDateChange(
+                    'endDate',
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
+                className="date-input"
+                placeholder="End"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Export Button */}
         <button
           onClick={() => onExport('csv')}
           disabled={isExporting}
           className={`export-btn ${isExporting ? 'loading' : ''}`}
-          title="Export Data"
+          title={currentView === VIEW_MODES.FUEL_ANOMALY ? "Export Fuel Anomaly Report" : "Export Data"}
         >
           {isExporting ? (
             <RefreshCw className="export-icon spinning" />
@@ -313,19 +555,22 @@ const ControlsBar = ({
           )}
         </button>
       </div>
+      
       <style jsx>{`
         :root {
-          --primary-accent: #66aaff; /* Softer blue */
+          --primary-accent: #66aaff;
           --primary-accent-light: #88bbff;
           --primary-accent-dark: #4488cc;
           --success-color: #28a745;
-          --card-bg: #1a1a2e; /* Dark background for cards/elements */
+          --fuel-anomaly-color: #f97316; /* Orange for fuel anomaly */
+          --quality-color: #10b981; /* Emerald for data quality */
+          --card-bg: #1a1a2e;
           --card-dark: #0f0f1a;
-          --bg-gradient-1: linear-gradient(135deg, #0a0a1a, #1a1a2e); /* Main background gradient */
+          --bg-gradient-1: linear-gradient(135deg, #0a0a1a, #1a1a2e);
           --text-light: #e0e0e0;
           --text-muted: #a0a0a0;
           --border-subtle: rgba(255, 255, 255, 0.1);
-          --border-accent: rgba(102, 170, 255, 0.4); /* Adjusted to new primary-accent */
+          --border-accent: rgba(102, 170, 255, 0.4);
           --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
           --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2);
           --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
@@ -346,7 +591,6 @@ const ControlsBar = ({
           gap: 8px;
           min-height: 40px;
           font-family: 'Nunito', sans-serif;
-          /* Adding a subtle 3D effect to the bar itself */
           transform: perspective(1000px) rotateX(0deg);
           transition: transform var(--transition-medium);
         }
@@ -397,7 +641,7 @@ const ControlsBar = ({
           position: relative;
           overflow: hidden;
           box-shadow: var(--shadow-sm);
-          transform: translateZ(0); /* For 3D effect */
+          transform: translateZ(0);
         }
 
         .nav-btn::before {
@@ -418,7 +662,7 @@ const ControlsBar = ({
 
         .nav-btn:hover {
           background: linear-gradient(135deg, var(--primary-accent-dark), var(--primary-accent));
-          transform: translateY(-1px) translateZ(2px); /* Lift and push forward */
+          transform: translateY(-1px) translateZ(2px);
           box-shadow: var(--shadow-md);
         }
 
@@ -436,7 +680,7 @@ const ControlsBar = ({
         }
 
         .nav-btn.active .nav-icon {
-            color: var(--primary-accent-dark);
+          color: var(--primary-accent-dark);
         }
 
         .nav-label {
@@ -472,11 +716,11 @@ const ControlsBar = ({
           overflow: hidden;
           animation: fadeInDropdown 0.2s ease-out;
           backdrop-filter: blur(10px);
-          transform: translateZ(10px); /* Give it a 3D pop */
+          transform: translateZ(10px);
         }
 
         .filter-dropdown.vessel-dropdown {
-            width: 280px;
+          width: 280px;
         }
 
         .filter-header {
@@ -709,7 +953,7 @@ const ControlsBar = ({
           animation: spin 1s linear infinite;
         }
 
-        /* View Toggle Group */
+        /* Enhanced View Toggle Group with Fuel Anomaly */
         .view-toggle-group {
           display: flex;
           border: 1px solid var(--border-subtle);
@@ -722,7 +966,7 @@ const ControlsBar = ({
         .view-toggle-btn {
           display: flex;
           align-items: center;
-          justify-content: center; /* Center the icon */
+          justify-content: center;
           padding: 6px 10px;
           background: transparent;
           border: none;
@@ -732,7 +976,7 @@ const ControlsBar = ({
           font-size: 12px;
           font-weight: 500;
           height: 32px;
-          width: 40px; /* Fixed width for subtle look */
+          width: 40px;
           position: relative;
           overflow: hidden;
         }
@@ -765,6 +1009,16 @@ const ControlsBar = ({
           transform: translateY(0);
         }
 
+        /* Special styling for fuel anomaly button */
+        .view-toggle-btn.fuel-anomaly-btn.active {
+          background: var(--fuel-anomaly-color);
+          box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.6);
+        }
+
+        .view-toggle-btn.fuel-anomaly-btn:hover:not(.active) {
+          background: rgba(249, 115, 22, 0.1);
+        }
+
         .view-toggle-icon {
           width: 12px;
           height: 12px;
@@ -772,7 +1026,86 @@ const ControlsBar = ({
         }
 
         .view-toggle-btn:not(.active) .view-toggle-icon {
-            color: var(--primary-accent);
+          color: var(--primary-accent);
+        }
+
+        .view-toggle-btn.fuel-anomaly-btn:not(.active) .view-toggle-icon {
+          color: var(--fuel-anomaly-color);
+        }
+
+        /* NEW: Data Quality Toggle Styles */
+        .quality-toggle-container {
+          display: flex;
+          align-items: center;
+        }
+
+        .quality-toggle-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: linear-gradient(135deg, var(--card-bg), var(--card-dark));
+          border: 1px solid var(--border-subtle);
+          border-radius: 4px;
+          cursor: pointer;
+          transition: var(--transition-fast);
+          color: var(--text-light);
+          box-shadow: var(--shadow-sm);
+          position: relative;
+          overflow: hidden;
+          transform: translateZ(0);
+        }
+
+        .quality-toggle-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          opacity: 0;
+          transition: opacity var(--transition-fast);
+        }
+
+        .quality-toggle-btn:hover::before {
+          opacity: 1;
+        }
+
+        .quality-toggle-btn:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: var(--quality-color);
+          transform: translateY(-1px) translateZ(2px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .quality-toggle-btn.active {
+          background: linear-gradient(135deg, var(--quality-color), #059669);
+          border-color: var(--quality-color);
+          color: white;
+          box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.6), var(--shadow-md);
+          transform: translateY(0) translateZ(0);
+        }
+
+        .quality-toggle-btn.active::before {
+          background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          opacity: 1;
+        }
+
+        .quality-toggle-icon {
+          width: 14px;
+          height: 14px;
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          transition: var(--transition-fast);
+        }
+
+        .quality-toggle-btn:not(.active) .quality-toggle-icon {
+          color: var(--quality-color);
+        }
+
+        .quality-toggle-btn.active .quality-toggle-icon {
+          color: white;
         }
 
         /* Right Section */
@@ -980,6 +1313,16 @@ const ControlsBar = ({
           .filter-dropdown.vessel-dropdown {
             width: calc(100vw - 20px);
           }
+
+          .quality-toggle-btn {
+            width: 28px;
+            height: 28px;
+          }
+
+          .quality-toggle-icon {
+            width: 12px;
+            height: 12px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -996,4 +1339,5 @@ const ControlsBar = ({
   );
 };
 
+export { VIEW_MODES };
 export default ControlsBar;

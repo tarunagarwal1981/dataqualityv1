@@ -15,9 +15,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ReferenceArea,
-  Cell,
-  PieChart,
-  Pie,
 } from 'recharts';
 import {
   Download,
@@ -48,16 +45,61 @@ import {
   WifiOff,
   XCircle,
   AlertCircle,
-  Database,
-  Gauge,
-  BarChart2,
+  Clock,
+  Info,
+  Check,
 } from 'lucide-react';
 
-// Mock data and constants
+// Import the shared DataQualityCards component
+import DataQualityCards, { staticQualityData } from '../table/DataQualityCards';
+
+// Constants and Data Types
 const DATA_TYPES = {
   COMBINED: 'combined',
   LF: 'lf',
   HF: 'hf',
+};
+
+// HF Data Intervals
+const HF_INTERVALS = {
+  RAW: 'raw',
+  HOURLY: '1hr',
+  SIX_HOURLY: '6hr',
+  TWELVE_HOURLY: '12hr',
+  DAILY: 'daily',
+};
+
+const HF_INTERVAL_CONFIGS = {
+  [HF_INTERVALS.RAW]: {
+    label: 'Raw Data (3hr intervals)',
+    maxDays: 3,
+    dataPointInterval: 3, // hours
+    description: 'Every 3 hours for max 3 days'
+  },
+  [HF_INTERVALS.HOURLY]: {
+    label: '1 Hour Data',
+    maxDays: 5,
+    dataPointInterval: 1, // hours
+    description: 'Every 1 hour for max 5 days'
+  },
+  [HF_INTERVALS.SIX_HOURLY]: {
+    label: '6 Hour Data',
+    maxDays: 15,
+    dataPointInterval: 6, // hours
+    description: 'Every 6 hours for max 15 days'
+  },
+  [HF_INTERVALS.TWELVE_HOURLY]: {
+    label: '12 Hour Data',
+    maxDays: null, // no limit
+    dataPointInterval: 12, // hours
+    description: 'Every 12 hours (no date limit)'
+  },
+  [HF_INTERVALS.DAILY]: {
+    label: 'Daily Data',
+    maxDays: null, // no limit
+    dataPointInterval: 24, // hours
+    description: 'Daily aggregation (no date limit)'
+  },
 };
 
 const sampleVessels = [
@@ -73,977 +115,10 @@ const sampleVessels = [
   { id: 'vessel_10', name: 'MV Deepwater Voyager' },
 ];
 
-// Use same 5 vessels consistently across all charts
+// Default selected vessels (first 5)
 const defaultSelectedVessels = sampleVessels.slice(0, 5);
 
-// Annotation Categories
-const ANNOTATION_CATEGORIES = {
-  PORT: {
-    id: 'port',
-    name: 'Port Events',
-    icon: Anchor,
-    color: '#4CC9F0',
-    bgColor: 'rgba(76, 201, 240, 0.1)',
-    borderColor: 'rgba(76, 201, 240, 0.3)',
-  },
-  WEATHER: {
-    id: 'weather',
-    name: 'Weather Events',
-    icon: CloudRain,
-    color: '#8D8DDA',
-    bgColor: 'rgba(141, 141, 218, 0.1)',
-    borderColor: 'rgba(141, 141, 218, 0.3)',
-  },
-  MAINTENANCE: {
-    id: 'maintenance',
-    name: 'Maintenance',
-    icon: Wrench,
-    color: '#FFC300',
-    bgColor: 'rgba(255, 195, 0, 0.1)',
-    borderColor: 'rgba(255, 195, 0, 0.3)',
-  },
-  ALERT: {
-    id: 'alert',
-    name: 'Alerts',
-    icon: AlertTriangle,
-    color: '#F07167',
-    bgColor: 'rgba(240, 113, 103, 0.1)',
-    borderColor: 'rgba(240, 113, 103, 0.3)',
-  },
-  PERFORMANCE: {
-    id: 'performance',
-    name: 'Performance',
-    icon: TrendingUp,
-    color: '#2ECC71',
-    bgColor: 'rgba(46, 204, 113, 0.1)',
-    borderColor: 'rgba(46, 204, 113, 0.3)',
-  },
-  CUSTOM: {
-    id: 'custom',
-    name: 'Custom',
-    icon: Flag,
-    color: '#9B59B6',
-    bgColor: 'rgba(155, 89, 182, 0.1)',
-    borderColor: 'rgba(155, 89, 182, 0.3)',
-  },
-};
-
-// Enhanced static quality data with actual issue counts
-const staticQualityData = (() => {
-  const vessels = [
-    'MV Atlantic Pioneer',
-    'MV Pacific Navigator',
-    'MV Ocean Explorer',
-    'MV Global Trader',
-    'MV Northern Star',
-    'MV Southern Cross',
-    'MV Eastern Horizon',
-    'MV Western Seeker',
-    'MV Coastal Guardian',
-    'MV Deepwater Voyager',
-  ];
-
-  return vessels.map((name, index) => {
-    // Generate specific number of quality issues
-    const issues = [];
-    const kpiIssues = {};
-
-    // Create predictable issue patterns for demo
-    const issuePatterns = [
-      { missing: 2, incorrect: 3 }, // Atlantic Pioneer: 5 total
-      { missing: 1, incorrect: 1 }, // Pacific Navigator: 2 total
-      { missing: 3, incorrect: 2 }, // Ocean Explorer: 5 total
-      { missing: 0, incorrect: 4 }, // Global Trader: 4 total
-      { missing: 1, incorrect: 2 }, // Northern Star: 3 total
-      { missing: 2, incorrect: 1 }, // Southern Cross: 3 total
-      { missing: 1, incorrect: 3 }, // Eastern Horizon: 4 total
-      { missing: 0, incorrect: 2 }, // Western Seeker: 2 total
-      { missing: 2, incorrect: 2 }, // Coastal Guardian: 4 total
-      { missing: 1, incorrect: 1 }, // Deepwater Voyager: 2 total
-    ];
-
-    const pattern = issuePatterns[index];
-
-    // Add missing data issues
-    const kpiList = [
-      'wind_force',
-      'me_power',
-      'rpm',
-      'me_consumption',
-      'obs_speed',
-    ];
-    for (let i = 0; i < pattern.missing; i++) {
-      const kpi = kpiList[i % kpiList.length];
-      kpiIssues[`${kpi}_missing_${i}`] = {
-        type: 'missing',
-        severity: 'medium',
-        kpi,
-      };
-      issues.push({
-        type: 'completeness',
-        kpi,
-        message: 'Sensor data unavailable',
-        severity: 'medium',
-      });
-    }
-
-    // Add incorrect data issues
-    for (let i = 0; i < pattern.incorrect; i++) {
-      const kpi = kpiList[i % kpiList.length];
-      const severity = i === 0 ? 'high' : i === 1 ? 'medium' : 'low';
-      kpiIssues[`${kpi}_incorrect_${i}`] = {
-        type: 'incorrect',
-        severity,
-        kpi,
-        originalValue: i === 0 ? -2.5 : i === 1 ? 45.8 : 250,
-      };
-      issues.push({
-        type: 'correctness',
-        kpi,
-        message:
-          i === 0
-            ? 'Negative speed detected'
-            : i === 1
-            ? 'Consumption spike detected'
-            : 'RPM-speed correlation warning',
-        severity,
-      });
-    }
-
-    // Calculate quality scores
-    const totalKPIs = 8;
-    const issueCount = issues.length;
-    const highSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'high'
-    ).length;
-    const mediumSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'medium'
-    ).length;
-
-    const completeness = Math.max(
-      40,
-      100 - (pattern.missing / totalKPIs) * 100 - Math.random() * 5
-    );
-    const severityPenalty =
-      highSeverityIssues * 30 +
-      mediumSeverityIssues * 15 +
-      pattern.incorrect * 5;
-    const correctness = Math.max(30, 100 - severityPenalty - Math.random() * 5);
-
-    return {
-      id: index + 1,
-      name,
-      completeness: Math.round(completeness),
-      correctness: Math.round(correctness),
-      overallScore: Math.round((completeness + correctness) / 2),
-      issues: issues,
-      kpiIssues: kpiIssues,
-      issueCount: issues.length,
-      criticalIssues: highSeverityIssues,
-      lastUpdate: `${Math.floor(Math.random() * 30) + 1} mins ago`,
-      confidence: Math.round((completeness + correctness + 85) / 3),
-      missingCount: pattern.missing,
-      incorrectCount: pattern.incorrect,
-      kpiHealth: {
-        speed: Math.round(80 + index * 2),
-        fuel: Math.round(70 + index * 3),
-        engine: Math.round(75 + index * 2.5),
-        weather: Math.round(85 + index * 1.5),
-      },
-    };
-  });
-})();
-
-// Generate mock annotations data
-const generateMockAnnotations = (chartData, selectedVessels, selectedKPIs) => {
-  const annotations = [];
-  const sampleEvents = [
-    { type: 'port', text: 'Departed from Hamburg', vessel: 'vessel_1' },
-    { type: 'weather', text: 'Heavy weather conditions', vessel: 'vessel_2' },
-    {
-      type: 'maintenance',
-      text: 'Engine maintenance completed',
-      vessel: 'vessel_3',
-    },
-    {
-      type: 'alert',
-      text: 'Fuel consumption spike detected',
-      vessel: 'vessel_1',
-    },
-    { type: 'performance', text: 'Optimal speed achieved', vessel: 'vessel_4' },
-    { type: 'port', text: 'Arrived at Rotterdam', vessel: 'vessel_2' },
-    { type: 'weather', text: 'Fog conditions', vessel: 'vessel_5' },
-    { type: 'custom', text: 'Crew change completed', vessel: 'vessel_3' },
-  ];
-
-  // Add point annotations
-  chartData.forEach((dataPoint, index) => {
-    if (index % 3 === 0 && annotations.length < 8) {
-      const event = sampleEvents[annotations.length % sampleEvents.length];
-      const vesselId =
-        selectedVessels[Math.floor(Math.random() * selectedVessels.length)];
-      const kpiId =
-        selectedKPIs[Math.floor(Math.random() * selectedKPIs.length)];
-
-      annotations.push({
-        id: `annotation-${annotations.length}`,
-        type: 'point',
-        category: event.type,
-        date: dataPoint.date,
-        vesselId: vesselId,
-        kpiId: kpiId,
-        text: event.text,
-        author: 'Fleet Operator',
-        timestamp: new Date().toISOString(),
-        x: dataPoint.date,
-        y: dataPoint[`${vesselId}_${kpiId}`] || 0,
-      });
-    }
-  });
-
-  // Add range annotations
-  if (chartData.length > 5) {
-    annotations.push({
-      id: 'range-1',
-      type: 'range',
-      category: 'weather',
-      startDate: chartData[2].date,
-      endDate: chartData[4].date,
-      text: 'Storm period - reduced speed',
-      author: 'Weather Team',
-      timestamp: new Date().toISOString(),
-    });
-
-    annotations.push({
-      id: 'range-2',
-      type: 'range',
-      category: 'maintenance',
-      startDate: chartData[Math.floor(chartData.length * 0.6)].date,
-      endDate: chartData[Math.floor(chartData.length * 0.8)].date,
-      text: 'Scheduled maintenance window',
-      author: 'Chief Engineer',
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  return annotations;
-};
-
-// Generate quality zones data
-const generateQualityZones = (chartData) => {
-  const zones = [];
-  let currentZoneStart = 0;
-
-  chartData.forEach((_, index) => {
-    if (index > 0 && (index % 3 === 0 || index === chartData.length - 1)) {
-      const confidence = 60 + Math.random() * 40;
-      zones.push({
-        id: `zone-${zones.length}`,
-        startDate: chartData[currentZoneStart].date,
-        endDate: chartData[index].date,
-        confidence: Math.round(confidence),
-        issues: confidence < 70 ? ['Data gaps', 'Sensor drift'] : [],
-      });
-      currentZoneStart = index;
-    }
-  });
-
-  return zones;
-};
-
-// Reusable Data Quality Cards Component
-const DataQualityCards = ({
-  data = [],
-  onQualityFilter,
-  qualityVisible = true,
-  onToggleQuality,
-  selectedVessels = [],
-  selectedKPIs = [],
-  chartData = [],
-  annotationsVisible = true,
-  onToggleAnnotations,
-  qualityOverlayVisible = false,
-  onToggleQualityOverlay,
-  viewMode = 'charts', // 'charts' or 'table'
-  compactMode = false,
-}) => {
-  const [showDetails, setShowDetails] = useState(false);
-  const [hoveredCard, setHoveredCard] = useState(null);
-
-  // Calculate fleet metrics
-  const fleetMetrics = useMemo(() => {
-    const totalVessels = staticQualityData.length;
-    const avgCompleteness =
-      staticQualityData.reduce((sum, v) => sum + v.completeness, 0) /
-      totalVessels;
-    const avgCorrectness =
-      staticQualityData.reduce((sum, v) => sum + v.correctness, 0) /
-      totalVessels;
-    const totalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.issueCount,
-      0
-    );
-    const criticalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.criticalIssues,
-      0
-    );
-    const totalMissingIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.missingCount,
-      0
-    );
-    const totalIncorrectIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.incorrectCount,
-      0
-    );
-    const healthyVessels = staticQualityData.filter(
-      (v) => v.overallScore >= 85
-    ).length;
-    const averageVessels = staticQualityData.filter(
-      (v) => v.overallScore >= 70 && v.overallScore < 85
-    ).length;
-    const poorVessels = staticQualityData.filter(
-      (v) => v.overallScore < 70
-    ).length;
-
-    const overallHealth = Math.round((avgCompleteness + avgCorrectness) / 2);
-    const dataPoints =
-      chartData.length * selectedVessels.length * selectedKPIs.length;
-    const estimatedMissingPoints = Math.round(
-      dataPoints * (1 - avgCompleteness / 100)
-    );
-
-    return {
-      totalVessels,
-      avgCompleteness: Math.round(avgCompleteness),
-      avgCorrectness: Math.round(avgCorrectness),
-      overallHealth,
-      totalIssues,
-      criticalIssues,
-      totalMissingIssues,
-      totalIncorrectIssues,
-      healthyVessels,
-      averageVessels,
-      poorVessels,
-      dataPoints,
-      estimatedMissingPoints,
-      chartReliability: Math.round((overallHealth + 85) / 2),
-      timeSeriesHealth: Math.round(85 + Math.random() * 15),
-    };
-  }, [selectedVessels, selectedKPIs, chartData]);
-
-  const QualityMeter = ({ score, size = 'sm', type = 'overall' }) => {
-    const radius = size === 'sm' ? 14 : size === 'md' ? 18 : 22;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDasharray = circumference;
-    const strokeDashoffset = circumference - (score / 100) * circumference;
-
-    const getColor = () => {
-      if (type === 'completeness')
-        return score >= 85 ? '#10b981' : score >= 70 ? '#f59e0b' : '#ef4444';
-      if (type === 'correctness')
-        return score >= 85 ? '#8b5cf6' : score >= 70 ? '#f59e0b' : '#ef4444';
-      return score >= 85 ? '#06b6d4' : score >= 70 ? '#f59e0b' : '#ef4444';
-    };
-
-    return (
-      <div
-        className={`relative ${
-          size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : 'w-12 h-12'
-        }`}
-      >
-        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
-          <defs>
-            <filter id={`glow-${type}-${size}`}>
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <linearGradient
-              id={`gradient-${type}-${size}`}
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor={getColor()} stopOpacity="1" />
-              <stop offset="100%" stopColor={getColor()} stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          <circle
-            cx="20"
-            cy="20"
-            r={radius}
-            stroke="rgba(71, 85, 105, 0.5)"
-            strokeWidth="2"
-            fill="none"
-          />
-          <circle
-            cx="20"
-            cy="20"
-            r={radius}
-            stroke={`url(#gradient-${type}-${size})`}
-            strokeWidth="2"
-            fill="none"
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            className="transition-all duration-1000 ease-out"
-            filter={`url(#glow-${type}-${size})`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span
-            className={`font-bold ${
-              size === 'sm'
-                ? 'text-xs'
-                : size === 'md'
-                ? 'text-sm'
-                : 'text-base'
-            } text-white drop-shadow-sm`}
-          >
-            {score}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
-  const QualityDistributionChart = ({ data, type }) => {
-    const COLORS = {
-      excellent: '#10b981',
-      good: '#f59e0b',
-      poor: '#ef4444',
-    };
-
-    const chartData = [
-      {
-        name: 'Excellent',
-        value: data.healthyVessels,
-        color: COLORS.excellent,
-      },
-      { name: 'Good', value: data.averageVessels, color: COLORS.good },
-      { name: 'Needs Attention', value: data.poorVessels, color: COLORS.poor },
-    ];
-
-    return (
-      <div className="w-16 h-16">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={20}
-              outerRadius={30}
-              paddingAngle={2}
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    );
-  };
-
-  const Card = ({
-    children,
-    className = '',
-    onClick,
-    onHover,
-    style,
-    gradient = 'default',
-  }) => {
-    const gradients = {
-      default:
-        'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-      health:
-        'linear-gradient(145deg, rgba(6, 182, 212, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      completeness:
-        'linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      correctness:
-        'linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-      issues:
-        'linear-gradient(145deg, rgba(251, 146, 60, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
-    };
-
-    return (
-      <div
-        className={`relative overflow-hidden rounded-xl border transition-all duration-300 ease-out cursor-pointer ${className}`}
-        onClick={onClick}
-        onMouseEnter={onHover}
-        style={{
-          background: gradients[gradient],
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          boxShadow: `
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 4px 8px rgba(0, 0, 0, 0.2)
-          `,
-          transform: 'translateZ(0)',
-          ...style,
-        }}
-        onMouseLeave={() => setHoveredCard(null)}
-      >
-        {/* Subtle gradient overlay */}
-        <div
-          className="absolute inset-0 opacity-50 pointer-events-none"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)',
-          }}
-        />
-
-        {/* Animated glow effect on hover */}
-        <div
-          className={`absolute inset-0 transition-opacity duration-300 pointer-events-none ${
-            hoveredCard === gradient ? 'opacity-20' : 'opacity-0'
-          }`}
-          style={{
-            background:
-              'radial-gradient(circle at center, rgba(76, 201, 240, 0.3) 0%, transparent 70%)',
-          }}
-        />
-
-        <div className="relative z-10">{children}</div>
-      </div>
-    );
-  };
-
-  return (
-    <div className={`space-y-3 ${compactMode ? 'mb-1' : 'mb-2'}`}>
-      {/* Main Quality Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Fleet Health Score Card */}
-        <Card
-          gradient="health"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('health')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-cyan-500/20 border border-cyan-500/30">
-                  <Gauge className="w-3.5 h-3.5 text-cyan-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Fleet Health
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Overall Score
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.overallHealth}
-                size="sm"
-                type="overall"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-white">
-                {fleetMetrics.overallHealth}%
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400">
-                  {fleetMetrics.healthyVessels} excellent •{' '}
-                  {fleetMetrics.averageVessels} good •{' '}
-                  {fleetMetrics.poorVessels} attention needed
-                </div>
-                <QualityDistributionChart data={fleetMetrics} type="health" />
-              </div>
-
-              {/* <div className="text-[9px] text-slate-400">
-                {fleetMetrics.healthyVessels} excellent •{' '}
-                {fleetMetrics.averageVessels} good • {fleetMetrics.poorVessels}{' '}
-                attention needed
-              </div> */}
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div className="h-full flex">
-                  <div
-                    className="bg-emerald-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.healthyVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                  <div
-                    className="bg-yellow-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.averageVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                  <div
-                    className="bg-red-500 transition-all duration-1000 ease-out"
-                    style={{
-                      width: `${
-                        (fleetMetrics.poorVessels / fleetMetrics.totalVessels) *
-                        100
-                      }%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Data Completeness Card */}
-        <Card
-          gradient="completeness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('completeness')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                  <Database className="w-3.5 h-3.5 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Completeness
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Data Coverage
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.avgCompleteness}
-                size="sm"
-                type="completeness"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-xl font-bold text-white">
-                {fleetMetrics.avgCompleteness}%
-              </div>
-
-              <div className="flex items-center gap-1 text-[9px]">
-                <WifiOff className="w-2.5 h-2.5 text-orange-400" />
-                <span className="text-slate-400">
-                  {fleetMetrics.totalMissingIssues} missing data points
-                </span>
-              </div>
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-1000 ease-out ${
-                    fleetMetrics.avgCompleteness >= 85
-                      ? 'bg-emerald-500'
-                      : fleetMetrics.avgCompleteness >= 70
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${fleetMetrics.avgCompleteness}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Data Correctness Card */}
-        <Card
-          gradient="correctness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('correctness')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-purple-500/20 border border-purple-500/30">
-                  <Target className="w-3.5 h-3.5 text-purple-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Correctness
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Data Accuracy
-                  </span>
-                </div>
-              </div>
-              <QualityMeter
-                score={fleetMetrics.avgCorrectness}
-                size="sm"
-                type="correctness"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-xl font-bold text-white">
-                {fleetMetrics.avgCorrectness}%
-              </div>
-
-              <div className="flex items-center gap-1 text-[9px]">
-                <XCircle className="w-2.5 h-2.5 text-red-400" />
-                <span className="text-slate-400">
-                  {fleetMetrics.totalIncorrectIssues} incorrect data points
-                </span>
-              </div>
-
-              <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-1000 ease-out ${
-                    fleetMetrics.avgCorrectness >= 85
-                      ? 'bg-purple-500'
-                      : fleetMetrics.avgCorrectness >= 70
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${fleetMetrics.avgCorrectness}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Active Issues Card */}
-        <Card
-          gradient="issues"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
-          onHover={() => setHoveredCard('issues')}
-          style={{
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-orange-500/20 border border-orange-500/30">
-                  <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-slate-200 block">
-                    Active Issues
-                  </span>
-                  <span className="text-[9px] text-slate-400">
-                    Quality Alerts
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                {fleetMetrics.criticalIssues > 0 && (
-                  <div className="flex items-center gap-0.5 px-1 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                    <AlertCircle className="w-2 h-2 text-red-400" />
-                    <span className="text-[9px] text-red-400 font-medium">
-                      {fleetMetrics.criticalIssues}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-baseline gap-2">
-                <div className="text-xl font-bold text-white">
-                  {fleetMetrics.totalIssues}
-                </div>
-                {fleetMetrics.criticalIssues > 0 && (
-                  <div className="text-sm font-medium text-red-400">
-                    {fleetMetrics.criticalIssues} critical
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-1 text-[9px]">
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
-                  <span className="text-slate-400">
-                    {fleetMetrics.totalMissingIssues} missing
-                  </span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                  <span className="text-slate-400">
-                    {fleetMetrics.totalIncorrectIssues} incorrect
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-[9px] text-slate-400">
-                Across {fleetMetrics.totalVessels} vessels
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Enhanced KPI Details Panel */}
-      {showDetails && (
-        <Card
-          gradient="default"
-          className="transition-all duration-500 ease-out"
-        >
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold text-white flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-cyan-400" />
-                KPI Reliability Analysis
-              </h3>
-              <button
-                onClick={() => setShowDetails(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-700/50"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-              {[
-                {
-                  key: 'speed',
-                  label: 'Speed Data',
-                  icon: Navigation,
-                  color: '#4dc3ff',
-                  reliability: 85,
-                  issues: 3,
-                  status: 'good',
-                },
-                {
-                  key: 'fuel',
-                  label: 'Fuel Data',
-                  icon: Fuel,
-                  color: '#2ee086',
-                  reliability: 78,
-                  issues: 5,
-                  status: 'average',
-                },
-                {
-                  key: 'engine',
-                  label: 'Engine Data',
-                  icon: Activity,
-                  color: '#ffd426',
-                  reliability: 92,
-                  issues: 1,
-                  status: 'excellent',
-                },
-                {
-                  key: 'weather',
-                  label: 'Weather Data',
-                  icon: Waves,
-                  color: '#42a5f5',
-                  reliability: 88,
-                  issues: 2,
-                  status: 'good',
-                },
-              ].map(
-                ({
-                  key,
-                  label,
-                  icon: Icon,
-                  color,
-                  reliability,
-                  issues,
-                  status,
-                }) => (
-                  <div
-                    key={key}
-                    className="relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 p-2 transition-all duration-300 hover:border-white/20 hover:scale-[1.02]"
-                    style={{
-                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <div
-                        className="p-1 rounded-md"
-                        style={{
-                          backgroundColor: `${color}20`,
-                          border: `1px solid ${color}40`,
-                        }}
-                      >
-                        <Icon className="w-3.5 h-3.5" style={{ color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-white">
-                          {label}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {reliability}% reliable
-                        </div>
-                      </div>
-                      <QualityMeter score={reliability} size="sm" type={key} />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <div className="w-full h-1 bg-slate-700/50 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-1000 ease-out ${
-                            reliability >= 85
-                              ? 'bg-emerald-500'
-                              : reliability >= 70
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${reliability}%` }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400">
-                          {issues} issues found
-                        </span>
-                        <span
-                          className={`px-1 py-0.5 rounded-full font-medium ${
-                            status === 'excellent'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : status === 'good'
-                              ? 'bg-cyan-500/20 text-cyan-400'
-                              : status === 'average'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-red-500/20 text-red-400'
-                          }`}
-                        >
-                          {status}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Subtle gradient overlay */}
-                    <div
-                      className="absolute inset-0 opacity-20 pointer-events-none"
-                      style={{
-                        background: `radial-gradient(circle at top right, ${color}30, transparent 50%)`,
-                      }}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-// Define KPIs with data source information and chart properties
+// KPI Definitions with Chart Properties
 const ALL_KPIS = {
   LF: [
     {
@@ -1061,6 +136,71 @@ const ALL_KPIS = {
       unit: 'Mt',
       category: 'fuel',
       source: 'LF',
+      color: '#F07167',
+      yAxisRange: [0, 50],
+    },
+    {
+      id: 'total_consumption',
+      name: 'Total Consumption',
+      unit: 'Mt',
+      category: 'fuel',
+      source: 'LF',
+      color: '#FFC300',
+      yAxisRange: [0, 60],
+    },
+    {
+      id: 'wind_force',
+      name: 'Wind Force',
+      unit: 'Beaufort',
+      category: 'weather',
+      source: 'LF',
+      color: '#8D8DDA',
+      yAxisRange: [0, 12],
+    },
+    {
+      id: 'me_power',
+      name: 'ME Power',
+      unit: 'kW',
+      category: 'performance',
+      source: 'LF',
+      color: '#2ECC71',
+      yAxisRange: [0, 20000],
+    },
+    {
+      id: 'me_sfoc',
+      name: 'ME SFOC',
+      unit: 'gm/kWhr',
+      category: 'performance',
+      source: 'LF',
+      color: '#E74C3C',
+      yAxisRange: [160, 220],
+    },
+    {
+      id: 'rpm',
+      name: 'RPM',
+      unit: 'rpm',
+      category: 'performance',
+      source: 'LF',
+      color: '#9B59B6',
+      yAxisRange: [0, 150],
+    },
+  ],
+  HF: [
+    {
+      id: 'obs_speed',
+      name: 'Obs Speed',
+      unit: 'knts',
+      category: 'performance',
+      source: 'HF',
+      color: '#4CC9F0',
+      yAxisRange: [0, 25],
+    },
+    {
+      id: 'me_consumption',
+      name: 'ME Consumption',
+      unit: 'Mt',
+      category: 'fuel',
+      source: 'HF',
       color: '#F07167',
       yAxisRange: [0, 50],
     },
@@ -1110,56 +250,9 @@ const ALL_KPIS = {
       yAxisRange: [0, 150],
     },
   ],
-  HF: [
-    {
-      id: 'total_consumption',
-      name: 'Total Consumption',
-      unit: 'Mt',
-      category: 'fuel',
-      source: 'HF',
-      color: '#FFC300',
-      yAxisRange: [0, 60],
-    },
-    {
-      id: 'wind_force',
-      name: 'Wind Force',
-      unit: 'Beaufort',
-      category: 'weather',
-      source: 'HF',
-      color: '#8D8DDA',
-      yAxisRange: [0, 12],
-    },
-    {
-      id: 'me_power',
-      name: 'ME Power',
-      unit: 'kW',
-      category: 'performance',
-      source: 'HF',
-      color: '#2ECC71',
-      yAxisRange: [0, 20000],
-    },
-    {
-      id: 'me_sfoc',
-      name: 'ME SFOC',
-      unit: 'gm/kWhr',
-      category: 'performance',
-      source: 'HF',
-      color: '#E74C3C',
-      yAxisRange: [160, 220],
-    },
-    {
-      id: 'rpm',
-      name: 'RPM',
-      unit: 'rpm',
-      category: 'performance',
-      source: 'HF',
-      color: '#9B59B6',
-      yAxisRange: [0, 150],
-    },
-  ],
 };
 
-// Vessel colors for consistency
+// Vessel Colors for Chart Lines
 const VESSEL_COLORS = [
   '#8884d8',
   '#82ca9d',
@@ -1173,10 +266,15 @@ const VESSEL_COLORS = [
   '#87ceeb',
 ];
 
-// Helper to get KPI by ID
+// LF and HF colors for combined mode
+const LF_HF_COLORS = {
+  LF: '#4CC9F0',
+  HF: '#F07167',
+};
+
+// Helper Functions
 const getKPIById = (kpiId, dataType) => {
   const kpisForType = ALL_KPIS[dataType.toUpperCase()] || [];
-  // Also check in the other data type if not found in the primary one for COMBINED
   if (dataType === DATA_TYPES.COMBINED) {
     const combinedKpis = [...ALL_KPIS.LF, ...ALL_KPIS.HF];
     return combinedKpis.find((kpi) => kpi.id === kpiId);
@@ -1184,749 +282,204 @@ const getKPIById = (kpiId, dataType) => {
   return kpisForType.find((kpi) => kpi.id === kpiId);
 };
 
-// Get vessel color
 const getVesselColor = (vesselId) => {
   const index = sampleVessels.findIndex((v) => v.id === vesselId);
   return VESSEL_COLORS[index % VESSEL_COLORS.length];
 };
 
-// Generate mock chart data with quality issues aligned to quality cards
+// Mock Data Generation Functions
 const generateMockChartData = (
   selectedVesselIds,
   selectedKPIs,
   dataType,
   startDate,
-  endDate
+  endDate,
+  hfInterval = HF_INTERVALS.DAILY
 ) => {
   const data = [];
   const currentDate = new Date(startDate);
+  const intervalConfig = HF_INTERVAL_CONFIGS[hfInterval];
+  const intervalHours = intervalConfig.dataPointInterval;
 
   while (currentDate <= endDate) {
-    const dateString = currentDate.toISOString().split('T')[0];
+    const dateString = currentDate.toISOString();
     const entry = { date: dateString };
 
     selectedVesselIds.forEach((vesselId, vesselIndex) => {
       selectedKPIs.forEach((kpiId) => {
-        const kpiMeta = getKPIById(kpiId, dataType);
-        if (!kpiMeta) return;
+        if (dataType === DATA_TYPES.COMBINED) {
+          // For combined mode, generate both LF and HF data
+          ['LF', 'HF'].forEach((sourceType) => {
+            const kpiMeta = ALL_KPIS[sourceType].find(kpi => kpi.id === kpiId);
+            if (!kpiMeta) return;
 
-        // Get vessel quality data to determine issues - this aligns with quality cards
-        const vesselQuality =
-          staticQualityData[vesselIndex % staticQualityData.length];
-
-        // Check if this specific KPI has issues for this vessel
-        const hasKPIIssue = vesselQuality.issues.some(
-          (issue) => issue.kpi === kpiId
-        );
-        const kpiIssues = vesselQuality.issues.filter(
-          (issue) => issue.kpi === kpiId
-        );
-
-        let value;
-        let hasQualityIssue = false;
-        let qualityType = 'normal';
-        let issueDetails = null;
-
-        // Generate missing data based on actual missing count from quality cards
-        const missingDataChance =
-          vesselQuality.missingCount > 0 &&
-          hasKPIIssue &&
-          kpiIssues.some((issue) => issue.type === 'completeness')
-            ? 0.3
-            : 0;
-
-        if (Math.random() < missingDataChance) {
-          value = null;
-          hasQualityIssue = true;
-          qualityType = 'missing';
-          issueDetails = kpiIssues.find(
-            (issue) => issue.type === 'completeness'
-          );
+            const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
+            let value = generateKPIValue(kpiId, currentDate, sourceType);
+            
+            // Apply quality issues
+            const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
+            
+            const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
+            entry[dataKey] = finalValue;
+            entry[`${dataKey}_quality`] = qualityInfo.qualityType;
+            entry[`${dataKey}_hasIssue`] = qualityInfo.hasQualityIssue;
+            entry[`${dataKey}_issueDetails`] = qualityInfo.issueDetails;
+            entry[`${dataKey}_vesselQuality`] = vesselQuality;
+          });
         } else {
-          // Generate base value
-          switch (kpiId) {
-            case 'obs_speed':
-              value =
-                10 +
-                Math.random() * 5 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 24)) * 2;
-              break;
-            case 'me_consumption':
-              value =
-                20 +
-                Math.random() * 10 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 12)) * 3;
-              break;
-            case 'total_consumption':
-              value =
-                25 +
-                Math.random() * 15 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 8)) * 4;
-              break;
-            case 'wind_force':
-              value =
-                Math.floor(Math.random() * 8) +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 6)) * 2;
-              break;
-            case 'me_power':
-              value =
-                5000 +
-                Math.random() * 2000 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 4)) * 500;
-              break;
-            case 'me_sfoc':
-              value =
-                160 +
-                Math.random() * 10 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 24)) * 3;
-              break;
-            case 'rpm':
-              value =
-                80 +
-                Math.random() * 20 +
-                Math.sin(currentDate.getTime() / (1000 * 60 * 60 * 6)) * 5;
-              break;
-            default:
-              value = Math.random() * 100;
-          }
+          // For LF or HF mode
+          const kpiMeta = getKPIById(kpiId, dataType);
+          if (!kpiMeta) return;
 
-          // Check for incorrect data based on actual incorrect count from quality cards
-          const incorrectDataChance =
-            vesselQuality.incorrectCount > 0 &&
-            hasKPIIssue &&
-            kpiIssues.some((issue) => issue.type === 'correctness')
-              ? 0.2
-              : 0;
-
-          if (Math.random() < incorrectDataChance) {
-            const incorrectIssue = kpiIssues.find(
-              (issue) => issue.type === 'correctness'
-            );
-            if (incorrectIssue) {
-              // Use the specific incorrect value from the issue
-              if (
-                kpiId === 'obs_speed' &&
-                incorrectIssue.message.includes('Negative')
-              ) {
-                value = -2.5;
-              } else if (
-                kpiId === 'me_consumption' &&
-                incorrectIssue.message.includes('spike')
-              ) {
-                value = 55;
-              } else if (
-                kpiId === 'rpm' &&
-                incorrectIssue.message.includes('RPM')
-              ) {
-                value = 250;
-              }
-              hasQualityIssue = true;
-              qualityType = 'incorrect';
-              issueDetails = incorrectIssue;
-            }
-          }
+          const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
+          let value = generateKPIValue(kpiId, currentDate, dataType.toUpperCase());
+          
+          // Apply quality issues
+          const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
+          
+          const dataKey = `${vesselId}_${kpiId}`;
+          entry[dataKey] = finalValue;
+          entry[`${dataKey}_quality`] = qualityInfo.qualityType;
+          entry[`${dataKey}_hasIssue`] = qualityInfo.hasQualityIssue;
+          entry[`${dataKey}_issueDetails`] = qualityInfo.issueDetails;
+          entry[`${dataKey}_vesselQuality`] = vesselQuality;
         }
-
-        // Store value and quality metadata
-        entry[`${vesselId}_${kpiId}`] =
-          value === null ? null : Math.max(0, parseFloat(value.toFixed(2)));
-        entry[`${vesselId}_${kpiId}_quality`] = qualityType;
-        entry[`${vesselId}_${kpiId}_hasIssue`] = hasQualityIssue;
-        entry[`${vesselId}_${kpiId}_issueDetails`] = issueDetails;
-        entry[`${vesselId}_${kpiId}_vesselQuality`] = vesselQuality;
       });
     });
+
     data.push(entry);
-    currentDate.setDate(currentDate.getDate() + 1);
+    
+    // Increment by the specified interval
+    currentDate.setHours(currentDate.getHours() + intervalHours);
   }
+  
   return data;
 };
 
-// Enhanced Custom Dot Component with better visual indicators
-const QualityDot = ({
-  cx,
-  cy,
-  payload,
-  dataKey,
-  stroke,
-  strokeWidth,
-  qualityVisible,
-}) => {
-  const qualityKey = `${dataKey}_quality`;
-  const issueKey = `${dataKey}_hasIssue`;
-  const issueDetailsKey = `${dataKey}_issueDetails`;
-  const qualityType = payload[qualityKey];
-  const hasIssue = payload[issueKey];
-  const issueDetails = payload[issueDetailsKey];
-  const value = payload[dataKey];
-
-  // Missing data indicator - enhanced visibility
-  if (value === null || value === undefined) {
-    return (
-      <g>
-        <circle
-          cx={cx}
-          cy={cy}
-          r="4"
-          fill="none"
-          stroke="#ef4444"
-          strokeWidth="2"
-          strokeDasharray="2,1"
-          opacity={0.95}
-          style={{
-            filter: 'drop-shadow(0 1px 3px rgba(239, 68, 68, 0.4))',
-          }}
-        />
-        <g stroke="#ef4444" strokeWidth="2" opacity={0.95}>
-          <line x1={cx - 2} y1={cy - 2} x2={cx + 2} y2={cy + 2} />
-          <line x1={cx - 2} y1={cy + 2} x2={cx + 2} y2={cy - 2} />
-        </g>
-        {/* Pulsing animation */}
-        <circle
-          cx={cx}
-          cy={cy}
-          r="6"
-          fill="none"
-          stroke="#ef4444"
-          strokeWidth="0.8"
-          opacity={0.4}
-        >
-          <animate
-            attributeName="r"
-            values="4;8;4"
-            dur="2s"
-            repeatCount="indefinite"
-          />
-          <animate
-            attributeName="opacity"
-            values="0.4;0.1;0.4"
-            dur="2s"
-            repeatCount="indefinite"
-          />
-        </circle>
-      </g>
-    );
+const generateKPIValue = (kpiId, currentDate, sourceType) => {
+  const timeComponent = currentDate.getTime() / (1000 * 60 * 60);
+  const sourceMultiplier = sourceType === 'HF' ? 1.1 : 1.0; // HF slightly higher values
+  
+  switch (kpiId) {
+    case 'obs_speed':
+      return (10 + Math.random() * 5 + Math.sin(timeComponent / 24) * 2) * sourceMultiplier;
+    case 'me_consumption':
+      return (20 + Math.random() * 10 + Math.sin(timeComponent / 12) * 3) * sourceMultiplier;
+    case 'total_consumption':
+      return (25 + Math.random() * 15 + Math.sin(timeComponent / 8) * 4) * sourceMultiplier;
+    case 'wind_force':
+      return Math.floor(Math.random() * 8) + Math.sin(timeComponent / 6) * 2;
+    case 'me_power':
+      return (5000 + Math.random() * 2000 + Math.sin(timeComponent / 4) * 500) * sourceMultiplier;
+    case 'me_sfoc':
+      return (160 + Math.random() * 10 + Math.sin(timeComponent / 24) * 3) * sourceMultiplier;
+    case 'rpm':
+      return (80 + Math.random() * 20 + Math.sin(timeComponent / 6) * 5) * sourceMultiplier;
+    default:
+      return Math.random() * 100 * sourceMultiplier;
   }
-
-  // Incorrect data indicator - enhanced warning triangle
-  if (hasIssue && qualityType === 'incorrect') {
-    const severity = issueDetails?.severity || 'medium';
-    const severityColors = {
-      high: '#ef4444',
-      medium: '#f59e0b',
-      low: '#eab308',
-    };
-    const color = severityColors[severity];
-
-    return (
-      <g>
-        {/* Warning triangle with enhanced gradient */}
-        <defs>
-          <linearGradient
-            id={`warningGradient-${cx}-${cy}`}
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor={color} stopOpacity="1" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.8" />
-          </linearGradient>
-          <filter id={`glow-${cx}-${cy}`}>
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <polygon
-          points={`${cx},${cy - 5} ${cx - 4.5},${cy + 3.5} ${cx + 4.5},${
-            cy + 3.5
-          }`}
-          fill={`url(#warningGradient-${cx}-${cy})`}
-          stroke="#fff"
-          strokeWidth="1"
-          style={{
-            filter: `url(#glow-${cx}-${cy})`,
-          }}
-        />
-
-        {/* Exclamation mark */}
-        <g fill="#ffffff" fontSize="8" textAnchor="middle" fontWeight="bold">
-          <text x={cx} y={cy} style={{ fontSize: '10px' }}>
-            !
-          </text>
-        </g>
-
-        {/* Enhanced pulsing for high severity */}
-        {severity === 'high' && (
-          <polygon
-            points={`${cx},${cy - 6} ${cx - 5.5},${cy + 4.5} ${cx + 5.5},${
-              cy + 4.5
-            }`}
-            fill="none"
-            stroke={color}
-            strokeWidth="1.2"
-            opacity={0.5}
-          >
-            <animate
-              attributeName="stroke-width"
-              values="1.2;3;1.2"
-              dur="1.5s"
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="opacity"
-              values="0.5;0.1;0.5"
-              dur="1.5s"
-              repeatCount="indefinite"
-            />
-          </polygon>
-        )}
-      </g>
-    );
-  }
-
-  // Normal data dot with enhanced quality indication
-  return (
-    <g>
-      <circle
-        cx={cx}
-        cy={cy}
-        r="4"
-        fill={stroke}
-        stroke="#fff"
-        strokeWidth="2"
-        style={{
-          filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))',
-        }}
-      />
-      {/* Quality confidence ring */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r="6"
-        fill="none"
-        stroke="#10b981"
-        strokeWidth="1"
-        opacity={0.6}
-        strokeDasharray="2,2"
-      >
-        <animate
-          attributeName="r"
-          values="6;7;6"
-          dur="1.5s"
-          repeatCount="indefinite"
-        />
-        <animate
-          attributeName="opacity"
-          values="0.6;0.3;0.6"
-          dur="1.5s"
-          repeatCount="indefinite"
-        />
-      </circle>
-    </g>
-  );
 };
 
-// Enhanced Custom Line Component
-const QualityLine = ({ points, stroke, strokeWidth, dataKey, data }) => {
-  const segments = [];
-  let currentSegment = [];
+const applyQualityIssues = (value, kpiId, vesselQuality) => {
+  const hasKPIIssue = vesselQuality.issues.some(issue => issue.kpi === kpiId);
+  const kpiIssues = vesselQuality.issues.filter(issue => issue.kpi === kpiId);
 
-  points.forEach((point, index) => {
-    const dataPoint = data[index];
-    const value = dataPoint[dataKey];
-    const qualityType = dataPoint[`${dataKey}_quality`];
+  let finalValue = value;
+  let hasQualityIssue = false;
+  let qualityType = 'normal';
+  let issueDetails = null;
 
-    if (value !== null && value !== undefined) {
-      currentSegment.push({ ...point, quality: qualityType });
-    } else {
-      // Missing data - end current segment
-      if (currentSegment.length > 1) {
-        segments.push({
-          points: [...currentSegment],
-          quality: 'normal',
-        });
+  if (hasKPIIssue) {
+    const missingIssue = kpiIssues.find(issue => issue.type === 'completeness');
+    const incorrectIssue = kpiIssues.find(issue => issue.type === 'correctness');
+
+    if (missingIssue && Math.random() < 0.3) {
+      finalValue = null;
+      hasQualityIssue = true;
+      qualityType = 'missing';
+      issueDetails = missingIssue;
+    } else if (incorrectIssue && Math.random() < 0.2) {
+      // Apply incorrect values based on KPI type
+      switch (kpiId) {
+        case 'obs_speed':
+          finalValue = -2.5;
+          break;
+        case 'me_consumption':
+          finalValue = 55;
+          break;
+        case 'rpm':
+          finalValue = 250;
+          break;
+        default:
+          finalValue = value * 1.5; // 50% higher than normal
       }
-      currentSegment = [];
+      hasQualityIssue = true;
+      qualityType = 'incorrect';
+      issueDetails = incorrectIssue;
     }
-  });
-
-  // Add final segment
-  if (currentSegment.length > 1) {
-    segments.push({
-      points: currentSegment,
-      quality: 'normal',
-    });
   }
 
-  return (
-    <g>
-      <defs>
-        <linearGradient
-          id={`lineGradient-${dataKey}`}
-          x1="0%"
-          y1="0%"
-          x2="100%"
-          y2="0%"
-        >
-          <stop offset="0%" stopColor={stroke} stopOpacity="1" />
-          <stop offset="100%" stopColor={stroke} stopOpacity="0.6" />
-        </linearGradient>
-        <filter id={`lineShadow-${dataKey}`}>
-          <feDropShadow
-            dx="0"
-            dy="2"
-            stdDeviation="3"
-            floodColor="rgba(0,0,0,0.3)"
-          />
-        </filter>
-      </defs>
-
-      {segments.map((segment, index) => {
-        const pathData = segment.points.reduce((path, point, i) => {
-          return (
-            path +
-            (i === 0 ? `M ${point.x},${point.y}` : ` L ${point.x},${point.y}`)
-          );
-        }, '');
-
-        return (
-          <path
-            key={index}
-            d={pathData}
-            fill="none"
-            stroke={`url(#lineGradient-${dataKey})`}
-            strokeWidth={strokeWidth + 0.5}
-            style={{
-              filter: `url(#lineShadow-${dataKey})`,
-            }}
-          />
-        );
-      })}
-    </g>
-  );
+  return {
+    finalValue: finalValue === null ? null : Math.max(0, parseFloat(finalValue.toFixed(2))),
+    qualityInfo: {
+      hasQualityIssue,
+      qualityType,
+      issueDetails
+    }
+  };
 };
 
-// Enhanced Custom Tooltip with quality information
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-  annotations = [],
-  annotationsVisible = true,
-}) => {
-  if (active && payload && payload.length) {
-    const dateAnnotations = annotations.filter(
-      (annotation) => annotation.type === 'point' && annotation.date === label
-    );
+// Notification Component
+const NotificationPopup = ({ message, type = 'info', onClose, duration = 5000 }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, duration);
 
-    return (
-      <div
-        className="relative bg-slate-800/98 border border-white/25 rounded-lg p-3 shadow-2xl backdrop-blur-md"
-        style={{
-          background:
-            'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          boxShadow: `
-            0 20px 40px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 0 20px rgba(76, 201, 240, 0.2)
-          `,
-        }}
-      >
-        {/* Header */}
-        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-white/15">
-          <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-          <p className="text-xs font-semibold text-white">
-            {new Date(label).toLocaleDateString('en-US', {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })}
-          </p>
-        </div>
+    return () => clearTimeout(timer);
+  }, [onClose, duration]);
 
-        {/* Data Points */}
-        <div className="space-y-1.5 max-h-40 overflow-y-auto">
-          {payload.map((entry, index) => {
-            const [vesselId, kpiId] = entry.dataKey.split('_');
-            const vessel = sampleVessels.find((v) => v.id === vesselId);
-            const qualityType = entry.payload[`${entry.dataKey}_quality`];
-            const hasIssue = entry.payload[`${entry.dataKey}_hasIssue`];
-            const issueDetails = entry.payload[`${entry.dataKey}_issueDetails`];
-            const vesselQuality =
-              entry.payload[`${entry.dataKey}_vesselQuality`];
-
-            if (!vessel) return null;
-
-            return (
-              <div key={`item-${index}`} className="group">
-                <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
-                  <div className="flex items-center gap-2">
-                    {/* Enhanced Quality Indicator */}
-                    <div className="relative">
-                      {entry.value === null ? (
-                        <div className="w-3.5 h-3.5 border-2 border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
-                          <WifiOff className="w-2 h-2 text-red-400" />
-                        </div>
-                      ) : hasIssue && qualityType === 'incorrect' ? (
-                        <div className="relative">
-                          <div
-                            className="w-3.5 h-3.5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-sm flex items-center justify-center"
-                            style={{
-                              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-                            }}
-                          ></div>
-                          <AlertTriangle className="w-2.5 h-2.5 text-white absolute inset-0 m-auto" />
-                        </div>
-                      ) : (
-                        <div className="relative">
-                          <div
-                            className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
-                            style={{
-                              backgroundColor: entry.color,
-                              boxShadow: `0 0 8px ${entry.color}40`,
-                            }}
-                          />
-                          <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-400 rounded-full border border-white/60"></div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="text-xs font-medium truncate"
-                          style={{ color: entry.color }}
-                        >
-                          {vessel.name}
-                        </span>
-                        {vesselQuality && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
-                            <span className="text-[10px] text-slate-400">
-                              Q{vesselQuality.overallScore}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {hasIssue && issueDetails && (
-                        <div className="text-[10px] text-orange-300 flex items-center gap-0.5 mt-0.5">
-                          <AlertCircle className="w-2.5 h-2.5" />
-                          {issueDetails.message}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-xs text-white font-semibold">
-                      {entry.value === null ? (
-                        <span className="text-red-400 flex items-center gap-0.5">
-                          <X className="w-2.5 h-2.5" />
-                          Missing
-                        </span>
-                      ) : (
-                        entry.value
-                      )}
-                    </span>
-                    {entry.value !== null &&
-                      hasIssue &&
-                      qualityType === 'incorrect' && (
-                        <div className="text-[10px] text-yellow-400 flex items-center gap-0.5 justify-end mt-0.5">
-                          <AlertTriangle className="w-2.5 h-2.5" />
-                          Flagged
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Annotations */}
-        {annotationsVisible && dateAnnotations.length > 0 && (
-          <div className="border-t border-white/20 pt-2.5 mt-2.5">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <MessageCircle className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-xs font-medium text-blue-400">Events</span>
-            </div>
-            <div className="space-y-1.5">
-              {dateAnnotations.map((annotation, index) => {
-                const category =
-                  ANNOTATION_CATEGORIES[annotation.category.toUpperCase()];
-                const Icon = category?.icon || Flag;
-                return (
-                  <div
-                    key={index}
-                    className="flex items-start gap-1.5 p-1.5 rounded-md bg-slate-600/30"
-                  >
-                    <div
-                      className="p-1 rounded"
-                      style={{
-                        backgroundColor: `${category?.color}20`,
-                        border: `1px solid ${category?.color}40`,
-                      }}
-                    >
-                      <Icon
-                        className="w-2.5 h-2.5"
-                        style={{ color: category?.color }}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs text-slate-300">
-                        {annotation.text}
-                      </div>
-                      <div className="text-[10px] text-slate-500">
-                        {annotation.author}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Tooltip arrow */}
-        <div
-          className="absolute bottom-0 left-1/2 transform translate-y-full -translate-x-1/2"
-          style={{
-            width: 0,
-            height: 0,
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: '6px solid rgba(30, 41, 59, 0.98)',
-          }}
-        />
-      </div>
-    );
-  }
-  return null;
-};
-
-// Enhanced Annotation Marker Component
-const AnnotationMarker = ({ annotation, onEdit, onDelete }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const category = ANNOTATION_CATEGORIES[annotation.category.toUpperCase()];
-  const Icon = category?.icon || Flag;
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'warning':
+        return 'bg-yellow-600 border-yellow-500 text-yellow-100';
+      case 'error':
+        return 'bg-red-600 border-red-500 text-red-100';
+      case 'success':
+        return 'bg-green-600 border-green-500 text-green-100';
+      default:
+        return 'bg-blue-600 border-blue-500 text-blue-100';
+    }
+  };
 
   return (
-    <div
-      className="absolute transform -translate-x-1/2 -translate-y-1/2 z-50 cursor-pointer"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
-      <div
-        className="relative w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 hover:scale-125"
-        style={{
-          backgroundColor: category?.bgColor,
-          borderColor: category?.borderColor,
-          color: category?.color,
-          boxShadow: `0 4px 12px ${category?.color}40, 0 0 20px ${category?.color}20`,
-        }}
-      >
-        <Icon className="w-3.5 h-3.5" />
-
-        {/* Pulse animation */}
-        <div
-          className="absolute inset-0 rounded-full animate-ping"
-          style={{
-            backgroundColor: category?.color,
-            opacity: 0.3,
-          }}
-        />
-      </div>
-
-      {showTooltip && (
-        <div
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2.5 w-60 rounded-lg shadow-xl z-50 overflow-hidden"
-          style={{
-            background:
-              'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          <div className="p-3">
-            <div className="flex items-center gap-2 mb-2.5">
-              <div
-                className="p-1.5 rounded-md"
-                style={{
-                  backgroundColor: `${category?.color}20`,
-                  border: `1px solid ${category?.color}40`,
-                }}
-              >
-                <Icon
-                  className="w-3.5 h-3.5"
-                  style={{ color: category?.color }}
-                />
-              </div>
-              <div>
-                <span className="text-sm font-medium text-white block">
-                  {category?.name}
-                </span>
-                <span className="text-xs text-slate-400">
-                  {annotation.author}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-sm text-slate-300 mb-2.5 leading-relaxed">
-              {annotation.text}
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">
-                {new Date(annotation.timestamp).toLocaleTimeString()}
-              </span>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => onEdit(annotation)}
-                  className="p-1 bg-blue-500/20 text-blue-400 rounded-md text-xs hover:bg-blue-500/30 transition-colors"
-                >
-                  <Edit3 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() => onDelete(annotation.id)}
-                  className="p-1 bg-red-500/20 text-red-400 rounded-md text-xs hover:bg-red-500/30 transition-colors"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            </div>
+    <div className="fixed top-4 right-4 z-50 max-w-md">
+      <div className={`p-4 rounded-lg border shadow-lg backdrop-blur-md ${getTypeStyles()}`}>
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{message}</p>
           </div>
-
-          {/* Arrow */}
-          <div
-            className="absolute top-full left-1/2 transform -translate-x-1/2"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: '6px solid transparent',
-              borderRight: '6px solid transparent',
-              borderTop: '6px solid rgba(30, 41, 59, 0.98)',
-            }}
-          />
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 p-1 rounded-md hover:bg-white/10 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-// Enhanced ControlsBar Component
+// Controls Bar Component
 const ControlsBar = ({
   filters = {
     dataType: DATA_TYPES.LF,
     selectedKPIs: [],
     selectedVessels: [],
     dateRange: { startDate: null, endDate: null },
+    hfInterval: HF_INTERVALS.DAILY,
   },
   onFilterChange = () => {},
   vessels = sampleVessels,
@@ -1936,6 +489,7 @@ const ControlsBar = ({
   onExport = () => {},
   isExporting = false,
   currentView = 'charts',
+  onShowNotification = () => {},
 }) => {
   const getInitialDateRange = () => {
     const endDate = new Date();
@@ -1959,6 +513,7 @@ const ControlsBar = ({
       filters.selectedKPIs.length > 0
         ? filters.selectedKPIs
         : ALL_KPIS.LF.map((kpi) => kpi.id),
+    hfInterval: filters.hfInterval || HF_INTERVALS.DAILY,
   }));
 
   const [showKPIDropdown, setShowKPIDropdown] = useState(false);
@@ -1981,13 +536,71 @@ const ControlsBar = ({
   }, []);
 
   const handleDataTypeChange = (type) => {
-    setLocalFilters((prev) => ({
-      ...prev,
-      dataType: type,
-      selectedKPIs: ALL_KPIS[type.toUpperCase()]
-        ? ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id)
-        : [], // Handle COMBINED case or empty
-    }));
+    if (type === DATA_TYPES.COMBINED) {
+      // For combined mode, limit to single vessel
+      const singleVessel = localFilters.selectedVessels.slice(0, 1);
+      setLocalFilters((prev) => ({
+        ...prev,
+        dataType: type,
+        selectedVessels: singleVessel.length > 0 ? singleVessel : [defaultSelectedVessels[0].id],
+        selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
+      }));
+      
+      onShowNotification(
+        'Combined mode shows both LF and HF data for a single vessel per chart. Only one vessel has been selected.',
+        'info'
+      );
+    } else if (type === DATA_TYPES.HF) {
+      // For HF mode, limit to 3 vessels
+      const limitedVessels = localFilters.selectedVessels.slice(0, 3);
+      setLocalFilters((prev) => ({
+        ...prev,
+        dataType: type,
+        selectedVessels: limitedVessels.length > 0 ? limitedVessels : defaultSelectedVessels.slice(0, 3).map((v) => v.id),
+        selectedKPIs: ALL_KPIS.HF.map((kpi) => kpi.id),
+        hfInterval: HF_INTERVALS.DAILY,
+      }));
+      
+      if (localFilters.selectedVessels.length > 3) {
+        onShowNotification(
+          'HF mode supports maximum 3 vessels for optimal performance. Selection has been limited to first 3 vessels.',
+          'warning'
+        );
+      }
+    } else {
+      // LF mode
+      setLocalFilters((prev) => ({
+        ...prev,
+        dataType: type,
+        selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
+      }));
+    }
+  };
+
+  const handleHFIntervalChange = (interval) => {
+    const config = HF_INTERVAL_CONFIGS[interval];
+    
+    if (config.maxDays) {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - config.maxDays);
+      
+      setLocalFilters((prev) => ({
+        ...prev,
+        hfInterval: interval,
+        dateRange: { startDate, endDate },
+      }));
+      
+      onShowNotification(
+        `${config.label}: ${config.description}. Date range has been adjusted accordingly.`,
+        'info'
+      );
+    } else {
+      setLocalFilters((prev) => ({
+        ...prev,
+        hfInterval: interval,
+      }));
+    }
   };
 
   const handleKPISelection = (kpiId) => {
@@ -2009,31 +622,23 @@ const ControlsBar = ({
     setShowKPIDropdown(false);
   };
 
-  const getDataSourceIndicator = (source) => {
-    const colors = {
-      LF: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      HF: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-    };
-    return (
-      <sup
-        className={`ml-1 px-1 py-0.5 text-[9px] font-medium rounded-full border ${colors[source]}`}
-      >
-        {source}
-      </sup>
-    );
-  };
+  const availableKPIs = useMemo(() => {
+    if (localFilters.dataType === DATA_TYPES.COMBINED) {
+      // For combined, show unique KPIs
+      const uniqueKPIs = {};
+      [...ALL_KPIS.LF, ...ALL_KPIS.HF].forEach((kpi) => {
+        if (!uniqueKPIs[kpi.id]) {
+          uniqueKPIs[kpi.id] = { ...kpi, source: 'COMBINED' };
+        }
+      });
+      return Object.values(uniqueKPIs);
+    }
+    return ALL_KPIS[localFilters.dataType.toUpperCase()] || [];
+  }, [localFilters.dataType]);
 
   return (
-    <div
-      className="border-b backdrop-blur-md"
-      style={{
-        background:
-          'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-      }}
-    >
-      <div className="flex items-center justify-between w-full p-1">
+    <div className="bg-slate-800/50 border-b border-white/10 backdrop-blur-md relative">
+      <div className="flex items-center justify-between w-full p-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
@@ -2057,114 +662,232 @@ const ControlsBar = ({
             </button>
 
             {showKPIDropdown && (
-              <div
-                className="absolute right-0 top-full mt-2 w-80 rounded-lg shadow-xl z-50 overflow-hidden"
-                style={{
-                  background:
-                    'linear-gradient(145deg, rgba(30, 41, 59, 1) 0%, rgba(15, 23, 42, 1) 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  backdropFilter: 'blur(10px)',
-                }}
-              >
-                <div className="flex items-center justify-between p-4 border-b border-white/10">
-                  <h4 className="text-base font-semibold text-white">
-                    Configure KPIs
-                  </h4>
-                  <button onClick={() => setShowKPIDropdown(false)}>
-                    <X className="w-4 h-4 text-slate-400 hover:text-white transition-colors" />
-                  </button>
-                </div>
-
-                <div className="p-4 border-b border-white/10">
-                  <label className="text-xs font-medium text-slate-300 mb-2 block">
-                    Data Source
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {['LF', 'HF', 'COMBINED'].map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => handleDataTypeChange(type)}
-                        className={`flex flex-col items-center gap-1.5 px-3 py-2.5 text-xs font-medium rounded-md transition-all duration-300 ${
-                          localFilters.dataType === type
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 scale-105'
-                            : 'bg-slate-700/50 text-slate-300 border border-white/10 hover:bg-slate-700 hover:scale-105'
-                        }`}
-                      >
-                        <div className="flex items-center justify-center">
-                          {type === 'LF' && <Radio className="w-4 h-4" />}
-                          {type === 'HF' && <Zap className="w-4 h-4" />}
-                          {type === 'COMBINED' && (
-                            <Layers className="w-4 h-4" />
-                          )}
-                        </div>
-                        <span>{type}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-4 max-h-64 overflow-y-auto">
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-medium text-slate-300">
-                      Select KPIs
-                    </label>
-                    <span className="text-[10px] text-slate-400 bg-slate-700/50 px-1.5 py-0.5 rounded">
-                      {localFilters.selectedKPIs?.length || 0} selected
-                    </span>
+              <>
+                {/* Backdrop overlay to prevent click-through */}
+                <div 
+                  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+                  onClick={() => setShowKPIDropdown(false)}
+                />
+                
+                {/* Dropdown positioned to be fully visible */}
+                <div 
+                  className="fixed right-4 top-16 w-80 max-h-[calc(100vh-80px)] rounded-lg shadow-2xl z-50 overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    backdropFilter: 'blur(16px)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                  }}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 border-b border-white/20 bg-slate-800/30">
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-cyan-400" />
+                      Configure KPIs
+                    </h4>
+                    <button 
+                      onClick={() => setShowKPIDropdown(false)}
+                      className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
+                    >
+                      <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                    </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {(localFilters.dataType === 'COMBINED'
-                      ? [...ALL_KPIS.LF, ...ALL_KPIS.HF]
-                      : ALL_KPIS[localFilters.dataType.toUpperCase()]
-                    ).map((kpi) => (
-                      <label
-                        key={`${kpi.id}-${kpi.source}`}
-                        className="group flex items-center gap-3 p-2.5 rounded-md hover:bg-slate-700/30 cursor-pointer transition-all duration-300"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={localFilters.selectedKPIs?.includes(kpi.id)}
-                          onChange={() => handleKPISelection(kpi.id)}
-                          className="w-3.5 h-3.5 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-1"
-                        />
-                        <div
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: kpi.color }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium text-white truncate">
-                              {kpi.name}
-                            </span>
-                            {getDataSourceIndicator(kpi.source)}
-                          </div>
-                          {kpi.unit && (
-                            <span className="text-xs text-slate-400">
-                              Unit: {kpi.unit}
-                            </span>
-                          )}
-                        </div>
+                  {/* Scrollable content */}
+                  <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+                    {/* Data Source Selection */}
+                    <div className="p-4 border-b border-white/10">
+                      <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center gap-2">
+                        <Radio className="w-3 h-3 text-cyan-400" />
+                        Data Source
                       </label>
-                    ))}
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { key: 'LF', label: 'LF', icon: Radio, color: 'blue' },
+                          { key: 'HF', label: 'HF', icon: Zap, color: 'orange' },
+                          { key: 'COMBINED', label: 'Combined', icon: Layers, color: 'purple' }
+                        ].map((type) => {
+                          const isSelected = localFilters.dataType === type.key.toLowerCase();
+                          return (
+                            <button
+                              key={type.key}
+                              onClick={() => handleDataTypeChange(type.key.toLowerCase())}
+                              className={`px-3 py-3 text-xs font-medium rounded-lg transition-all duration-200 border-2 ${
+                                isSelected
+                                  ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/70 shadow-lg transform scale-105'
+                                  : 'bg-slate-700/40 text-slate-300 border-slate-600/50 hover:bg-slate-600/60 hover:border-slate-500/70 hover:scale-102'
+                              }`}
+                            >
+                              <div className="flex flex-col items-center gap-1.5">
+                                <type.icon className={`w-4 h-4 ${isSelected ? 'text-emerald-200' : 'text-slate-400'}`} />
+                                <span className="text-[11px] font-semibold">{type.label}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      
+                      {/* Data type info */}
+                      <div className="mt-3 p-2 bg-slate-700/30 rounded-md">
+                        <p className="text-[10px] text-slate-400">
+                          {localFilters.dataType === 'lf' && '📊 Low Frequency data - Multiple vessels supported'}
+                          {localFilters.dataType === 'hf' && '⚡ High Frequency data - Max 3 vessels, configurable intervals'}
+                          {localFilters.dataType === 'combined' && '🔄 Shows both LF & HF data - Single vessel only'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* HF Interval Selection */}
+                    {localFilters.dataType === DATA_TYPES.HF && (
+                      <div className="p-4 border-b border-white/10">
+                        <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center gap-2">
+                          <Clock className="w-3 h-3 text-orange-400" />
+                          HF Data Interval
+                        </label>
+                        <div className="space-y-2">
+                          {Object.entries(HF_INTERVALS).map(([key, value]) => {
+                            const config = HF_INTERVAL_CONFIGS[value];
+                            const isSelected = localFilters.hfInterval === value;
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => handleHFIntervalChange(value)}
+                                className={`w-full px-3 py-2 text-xs text-left rounded-lg transition-all duration-200 border ${
+                                  isSelected
+                                    ? 'bg-orange-500/25 text-orange-100 border-orange-400/50 shadow-md'
+                                    : 'bg-slate-700/30 text-slate-300 border-slate-600/30 hover:bg-slate-600/50'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium">{config.label}</span>
+                                  <div className="flex items-center gap-1">
+                                    {config.maxDays && (
+                                      <span className="text-[9px] bg-slate-600/50 px-1 py-0.5 rounded">
+                                        {config.maxDays}d max
+                                      </span>
+                                    )}
+                                    <Clock className="w-3 h-3" />
+                                  </div>
+                                </div>
+                                <div className="text-[10px] text-slate-400 mt-1">
+                                  {config.description}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* KPI Selection */}
+                    <div className="p-4">
+                      <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                          <Target className="w-3 h-3 text-cyan-400" />
+                          Select KPIs
+                        </span>
+                        <span className="text-emerald-400 font-semibold">
+                          {localFilters.selectedKPIs?.length || 0} selected
+                        </span>
+                      </label>
+                      
+                      {/* Select All / None buttons */}
+                      <div className="flex gap-2 mb-3">
+                        <button
+                          onClick={() => setLocalFilters(prev => ({ 
+                            ...prev, 
+                            selectedKPIs: availableKPIs.map(kpi => kpi.id) 
+                          }))}
+                          className="text-[10px] px-2 py-1 bg-emerald-600/20 text-emerald-300 rounded hover:bg-emerald-600/30 transition-colors"
+                        >
+                          Select All
+                        </button>
+                        <button
+                          onClick={() => setLocalFilters(prev => ({ ...prev, selectedKPIs: [] }))}
+                          className="text-[10px] px-2 py-1 bg-red-600/20 text-red-300 rounded hover:bg-red-600/30 transition-colors"
+                        >
+                          Clear All
+                        </button>
+                      </div>
+
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {availableKPIs.map((kpi) => {
+                          const isSelected = localFilters.selectedKPIs?.includes(kpi.id);
+                          return (
+                            <label
+                              key={`${kpi.id}-${kpi.source}`}
+                              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
+                                isSelected
+                                  ? 'bg-emerald-500/20 border-emerald-400/40 shadow-sm'
+                                  : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-600/40 hover:border-slate-500/50'
+                              }`}
+                            >
+                              <div className="relative">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleKPISelection(kpi.id)}
+                                  className="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2 focus:ring-offset-0"
+                                />
+                                {isSelected && (
+                                  <Check className="w-3 h-3 text-emerald-400 absolute top-0.5 left-0.5 pointer-events-none" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-white truncate">
+                                    {kpi.name}
+                                  </span>
+                                  {kpi.source !== 'COMBINED' && (
+                                    <span
+                                      className={`text-[8px] px-1.5 py-0.5 rounded-full border font-semibold ${
+                                        kpi.source === 'LF'
+                                          ? 'bg-blue-500/25 text-blue-200 border-blue-400/50'
+                                          : 'bg-orange-500/25 text-orange-200 border-orange-400/50'
+                                      }`}
+                                    >
+                                      {kpi.source}
+                                    </span>
+                                  )}
+                                </div>
+                                {kpi.unit && (
+                                  <span className="text-xs text-slate-400">
+                                    Unit: {kpi.unit}
+                                  </span>
+                                )}
+                                <span className="text-[10px] text-slate-500 capitalize">
+                                  {kpi.category} metric
+                                </span>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-4 border-t border-white/10 bg-slate-800/30 flex justify-between items-center">
+                    <div className="text-[10px] text-slate-400">
+                      {localFilters.selectedKPIs?.length || 0} KPIs • {localFilters.dataType.toUpperCase()} mode
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowKPIDropdown(false)}
+                        className="px-3 py-2 text-xs font-medium text-slate-300 bg-slate-700/50 border border-slate-600/50 rounded-md hover:bg-slate-600/70 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleApply}
+                        className="px-3 py-2 text-xs font-medium text-white bg-emerald-600 border border-emerald-500 rounded-md hover:bg-emerald-700 transition-colors shadow-lg"
+                      >
+                        Apply Changes
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="p-4 border-t border-white/10 flex justify-end gap-2.5">
-                  <button
-                    onClick={() => setShowKPIDropdown(false)}
-                    className="px-3.5 py-1.5 text-sm font-medium text-slate-300 bg-slate-700/50 rounded-md hover:bg-slate-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleApply}
-                    className="px-3.5 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                  >
-                    Apply Changes
-                  </button>
-                </div>
-              </div>
+              </>
             )}
           </div>
 
@@ -2200,25 +923,312 @@ const ControlsBar = ({
   );
 };
 
-// Main ChartView Component
-const ChartView = () => {
-  const [chartFilters, setChartFilters] = useState({
-    dataType: DATA_TYPES.LF,
-    selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-    selectedVessels: defaultSelectedVessels.map((v) => v.id),
-    dateRange: (() => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
-      return { startDate, endDate };
-    })(),
-  });
+// Chart Components - Enhanced with Quality Toggle Support
+const QualityDot = ({
+  cx,
+  cy,
+  payload,
+  dataKey,
+  stroke,
+  strokeWidth,
+  qualityVisible,
+}) => {
+  const qualityKey = `${dataKey}_quality`;
+  const issueKey = `${dataKey}_hasIssue`;
+  const issueDetailsKey = `${dataKey}_issueDetails`;
+  const qualityType = payload[qualityKey];
+  const hasIssue = payload[issueKey];
+  const issueDetails = payload[issueDetailsKey];
+  const value = payload[dataKey];
 
+  // NEW: If quality is not visible, show clean dots
+  if (!qualityVisible) {
+    if (value === null || value === undefined) {
+      return null; // Don't render missing data dots when quality is off
+    }
+    
+    return (
+      <g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r="4"
+          fill={stroke}
+          stroke="#fff"
+          strokeWidth="2"
+          style={{
+            filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))',
+          }}
+        />
+      </g>
+    );
+  }
+
+  // Original quality-aware dot rendering
+  if (value === null || value === undefined) {
+    return (
+      <g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r="4"
+          fill="none"
+          stroke="#ef4444"
+          strokeWidth="2"
+          strokeDasharray="2,1"
+          opacity={0.95}
+        />
+        <g stroke="#ef4444" strokeWidth="2" opacity={0.95}>
+          <line x1={cx - 2} y1={cy - 2} x2={cx + 2} y2={cy + 2} />
+          <line x1={cx - 2} y1={cy + 2} x2={cx + 2} y2={cy - 2} />
+        </g>
+      </g>
+    );
+  }
+
+  if (hasIssue && qualityType === 'incorrect') {
+    const severity = issueDetails?.severity || 'medium';
+    const severityColors = {
+      high: '#ef4444',
+      medium: '#f59e0b',
+      low: '#eab308',
+    };
+    const color = severityColors[severity];
+
+    return (
+      <g>
+        <polygon
+          points={`${cx},${cy - 5} ${cx - 4.5},${cy + 3.5} ${cx + 4.5},${cy + 3.5}`}
+          fill={color}
+          stroke="#fff"
+          strokeWidth="1"
+        />
+        <g fill="#ffffff" fontSize="8" textAnchor="middle" fontWeight="bold">
+          <text x={cx} y={cy} style={{ fontSize: '10px' }}>!</text>
+        </g>
+      </g>
+    );
+  }
+
+  return (
+    <g>
+      <circle
+        cx={cx}
+        cy={cy}
+        r="4"
+        fill={stroke}
+        stroke="#fff"
+        strokeWidth="2"
+        style={{
+          filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))',
+        }}
+      />
+    </g>
+  );
+};
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+  dataType,
+  qualityVisible, // NEW: Quality visibility prop
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-800/98 border border-white/25 rounded-lg p-3 shadow-2xl backdrop-blur-md">
+        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-white/15">
+          <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+          <p className="text-xs font-semibold text-white">
+            {new Date(label).toLocaleDateString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+        </div>
+
+        <div className="space-y-1.5 max-h-40 overflow-y-auto">
+          {payload.map((entry, index) => {
+            const parts = entry.dataKey.split('_');
+            let vesselId, kpiId, sourceType;
+            
+            if (dataType === DATA_TYPES.COMBINED) {
+              [vesselId, kpiId, sourceType] = parts;
+            } else {
+              [vesselId, kpiId] = parts;
+              sourceType = dataType.toUpperCase();
+            }
+            
+            const vessel = sampleVessels.find((v) => v.id === vesselId);
+            const qualityType = entry.payload[`${entry.dataKey}_quality`];
+            const hasIssue = entry.payload[`${entry.dataKey}_hasIssue`];
+            const issueDetails = entry.payload[`${entry.dataKey}_issueDetails`];
+
+            if (!vessel) return null;
+
+            return (
+              <div key={`item-${index}`} className="group">
+                <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      {/* NEW: Conditional quality indicator rendering */}
+                      {!qualityVisible ? (
+                        // Clean dot when quality is off
+                        <div
+                          className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
+                          style={{
+                            backgroundColor: entry.color,
+                            boxShadow: `0 0 8px ${entry.color}40`,
+                          }}
+                        />
+                      ) : (
+                        // Quality-aware indicators when quality is on
+                        entry.value === null ? (
+                          <div className="w-3.5 h-3.5 border-2 border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
+                            <WifiOff className="w-2 h-2 text-red-400" />
+                          </div>
+                        ) : hasIssue && qualityType === 'incorrect' ? (
+                          <div className="relative">
+                            <div
+                              className="w-3.5 h-3.5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-sm flex items-center justify-center"
+                              style={{
+                                clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+                              }}
+                            ></div>
+                            <AlertTriangle className="w-2.5 h-2.5 text-white absolute inset-0 m-auto" />
+                          </div>
+                        ) : (
+                          <div className="relative">
+                            <div
+                              className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
+                              style={{
+                                backgroundColor: entry.color,
+                                boxShadow: `0 0 8px ${entry.color}40`,
+                              }}
+                            />
+                          </div>
+                        )
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="text-xs font-medium truncate"
+                          style={{ color: entry.color }}
+                        >
+                          {vessel.name}
+                        </span>
+                        {dataType === DATA_TYPES.COMBINED && (
+                          <span
+                            className={`text-[8px] px-1 py-0.5 rounded-full border ${
+                              sourceType === 'LF'
+                                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                            }`}
+                          >
+                            {sourceType}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* NEW: Only show quality issues when quality is visible */}
+                      {qualityVisible && hasIssue && issueDetails && (
+                        <div className="text-[10px] text-orange-300 flex items-center gap-0.5 mt-0.5">
+                          <AlertCircle className="w-2.5 h-2.5" />
+                          {issueDetails.message}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs text-white font-semibold">
+                      {entry.value === null ? (
+                        qualityVisible ? (
+                          <span className="text-red-400 flex items-center gap-0.5">
+                            <X className="w-2.5 h-2.5" />
+                            Missing
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">--</span>
+                        )
+                      ) : (
+                        entry.value
+                      )}
+                    </span>
+                    {/* NEW: Only show quality flags when quality is visible */}
+                    {qualityVisible && entry.value !== null &&
+                      hasIssue &&
+                      qualityType === 'incorrect' && (
+                        <div className="text-[10px] text-yellow-400 flex items-center gap-0.5 justify-end mt-0.5">
+                          <AlertTriangle className="w-2.5 h-2.5" />
+                          Flagged
+                        </div>
+                      )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Main ChartView Component
+const ChartView = ({ 
+  initialVesselId = null,
+  className = '',
+  qualityVisible = true, // NEW: Quality toggle prop
+  onQualityToggle = () => {}, // NEW: Quality toggle handler
+}) => {
+  const getInitialFilters = () => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    const selectedVessels = initialVesselId 
+      ? [initialVesselId] 
+      : defaultSelectedVessels.map((v) => v.id);
+
+    return {
+      dataType: DATA_TYPES.LF,
+      selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
+      selectedVessels: selectedVessels,
+      dateRange: { startDate, endDate },
+      hfInterval: HF_INTERVALS.DAILY,
+    };
+  };
+
+  const [chartFilters, setChartFilters] = useState(getInitialFilters());
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
-  const qualityVisible = true;
-  const annotationsVisible = false;
-  const qualityOverlayVisible = false;
+  const [notifications, setNotifications] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
+
+  const showNotification = useCallback((message, type = 'info') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+  }, []);
+
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  useEffect(() => {
+    if (initialVesselId) {
+      setChartFilters(prev => ({
+        ...prev,
+        selectedVessels: [initialVesselId]
+      }));
+    }
+  }, [initialVesselId]);
 
   const handleApplyFilters = (newFilters) => {
     setIsApplyingFilters(true);
@@ -2229,18 +1239,7 @@ const ChartView = () => {
   };
 
   const handleResetFilters = () => {
-    const initialDateRange = (() => {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
-      return { startDate, endDate };
-    })();
-    const resetFilters = {
-      dataType: DATA_TYPES.LF,
-      selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-      selectedVessels: defaultSelectedVessels.map((v) => v.id),
-      dateRange: initialDateRange,
-    };
+    const resetFilters = getInitialFilters();
     setChartFilters(resetFilters);
   };
 
@@ -2264,33 +1263,23 @@ const ChartView = () => {
       chartFilters.selectedKPIs,
       chartFilters.dataType,
       chartFilters.dateRange.startDate,
-      chartFilters.dateRange.endDate
+      chartFilters.dateRange.endDate,
+      chartFilters.hfInterval
     );
   }, [chartFilters]);
 
-  // Generate annotations and quality zones
-  const annotations = useMemo(() => {
-    return generateMockAnnotations(
-      chartData,
-      chartFilters.selectedVessels,
-      chartFilters.selectedKPIs
-    );
-  }, [chartData, chartFilters.selectedVessels, chartFilters.selectedKPIs]);
-
-  const qualityZones = useMemo(() => {
-    return generateQualityZones(chartData);
-  }, [chartData]);
-
-  const handleAnnotationEdit = (annotation) => {
-    console.log('Edit annotation:', annotation);
-  };
-
-  const handleAnnotationDelete = (annotationId) => {
-    console.log('Delete annotation:', annotationId);
-  };
-
   return (
     <div className="bg-slate-900 text-white min-h-screen flex flex-col">
+      {/* Notifications */}
+      {notifications.map((notification) => (
+        <NotificationPopup
+          key={notification.id}
+          message={notification.message}
+          type={notification.type}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
+
       <ControlsBar
         filters={chartFilters}
         onFilterChange={setChartFilters}
@@ -2301,21 +1290,25 @@ const ChartView = () => {
         onExport={handleExport}
         isExporting={isExporting}
         currentView="charts"
+        onShowNotification={showNotification}
       />
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-1">
-          <DataQualityCards
-            data={chartData}
-            qualityVisible={qualityVisible}
-            selectedVessels={chartFilters.selectedVessels}
-            selectedKPIs={chartFilters.selectedKPIs}
-            chartData={chartData}
-            annotationsVisible={annotationsVisible}
-            qualityOverlayVisible={qualityOverlayVisible}
-            viewMode="charts"
-            compactMode={true}
-          />
+          {/* NEW: Conditional rendering based on quality toggle */}
+          {qualityVisible && (
+            <DataQualityCards
+              data={chartData}
+              qualityVisible={qualityVisible}
+              selectedVessels={chartFilters.selectedVessels}
+              selectedKPIs={chartFilters.selectedKPIs}
+              chartData={chartData}
+              annotationsVisible={false}
+              qualityOverlayVisible={false}
+              viewMode="charts"
+              compactMode={true}
+            />
+          )}
         </div>
 
         <div className="px-1 pb-1">
@@ -2346,61 +1339,6 @@ const ChartView = () => {
                 const kpiMeta = getKPIById(kpiId, chartFilters.dataType);
                 if (!kpiMeta) return null;
 
-                const kpiAnnotations = annotations.filter(
-                  (ann) => ann.type === 'point' && ann.kpiId === kpiId
-                );
-
-                const rangeAnnotations = annotations.filter(
-                  (ann) => ann.type === 'range'
-                );
-
-                // Count quality issues for this KPI across all selected vessels
-                const qualityIssues = chartData.reduce((total, dataPoint) => {
-                  return (
-                    total +
-                    chartFilters.selectedVessels.reduce(
-                      (vesselTotal, vesselId) => {
-                        const hasIssue =
-                          dataPoint[`${vesselId}_${kpiId}_hasIssue`];
-                        return vesselTotal + (hasIssue ? 1 : 0);
-                      },
-                      0
-                    )
-                  );
-                }, 0);
-
-                const missingIssues = chartData.reduce((total, dataPoint) => {
-                  return (
-                    total +
-                    chartFilters.selectedVessels.reduce(
-                      (vesselTotal, vesselId) => {
-                        const value = dataPoint[`${vesselId}_${kpiId}`];
-                        return vesselTotal + (value === null ? 1 : 0);
-                      },
-                      0
-                    )
-                  );
-                }, 0);
-
-                const incorrectIssues = chartData.reduce((total, dataPoint) => {
-                  return (
-                    total +
-                    chartFilters.selectedVessels.reduce(
-                      (vesselTotal, vesselId) => {
-                        const qualityType =
-                          dataPoint[`${vesselId}_${kpiId}_quality`];
-                        const hasIssue =
-                          dataPoint[`${vesselId}_${kpiId}_hasIssue`];
-                        return (
-                          vesselTotal +
-                          (hasIssue && qualityType === 'incorrect' ? 1 : 0)
-                        );
-                      },
-                      0
-                    )
-                  );
-                }, 0);
-
                 return (
                   <div
                     className="relative group"
@@ -2415,46 +1353,8 @@ const ChartView = () => {
                         0 5px 10px rgba(0, 0, 0, 0.3)
                       `,
                       border: '1px solid rgba(255, 255, 255, 0.12)',
-                      transform: 'translateZ(0)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform =
-                        'translateY(-2px) translateZ(0) scale(1.005)';
-                      e.currentTarget.style.boxShadow = `
-                        0 18px 35px rgba(0, 0, 0, 0.45),
-                        inset 0 1.5px 0 rgba(255, 255, 255, 0.15),
-                        0 8px 16px rgba(0, 0, 0, 0.4),
-                        0 0 25px ${kpiMeta.color}20
-                      `;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform =
-                        'translateY(0) translateZ(0) scale(1)';
-                      e.currentTarget.style.boxShadow = `
-                        0 12px 25px rgba(0, 0, 0, 0.35),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                        0 5px 10px rgba(0, 0, 0, 0.3)
-                      `;
                     }}
                   >
-                    {/* Subtle gradient overlay for 3D effect */}
-                    <div
-                      className="absolute inset-0 rounded-lg opacity-60 pointer-events-none"
-                      style={{
-                        background:
-                          'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%)',
-                      }}
-                    />
-
-                    {/* Animated glow effect */}
-                    <div
-                      className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none"
-                      style={{
-                        background: `radial-gradient(circle at center, ${kpiMeta.color}40 0%, transparent 70%)`,
-                      }}
-                    />
-
                     <div className="relative p-3">
                       {/* Enhanced Header */}
                       <div className="flex items-center justify-between mb-3">
@@ -2495,21 +1395,28 @@ const ChartView = () => {
                               </h3>
 
                               <div className="flex items-center gap-1.5 mt-0.5">
-                                <span
-                                  className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 ${
-                                    kpiMeta.source === 'LF'
-                                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                                      : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
-                                  }`}
-                                >
-                                  {kpiMeta.source === 'LF' && (
-                                    <Radio className="w-2 h-2" />
-                                  )}
-                                  {kpiMeta.source === 'HF' && (
-                                    <Zap className="w-2 h-2" />
-                                  )}
-                                  {kpiMeta.source}
-                                </span>
+                                {chartFilters.dataType !== DATA_TYPES.COMBINED && (
+                                  <span
+                                    className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 ${
+                                      kpiMeta.source === 'LF'
+                                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                        : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                                    }`}
+                                  >
+                                    {kpiMeta.source === 'LF' && (
+                                      <Radio className="w-2 h-2" />
+                                    )}
+                                    {kpiMeta.source === 'HF' && (
+                                      <Zap className="w-2 h-2" />
+                                    )}
+                                    {kpiMeta.source}
+                                  </span>
+                                )}
+                                {chartFilters.dataType === DATA_TYPES.HF && (
+                                  <span className="text-xs text-slate-400 bg-slate-700/50 px-1 py-0.5 rounded-full">
+                                    {HF_INTERVAL_CONFIGS[chartFilters.hfInterval].label}
+                                  </span>
+                                )}
                                 <span className="text-xs text-slate-400 capitalize bg-slate-700/50 px-1 py-0.5 rounded-full">
                                   {kpiMeta.category}
                                 </span>
@@ -2517,182 +1424,45 @@ const ChartView = () => {
                             </div>
                           </div>
                         </div>
-                        {/* Quality Indicators - moved to a more subtle bar */}
-                        {qualityVisible && qualityIssues > 0 && (
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-slate-700/40 border border-white/10 text-xs">
-                            <Shield className="w-3 h-3 text-emerald-400" />
-                            <span className="text-slate-300">
-                              {qualityIssues} Issues:
-                            </span>
-                            <span className="flex items-center gap-0.5 text-orange-400">
-                              <WifiOff className="w-2.5 h-2.5" />
-                              {missingIssues}
-                            </span>
-                            <span className="flex items-center gap-0.5 text-red-400">
-                              <XCircle className="w-2.5 h-2.5" />
-                              {incorrectIssues}
-                            </span>
-                          </div>
-                        )}
                       </div>
+
                       {/* Enhanced Chart Container */}
                       <div className="relative">
                         <ResponsiveContainer width="100%" height={220}>
                           <LineChart
                             data={chartData}
                             margin={{
-                              top: -5,
+                              top: 5,
                               right: 5,
                               left: 5,
-                              bottom: -5,
+                              bottom: 5,
                             }}
                           >
-                            <defs>
-                              {/* Enhanced gradients */}
-                              <linearGradient
-                                id={`gradient-${kpiId}`}
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor={kpiMeta.color}
-                                  stopOpacity={0.9}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor={kpiMeta.color}
-                                  stopOpacity={0.1}
-                                />
-                              </linearGradient>
-
-                              {/* Glow filters */}
-                              <filter
-                                id={`glow-${kpiId}`}
-                                x="-50%"
-                                y="-50%"
-                                width="200%"
-                                height="200%"
-                              >
-                                <feGaussianBlur
-                                  stdDeviation="3"
-                                  result="coloredBlur"
-                                />
-                                <feMerge>
-                                  <feMergeNode in="coloredBlur" />
-                                  <feMergeNode in="SourceGraphic" />
-                                </feMerge>
-                              </filter>
-
-                              <filter
-                                id={`shadow-${kpiId}`}
-                                x="-50%"
-                                y="-50%"
-                                width="200%"
-                                height="200%"
-                              >
-                                <feDropShadow
-                                  dx="0"
-                                  dy="3"
-                                  stdDeviation="6"
-                                  floodColor="rgba(0,0,0,0.4)"
-                                />
-                              </filter>
-
-                              {/* Quality overlay patterns */}
-                              {qualityOverlayVisible && (
-                                <pattern
-                                  id={`qualityPattern-${kpiId}`}
-                                  patternUnits="userSpaceOnUse"
-                                  width="20"
-                                  height="20"
-                                >
-                                  <rect
-                                    width="20"
-                                    height="20"
-                                    fill="rgba(76, 201, 240, 0.05)"
-                                  />
-                                  <circle
-                                    cx="10"
-                                    cy="10"
-                                    r="1"
-                                    fill="rgba(76, 201, 240, 0.2)"
-                                  />
-                                </pattern>
-                              )}
-                            </defs>
-
-                            {/* Quality overlay background */}
-                            {qualityOverlayVisible && (
-                              <rect
-                                x="0"
-                                y="0"
-                                width="100%"
-                                height="100%"
-                                fill={`url(#qualityPattern-${kpiId})`}
-                                opacity="0.3"
-                              />
-                            )}
-
                             <CartesianGrid
                               strokeDasharray="3 6"
                               stroke="rgba(255, 255, 255, 0.1)"
                               strokeWidth={0.6}
                             />
 
-                            {/* Range annotations */}
-                            {annotationsVisible &&
-                              rangeAnnotations.map((annotation, index) => {
-                                const category =
-                                  ANNOTATION_CATEGORIES[
-                                    annotation.category.toUpperCase()
-                                  ];
-                                return (
-                                  <ReferenceArea
-                                    key={`range-annotation-${index}`}
-                                    x1={annotation.startDate}
-                                    x2={annotation.endDate}
-                                    fill={category?.bgColor}
-                                    stroke={category?.borderColor}
-                                    strokeWidth={1}
-                                    strokeDasharray="6 4"
-                                    fillOpacity={0.3}
-                                  />
-                                );
-                              })}
-
-                            {/* Point annotations */}
-                            {annotationsVisible &&
-                              kpiAnnotations.map((annotation, index) => {
-                                const category =
-                                  ANNOTATION_CATEGORIES[
-                                    annotation.category.toUpperCase()
-                                  ];
-                                return (
-                                  <ReferenceLine
-                                    key={`point-annotation-${index}`}
-                                    x={annotation.date}
-                                    stroke={category?.color}
-                                    strokeWidth={2}
-                                    strokeDasharray="8 4"
-                                    opacity={0.8}
-                                  />
-                                );
-                              })}
-
                             <XAxis
                               dataKey="date"
-                              tickFormatter={(tick) =>
-                                new Date(tick).toLocaleDateString('en-US', {
+                              tickFormatter={(tick) => {
+                                const date = new Date(tick);
+                                if (chartFilters.hfInterval === HF_INTERVALS.RAW || 
+                                    chartFilters.hfInterval === HF_INTERVALS.HOURLY) {
+                                  return date.toLocaleTimeString('en-US', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  });
+                                }
+                                return date.toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
-                                })
-                              }
+                                });
+                              }}
                               tick={{
                                 fill: '#cbd5e1',
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: 500,
                               }}
                               axisLine={{
@@ -2703,14 +1473,13 @@ const ChartView = () => {
                                 stroke: 'rgba(255, 255, 255, 0.15)',
                                 strokeWidth: 1,
                               }}
-                              height={30}
                             />
 
                             <YAxis
                               domain={kpiMeta.yAxisRange || ['auto', 'auto']}
                               tick={{
                                 fill: '#cbd5e1',
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: 500,
                               }}
                               axisLine={{
@@ -2721,14 +1490,13 @@ const ChartView = () => {
                                 stroke: 'rgba(255, 255, 255, 0.15)',
                                 strokeWidth: 1,
                               }}
-                              width={50}
                             />
 
                             <Tooltip
                               content={
                                 <CustomTooltip
-                                  annotations={annotations}
-                                  annotationsVisible={annotationsVisible}
+                                  dataType={chartFilters.dataType}
+                                  qualityVisible={qualityVisible}
                                 />
                               }
                               cursor={{
@@ -2740,52 +1508,74 @@ const ChartView = () => {
                             />
 
                             {/* Enhanced Lines with Quality Indicators */}
-                            {chartFilters.selectedVessels.map(
-                              (vesselId, index) => {
-                                const vesselQuality =
-                                  staticQualityData[
-                                    index % staticQualityData.length
-                                  ];
-                                const confidence = vesselQuality
-                                  ? vesselQuality.confidence
-                                  : 85;
-
+                            {chartFilters.dataType === DATA_TYPES.COMBINED ? (
+                              // Combined mode: Show LF and HF lines for single vessel
+                              ['LF', 'HF'].map((sourceType) => {
+                                const vesselId = chartFilters.selectedVessels[0];
+                                const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
+                                const color = LF_HF_COLORS[sourceType];
+                                
                                 return (
                                   <Line
-                                    key={`${vesselId}_${kpiId}`}
+                                    key={dataKey}
                                     type="monotone"
-                                    dataKey={`${vesselId}_${kpiId}`}
-                                    stroke={getVesselColor(vesselId)}
+                                    dataKey={dataKey}
+                                    stroke={color}
                                     strokeWidth={3}
                                     dot={(props) => (
                                       <QualityDot
                                         {...props}
-                                        dataKey={`${vesselId}_${kpiId}`}
-                                        stroke={getVesselColor(vesselId)}
+                                        dataKey={dataKey}
+                                        stroke={color}
                                         qualityVisible={qualityVisible}
                                       />
                                     )}
                                     activeDot={{
                                       r: 8,
                                       strokeWidth: 3,
-                                      fill: getVesselColor(vesselId),
+                                      fill: color,
                                       stroke: '#fff',
-                                      style: {
-                                        filter: `url(#glow-${kpiId})`,
-                                      },
                                     }}
-                                    connectNulls={false}
-                                    style={{
-                                      filter: `url(#shadow-${kpiId})`,
-                                    }}
+                                    connectNulls={!qualityVisible}
                                   />
                                 );
-                              }
+                              })
+                            ) : (
+                              // LF or HF mode: Show multiple vessels
+                              chartFilters.selectedVessels.map((vesselId, index) => {
+                                const dataKey = `${vesselId}_${kpiId}`;
+                                const color = getVesselColor(vesselId);
+                                
+                                return (
+                                  <Line
+                                    key={dataKey}
+                                    type="monotone"
+                                    dataKey={dataKey}
+                                    stroke={color}
+                                    strokeWidth={3}
+                                    dot={(props) => (
+                                      <QualityDot
+                                        {...props}
+                                        dataKey={dataKey}
+                                        stroke={color}
+                                        qualityVisible={qualityVisible}
+                                      />
+                                    )}
+                                    activeDot={{
+                                      r: 8,
+                                      strokeWidth: 3,
+                                      fill: color,
+                                      stroke: '#fff',
+                                    }}
+                                    connectNulls={!qualityVisible}
+                                  />
+                                );
+                              })
                             )}
                           </LineChart>
                         </ResponsiveContainer>
 
-                        {/* Quality Legend - moved to top, more subtle */}
+                        {/* Conditional Quality Legend */}
                         {qualityVisible && (
                           <div className="absolute top-0 left-0 right-0 flex items-center justify-end gap-3 text-[10px] p-1.5">
                             <div className="flex items-center gap-0.5">
@@ -2796,8 +1586,7 @@ const ChartView = () => {
                               <div
                                 className="w-2 h-2 bg-yellow-400"
                                 style={{
-                                  clipPath:
-                                    'polygon(50% 0%, 0% 100%, 100% 100%)',
+                                  clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                                 }}
                               ></div>
                               <span className="text-slate-300">Incorrect</span>
@@ -2805,9 +1594,7 @@ const ChartView = () => {
                             <div className="flex items-center gap-0.5">
                               <div className="w-2 h-2 border-2 border-red-400 border-dashed rounded-full bg-transparent relative">
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-red-400 text-[9px] leading-none">
-                                    ×
-                                  </span>
+                                  <span className="text-red-400 text-[9px] leading-none">×</span>
                                 </div>
                               </div>
                               <span className="text-slate-300">Missing</span>
@@ -2815,36 +1602,52 @@ const ChartView = () => {
                           </div>
                         )}
 
-                        {/* Enhanced Vessel Legend - horizontal, two rows if needed */}
+                        {/* Legend */}
                         <div className="mt-2 p-1.5">
-                          {/* <div className="text-[10px] font-medium text-white mb-1">
-                            Vessels
-                          </div> */}
                           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] justify-center">
-                            {chartFilters.selectedVessels.map((vesselId) => {
-                              const vessel = sampleVessels.find(
-                                (v) => v.id === vesselId
-                              );
-                              return (
-                                <div
-                                  key={vesselId}
-                                  className="flex items-center gap-1"
-                                >
-                                  <div
-                                    className="w-2 h-2 rounded-full border border-white/30"
-                                    style={{
-                                      backgroundColor: getVesselColor(vesselId),
-                                      boxShadow: `0 0 4px ${getVesselColor(
-                                        vesselId
-                                      )}40`,
-                                    }}
-                                  />
-                                  <span className="text-slate-300">
-                                    {vessel?.name || vesselId}
-                                  </span>
-                                </div>
-                              );
-                            })}
+                            {chartFilters.dataType === DATA_TYPES.COMBINED ? (
+                              // Combined mode legend: Show LF/HF for single vessel
+                              ['LF', 'HF'].map((sourceType) => {
+                                const vessel = sampleVessels.find(v => v.id === chartFilters.selectedVessels[0]);
+                                const color = LF_HF_COLORS[sourceType];
+                                
+                                return (
+                                  <div key={sourceType} className="flex items-center gap-1">
+                                    <div
+                                      className="w-2 h-2 rounded-full border border-white/30"
+                                      style={{
+                                        backgroundColor: color,
+                                        boxShadow: `0 0 4px ${color}40`,
+                                      }}
+                                    />
+                                    <span className="text-slate-300">
+                                      {vessel?.name} ({sourceType})
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              // LF/HF mode legend: Show multiple vessels
+                              chartFilters.selectedVessels.map((vesselId) => {
+                                const vessel = sampleVessels.find(v => v.id === vesselId);
+                                const color = getVesselColor(vesselId);
+                                
+                                return (
+                                  <div key={vesselId} className="flex items-center gap-1">
+                                    <div
+                                      className="w-2 h-2 rounded-full border border-white/30"
+                                      style={{
+                                        backgroundColor: color,
+                                        boxShadow: `0 0 4px ${color}40`,
+                                      }}
+                                    />
+                                    <span className="text-slate-300">
+                                      {vessel?.name || vesselId}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            )}
                           </div>
                         </div>
                       </div>

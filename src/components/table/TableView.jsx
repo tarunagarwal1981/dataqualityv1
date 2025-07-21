@@ -53,6 +53,8 @@ import {
   SignalHigh,
   SignalLow,
   BarChart2,
+  LineChart,
+  PieChart,
 } from 'lucide-react';
 
 // Import the shared DataQualityCards component
@@ -86,6 +88,7 @@ const ALL_KPIS = {
       name: 'Total Consumption',
       unit: 'Mt',
       category: 'fuel',
+
       source: 'HF',
     },
     {
@@ -96,6 +99,7 @@ const ALL_KPIS = {
       source: 'HF',
     },
     {
+
       id: 'me_power',
       name: 'ME Power',
       unit: 'kW',
@@ -289,18 +293,19 @@ const EnhancedQualityIndicator = ({
   );
 };
 
+
 // Controls Bar Component
 const ControlsBar = ({
   onExport = () => {},
   isExporting = false,
   onKPIChange = () => {},
+  selectedDataType,
+  setSelectedDataType,
+  selectedKPIs,
+  setSelectedKPIs,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showKPIDropdown, setShowKPIDropdown] = useState(false);
-  const [localFilters, setLocalFilters] = useState({
-    dataType: DATA_TYPES.LF,
-    selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-  });
   const kpiDropdownRef = useRef(null);
 
   useEffect(() => {
@@ -319,29 +324,31 @@ const ControlsBar = ({
   }, []);
 
   const handleDataTypeChange = (type) => {
-    setLocalFilters((prev) => ({
-      ...prev,
-      dataType: type,
-      selectedKPIs: ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id),
-    }));
+    setSelectedDataType(type);
+    if (type === DATA_TYPES.COMBINED) {
+      // For combined, select all unique KPIs from both LF and HF
+      const combinedKPIs = [
+        ...new Set([...ALL_KPIS.LF, ...ALL_KPIS.HF].map((kpi) => kpi.id)),
+      ];
+      setSelectedKPIs(combinedKPIs);
+    } else {
+      setSelectedKPIs(ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id));
+    }
   };
 
   const handleKPISelection = (kpiId) => {
-    setLocalFilters((prev) => {
-      const currentSelected = prev.selectedKPIs || [];
+    setSelectedKPIs((prev) => {
+      const currentSelected = prev || [];
       if (currentSelected.includes(kpiId)) {
-        return {
-          ...prev,
-          selectedKPIs: currentSelected.filter((id) => id !== kpiId),
-        };
+        return currentSelected.filter((id) => id !== kpiId);
       } else {
-        return { ...prev, selectedKPIs: [...currentSelected, kpiId] };
+        return [...currentSelected, kpiId];
       }
     });
   };
 
   const handleApply = () => {
-    onKPIChange(localFilters);
+    onKPIChange({ dataType: selectedDataType, selectedKPIs });
     setShowKPIDropdown(false);
   };
 
@@ -358,6 +365,20 @@ const ControlsBar = ({
       </sup>
     );
   };
+
+  const availableKPIs = useMemo(() => {
+    if (selectedDataType === DATA_TYPES.COMBINED) {
+      // Combine and deduplicate KPIs from both LF and HF
+      const combined = {};
+      [...ALL_KPIS.LF, ...ALL_KPIS.HF].forEach((kpi) => {
+        if (!combined[kpi.id]) {
+          combined[kpi.id] = { ...kpi, source: 'COMBINED' };
+        }
+      });
+      return Object.values(combined);
+    }
+    return ALL_KPIS[selectedDataType.toUpperCase()] || [];
+  }, [selectedDataType]);
 
   return (
     <div className="bg-slate-800/50 border-b border-white/10 p-2">
@@ -399,9 +420,9 @@ const ControlsBar = ({
                     {['LF', 'HF', 'COMBINED'].map((type) => (
                       <button
                         key={type}
-                        onClick={() => handleDataTypeChange(type)}
+                        onClick={() => handleDataTypeChange(type.toLowerCase())}
                         className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
-                          localFilters.dataType === type
+                          selectedDataType === type.toLowerCase()
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                             : 'bg-slate-700/50 text-slate-300 border border-white/10 hover:bg-slate-700'
                         }`}
@@ -421,21 +442,17 @@ const ControlsBar = ({
 
                 <div className="p-4 max-h-64 overflow-y-auto">
                   <label className="text-xs font-medium text-slate-300 mb-3 block">
-                    Select KPIs ({localFilters.selectedKPIs?.length || 0}{' '}
-                    selected)
+                    Select KPIs ({selectedKPIs?.length || 0} selected)
                   </label>
                   <div className="space-y-2">
-                    {(localFilters.dataType === 'COMBINED'
-                      ? [...ALL_KPIS.LF, ...ALL_KPIS.LF]
-                      : ALL_KPIS[localFilters.dataType.toUpperCase()]
-                    ).map((kpi) => (
+                    {availableKPIs.map((kpi) => (
                       <label
                         key={`${kpi.id}-${kpi.source}`}
                         className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-700/30 cursor-pointer"
                       >
                         <input
                           type="checkbox"
-                          checked={localFilters.selectedKPIs?.includes(kpi.id)}
+                          checked={selectedKPIs?.includes(kpi.id)}
                           onChange={() => handleKPISelection(kpi.id)}
                           className="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-600 rounded focus:ring-emerald-500 focus:ring-2"
                         />
@@ -444,7 +461,8 @@ const ControlsBar = ({
                             <span className="text-sm font-medium text-white truncate">
                               {kpi.name}
                             </span>
-                            {getDataSourceIndicator(kpi.source)}
+                            {kpi.source !== 'COMBINED' &&
+                              getDataSourceIndicator(kpi.source)}
                           </div>
                           {kpi.unit && (
                             <span className="text-xs text-slate-400">
@@ -506,34 +524,52 @@ const ControlsBar = ({
 };
 
 // Enhanced Table View Component
-const TableView = ({ className = '' }) => {
+const TableView = ({
+  className = '',
+  onVesselClick = () => {},
+  qualityVisible = true, // NEW: Quality toggle prop
+  onQualityToggle = () => {}, // NEW: Quality toggle handler
+}) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [qualityVisible, setQualityVisible] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
-  const currentKPIs = [
-    { id: 'obs_speed', name: 'Obs Speed', unit: 'knts', source: 'LF' },
-    { id: 'me_consumption', name: 'ME Consumption', unit: 'Mt', source: 'LF' },
-    {
-      id: 'total_consumption',
-      name: 'Total Consumption',
-      unit: 'Mt',
-      source: 'LF',
-    },
-    { id: 'wind_force', name: 'Wind Force', unit: '', source: 'LF' },
-    {
-      id: 'laden_condition',
-      name: 'Loading Condition',
-      unit: '',
-      source: 'LF',
-    },
-    { id: 'me_power', name: 'ME Power', unit: 'kW', source: 'LF' },
-    { id: 'me_sfoc', name: 'ME SFOC', unit: 'gm/kWhr', source: 'LF' },
-    { id: 'rpm', name: 'RPM', unit: '', source: 'LF' },
-  ];
+  // State for data type and KPI selection
+  const [selectedDataType, setSelectedDataType] = useState(DATA_TYPES.LF);
+  const [selectedKPIs, setSelectedKPIs] = useState(
+    ALL_KPIS.LF.map((kpi) => kpi.id)
+  );
+
+  // Helper to get KPI details by ID, considering both LF and HF
+  const getKpiDetails = (kpiId, source) => {
+    if (source) {
+      return ALL_KPIS[source.toUpperCase()]?.find((kpi) => kpi.id === kpiId);
+    }
+    // If source not specified, try to find in LF first, then HF
+    return (
+      ALL_KPIS.LF.find((kpi) => kpi.id === kpiId) ||
+      ALL_KPIS.HF.find((kpi) => kpi.id === kpiId)
+    );
+  };
+
+  const currentKPIsToDisplay = useMemo(() => {
+    if (selectedDataType === DATA_TYPES.COMBINED) {
+      // For combined, show each selected KPI (no duplication in display)
+      return selectedKPIs.map((kpiId) => {
+        const lfKpi = getKpiDetails(kpiId, 'LF');
+        return { ...lfKpi, id: kpiId, displaySource: 'COMBINED' };
+      }).filter(Boolean);
+    } else {
+      // For LF or HF, show only selected KPIs from that source
+      return (
+        ALL_KPIS[selectedDataType.toUpperCase()]?.filter((kpi) =>
+          selectedKPIs.includes(kpi.id)
+        ) || []
+      );
+    }
+  }, [selectedDataType, selectedKPIs]);
 
   // Generate sample data with quality issues that match the quality cards
   const sampleData = useMemo(() => {
@@ -547,84 +583,88 @@ const TableView = ({ className = '' }) => {
         vesselStatus: vessel.status,
         quality: vessel,
         lf: {},
+        hf: {},
       };
 
-      // Generate data for each KPI based on the actual issues in vessel.kpiIssues
-      currentKPIs.forEach((kpi) => {
-        const kpiId = kpi.id;
+      // Generate data for each KPI for both LF and HF
+      ['LF', 'HF'].forEach((sourceType) => {
+        ALL_KPIS[sourceType].forEach((kpi) => {
+          const kpiId = kpi.id;
+          const kpiKey = sourceType.toLowerCase();
 
-        // Check if this KPI has any issues for this vessel
-        const hasIssue = Object.values(vessel.kpiIssues).some(
-          (issue) => issue.kpi === kpiId
-        );
-        const kpiIssueEntries = Object.values(vessel.kpiIssues).filter(
-          (issue) => issue.kpi === kpiId
-        );
+          // Check if this KPI has any issues for this vessel
+          const hasIssue = Object.values(vessel.kpiIssues).some(
+            (issue) => issue.kpi === kpiId
+          );
+          const kpiIssueEntries = Object.values(vessel.kpiIssues).filter(
+            (issue) => issue.kpi === kpiId
+          );
 
-        // Determine if missing or incorrect
-        const hasMissingIssue = kpiIssueEntries.some(
-          (issue) => issue.type === 'missing'
-        );
-        const hasIncorrectIssue = kpiIssueEntries.some(
-          (issue) => issue.type === 'incorrect'
-        );
-
-        if (hasMissingIssue) {
-          data.lf[kpiId] = null;
-        } else if (hasIncorrectIssue) {
-          // Use specific incorrect values based on the issue
-          const incorrectIssue = kpiIssueEntries.find(
+          // Determine if missing or incorrect
+          const hasMissingIssue = kpiIssueEntries.some(
+            (issue) => issue.type === 'missing'
+          );
+          const hasIncorrectIssue = kpiIssueEntries.some(
             (issue) => issue.type === 'incorrect'
           );
-          if (incorrectIssue && incorrectIssue.originalValue !== undefined) {
-            data.lf[kpiId] = incorrectIssue.originalValue;
+
+          if (hasMissingIssue) {
+            data[kpiKey][kpiId] = null;
+          } else if (hasIncorrectIssue) {
+            // Use specific incorrect values based on the issue
+            const incorrectIssue = kpiIssueEntries.find(
+              (issue) => issue.type === 'incorrect'
+            );
+            if (incorrectIssue && incorrectIssue.originalValue !== undefined) {
+              data[kpiKey][kpiId] = incorrectIssue.originalValue;
+            } else {
+              // Generate problematic values
+              switch (kpiId) {
+                case 'obs_speed':
+                  data[kpiKey][kpiId] = -2.5;
+                  break;
+                case 'me_consumption':
+                  data[kpiKey][kpiId] = 45.8;
+                  break;
+                case 'rpm':
+                  data[kpiKey][kpiId] = 250;
+                  break;
+                default:
+                  data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
+              }
+            }
           } else {
-            // Generate problematic values
+            // Generate normal values
             switch (kpiId) {
               case 'obs_speed':
-                data.lf[kpiId] = -2.5; // Negative speed
+                data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
                 break;
               case 'me_consumption':
-                data.lf[kpiId] = 45.8; // High consumption
+                data[kpiKey][kpiId] = 8.2 + Math.random() * 4;
+                break;
+              case 'total_consumption':
+                data[kpiKey][kpiId] = 10.5 + Math.random() * 5;
+                break;
+              case 'wind_force':
+                data[kpiKey][kpiId] = Math.floor(Math.random() * 8) + 1;
+                break;
+              case 'laden_condition':
+                data[kpiKey][kpiId] = Math.random() > 0.5 ? 1 : 0;
+                break;
+              case 'me_power':
+                data[kpiKey][kpiId] = 4200 + Math.random() * 2000;
+                break;
+              case 'me_sfoc':
+                data[kpiKey][kpiId] = 185 + Math.random() * 15;
                 break;
               case 'rpm':
-                data.lf[kpiId] = 250; // High RPM
+                data[kpiKey][kpiId] = 85 + Math.random() * 25;
                 break;
               default:
-                data.lf[kpiId] = 12.5 + Math.random() * 8;
+                data[kpiKey][kpiId] = Math.random() * 100;
             }
           }
-        } else {
-          // Generate normal values
-          switch (kpiId) {
-            case 'obs_speed':
-              data.lf[kpiId] = 12.5 + Math.random() * 8;
-              break;
-            case 'me_consumption':
-              data.lf[kpiId] = 8.2 + Math.random() * 4;
-              break;
-            case 'total_consumption':
-              data.lf[kpiId] = 10.5 + Math.random() * 5;
-              break;
-            case 'wind_force':
-              data.lf[kpiId] = Math.floor(Math.random() * 8) + 1;
-              break;
-            case 'laden_condition':
-              data.lf[kpiId] = Math.random() > 0.5 ? 1 : 0;
-              break;
-            case 'me_power':
-              data.lf[kpiId] = 4200 + Math.random() * 2000;
-              break;
-            case 'me_sfoc':
-              data.lf[kpiId] = 185 + Math.random() * 15;
-              break;
-            case 'rpm':
-              data.lf[kpiId] = 85 + Math.random() * 25;
-              break;
-            default:
-              data.lf[kpiId] = Math.random() * 100;
-          }
-        }
+        });
       });
 
       return data;
@@ -632,10 +672,40 @@ const TableView = ({ className = '' }) => {
   }, []);
 
   // Enhanced value display with quality indicators that match the issues in quality cards
-  const getValueDisplay = (item, kpiId) => {
-    const value = item.lf[kpiId];
+  const getValueDisplay = (item, kpiId, source) => {
+    const dataKey = source.toLowerCase();
+    const value = item[dataKey][kpiId];
 
-    // Check if this KPI has issues for this vessel
+    // NEW: If quality is not visible, show clean values without indicators
+    if (!qualityVisible) {
+      if (value === null || value === undefined) {
+        return (
+          <span className="text-xs text-slate-500 font-medium">
+            --
+          </span>
+        );
+      }
+
+      const formatValue = (val) => {
+        if (kpiId === 'laden_condition') return val === 1 ? 'Laden' : 'Ballast';
+        if (kpiId === 'wind_force') return val.toString();
+        if (kpiId === 'obs_speed') return val.toFixed(1);
+        if (kpiId === 'me_consumption' || kpiId === 'total_consumption')
+          return val.toFixed(1);
+        if (kpiId === 'me_power') return Math.round(val).toLocaleString();
+        if (kpiId === 'me_sfoc') return val.toFixed(1);
+        if (kpiId === 'rpm') return Math.round(val).toString();
+        return val.toString();
+      };
+
+      return (
+        <span className="text-xs font-semibold text-white">
+          {formatValue(value)}
+        </span>
+      );
+    }
+
+    // Original quality-aware display logic
     const hasIssue = Object.values(item.quality.kpiIssues).some(
       (issue) => issue.kpi === kpiId
     );
@@ -747,32 +817,73 @@ const TableView = ({ className = '' }) => {
     setTimeout(() => setIsExporting(false), 2000);
   };
 
+  // Handle vessel click to navigate to chart view
+  const handleVesselClick = (vessel) => {
+    // Create a vessel ID that matches the format expected by chart view
+    const vesselId = `vessel_${vessel.id}`;
+    onVesselClick(vesselId);
+  };
+
   const paginatedData = sampleData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
   const totalPages = Math.ceil(sampleData.length / pageSize);
 
+  const getDataSourceBadge = (source) => {
+    const colors = {
+      LF: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+      HF: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+    };
+    return (
+      <span
+        className={`text-[8px] font-medium px-1 py-0.5 rounded-full border ${colors[source]} flex items-center gap-0.5`}
+      >
+        {source === 'LF' && <Radio className="w-2 h-2" />}
+        {source === 'HF' && <Zap className="w-2 h-2" />}
+        {source}
+      </span>
+    );
+  };
+
   return (
     <div
       className={`bg-slate-900 text-white min-h-screen flex flex-col ${className}`}
     >
-      <ControlsBar onExport={handleExport} isExporting={isExporting} />
+      <ControlsBar
+        onExport={handleExport}
+        isExporting={isExporting}
+        selectedDataType={selectedDataType}
+        setSelectedDataType={setSelectedDataType}
+        selectedKPIs={selectedKPIs}
+        setSelectedKPIs={setSelectedKPIs}
+      />
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
-          <DataQualityCards
-            data={sampleData}
-            qualityVisible={qualityVisible}
-            onToggleQuality={() => setQualityVisible(!qualityVisible)}
-            selectedVessels={sampleData.map((item) => `vessel_${item.id}`)}
-            selectedKPIs={currentKPIs.map((kpi) => kpi.id)}
-            chartData={sampleData}
-            annotationsVisible={false}
-            qualityOverlayVisible={false}
-            viewMode="table"
-            compactMode={true}
-          />
+          {/* NEW: Conditional rendering based on quality toggle */}
+          {qualityVisible ? (
+            // Show Data Quality Cards when quality is visible
+            <DataQualityCards
+              data={sampleData}
+              qualityVisible={qualityVisible}
+              onToggleQuality={onQualityToggle}
+              selectedVessels={sampleData.map((item) => `vessel_${item.id}`)}
+              selectedKPIs={selectedKPIs}
+              chartData={sampleData}
+              annotationsVisible={false}
+              qualityOverlayVisible={false}
+              viewMode="table"
+              compactMode={true}
+            />
+          ) : (
+            // Show Vessel Performance Charts when quality is hidden
+            <VesselPerformanceCharts
+              data={sampleData}
+              selectedKPIs={selectedKPIs}
+              selectedDataType={selectedDataType}
+            />
+          )}
 
           {/* Table Container */}
           <div className="bg-slate-800/50 border border-white/10 rounded-lg overflow-hidden">
@@ -804,6 +915,7 @@ const TableView = ({ className = '' }) => {
                         {getSortIcon('date')}
                       </button>
                     </th>
+                    {/* NEW: Conditionally show quality column */}
                     {qualityVisible && (
                       <th className="w-20 px-2 py-1 text-center">
                         <button
@@ -815,8 +927,11 @@ const TableView = ({ className = '' }) => {
                         </button>
                       </th>
                     )}
-                    {currentKPIs.map((kpi) => (
-                      <th key={kpi.id} className="w-24 px-2 py-1 text-center">
+                    {currentKPIsToDisplay.map((kpi) => (
+                      <th
+                        key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                        className="w-24 px-2 py-1 text-center"
+                      >
                         <button
                           onClick={() => handleSort(kpi.id)}
                           className="flex flex-col items-center gap-1 text-slate-300 hover:text-white transition-colors group w-full"
@@ -833,6 +948,9 @@ const TableView = ({ className = '' }) => {
                                 ({kpi.unit})
                               </span>
                             )}
+                            {selectedDataType !== DATA_TYPES.COMBINED && 
+                             kpi.source && 
+                             getDataSourceBadge(kpi.source)}
                           </div>
                         </button>
                       </th>
@@ -856,7 +974,11 @@ const TableView = ({ className = '' }) => {
                       </td>
                       <td className="px-2 py-1">
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-white text-sm truncate">
+                          <div
+                            className="font-semibold text-white text-sm truncate cursor-pointer hover:text-cyan-400 transition-colors hover:underline"
+                            onClick={() => handleVesselClick(item)}
+                            title="Click to view charts for this vessel"
+                          >
                             {item.vesselName}
                           </div>
                           <div className="mt-1 flex items-center gap-1 text-xs text-slate-400">
@@ -890,6 +1012,7 @@ const TableView = ({ className = '' }) => {
                           </div>
                         </div>
                       </td>
+                      {/* NEW: Conditionally show quality column */}
                       {qualityVisible && (
                         <td className="px-2 py-1 text-center">
                           <EnhancedQualityIndicator
@@ -900,9 +1023,25 @@ const TableView = ({ className = '' }) => {
                           />
                         </td>
                       )}
-                      {currentKPIs.map((kpi) => (
-                        <td key={kpi.id} className="px-2 py-1 text-center">
-                          {getValueDisplay(item, kpi.id)}
+                      {currentKPIsToDisplay.map((kpi) => (
+                        <td
+                          key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                          className="px-2 py-1 text-center"
+                        >
+                          {selectedDataType === DATA_TYPES.COMBINED ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center justify-center gap-1">
+                                {getValueDisplay(item, kpi.id, 'LF')}
+                                {getDataSourceBadge('LF')}
+                              </div>
+                              <div className="flex items-center justify-center gap-1">
+                                {getValueDisplay(item, kpi.id, 'HF')}
+                                {getDataSourceBadge('HF')}
+                              </div>
+                            </div>
+                          ) : (
+                            getValueDisplay(item, kpi.id, selectedDataType)
+                          )}
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center">
