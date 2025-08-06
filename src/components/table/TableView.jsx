@@ -186,96 +186,6 @@ const ALL_KPIS = {
   ],
 };
 
-// Mock data for fleet vessels (from second code)
-const generateMockFleetData = (count = 150) => {
-  const vesselTypes = ['Bulk Carrier', 'Container Ship', 'Tanker', 'General Cargo'];
-  const statuses = ['At Sea', 'At Port', 'Anchored', 'In Transit'];
-  const regions = ['North Atlantic', 'Pacific', 'Mediterranean', 'Indian Ocean', 'Caribbean'];
-  const ports = ['Hamburg', 'Rotterdam', 'Singapore', 'Shanghai', 'Los Angeles', 'Dubai', 'Antwerp'];
-
-  return Array.from({ length: count }, (_, i) => {
-    const issueCount = Math.floor(Math.random() * 8);
-    const criticalIssues = Math.floor(Math.random() * 3);
-    const warningIssues = issueCount - criticalIssues;
-    const healthScore = Math.max(60, 100 - (criticalIssues * 15) - (warningIssues * 5) + Math.random() * 10);
-
-    return {
-      id: `vessel_${i + 1}`,
-      name: `MV ${['Atlantic', 'Pacific', 'Nordic', 'Global', 'Ocean', 'Marine', 'Star', 'Pioneer', 'Navigator', 'Explorer'][Math.floor(Math.random() * 10)]} ${['Trader', 'Voyager', 'Guardian', 'Seeker', 'Spirit', 'Crown', 'Dawn', 'Pride', 'Quest', 'Harmony'][Math.floor(Math.random() * 10)]}`,
-      type: vesselTypes[Math.floor(Math.random() * vesselTypes.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      region: regions[Math.floor(Math.random() * regions.length)],
-      currentPort: Math.random() > 0.3 ? ports[Math.floor(Math.random() * ports.length)] : null,
-      healthScore: Math.round(healthScore),
-      criticalIssues,
-      warningIssues,
-      infoIssues: Math.max(0, issueCount - criticalIssues - warningIssues),
-      lastUpdate: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
-      speed: Math.round((8 + Math.random() * 15) * 10) / 10,
-      fuelEfficiency: Math.round((180 + Math.random() * 40) * 10) / 10,
-      dataQuality: Math.round(75 + Math.random() * 25),
-      crew: Math.floor(15 + Math.random() * 10),
-      nextMaintenance: new Date(Date.now() + Math.random() * 90 * 24 * 60 * 60 * 1000),
-      issues: generateVesselIssues(criticalIssues, warningIssues),
-      coordinates: {
-        lat: (Math.random() - 0.5) * 160,
-        lng: (Math.random() - 0.5) * 360
-      }
-    };
-  });
-};
-
-const generateVesselIssues = (critical, warning) => {
-  const issueTypes = [
-    { type: 'Fuel Consumption Spike', kpi: 'fuel_consumption', category: 'performance' },
-    { type: 'Speed Deviation', kpi: 'speed', category: 'performance' },
-    { type: 'Engine Temperature High', kpi: 'engine_temp', category: 'maintenance' },
-    { type: 'Data Transmission Delay', kpi: 'data_quality', category: 'connectivity' },
-    { type: 'Sensor Calibration Drift', kpi: 'sensors', category: 'maintenance' },
-    { type: 'Weather Routing Alert', kpi: 'routing', category: 'navigation' },
-    { type: 'Port ETA Deviation', kpi: 'eta', category: 'schedule' },
-    { type: 'Maintenance Due', kpi: 'maintenance', category: 'maintenance' }
-  ];
-
-  const issues = [];
-
-  // Add critical issues
-  for (let i = 0; i < critical; i++) {
-    const issue = issueTypes[Math.floor(Math.random() * issueTypes.length)];
-    issues.push({
-      id: `critical_${i}`,
-      severity: 'critical',
-      type: issue.type,
-      kpi: issue.kpi,
-      category: issue.category,
-      message: `Critical: ${issue.type} detected`,
-      timestamp: new Date(Date.now() - Math.random() * 6 * 60 * 60 * 1000),
-      acknowledged: Math.random() > 0.7,
-      originalValue: (Math.random() * 100).toFixed(2),
-      expectedRange: '0-50',
-    });
-  }
-
-  // Add warning issues
-  for (let i = 0; i < warning; i++) {
-    const issue = issueTypes[Math.floor(Math.random() * issueTypes.length)];
-    issues.push({
-      id: `warning_${i}`,
-      severity: 'warning',
-      type: issue.type,
-      kpi: issue.kpi,
-      category: issue.category,
-      message: `Warning: ${issue.type} requires attention`,
-      timestamp: new Date(Date.now() - Math.random() * 12 * 60 * 60 * 1000),
-      acknowledged: Math.random() > 0.5,
-      originalValue: (Math.random() * 100).toFixed(2),
-      expectedRange: '0-50',
-    });
-  }
-
-  return issues;
-};
-
 // Enhanced Quality Badge Component
 const EnhancedQualityIndicator = ({
   completeness,
@@ -446,22 +356,22 @@ const EnhancedQualityIndicator = ({
   );
 };
 
-// NEW: Vessel-wise Performance Charts Component (from first code)
+// NEW: Vessel-wise Performance Charts Component
 const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
   // Calculate vessel performance metrics
   const vesselMetrics = useMemo(() => {
     if (!data || data.length === 0) return null;
 
     const dataKey = selectedDataType.toLowerCase();
-
+  
     return data.map(vessel => {
       const speed = vessel[dataKey]?.obs_speed || 0;
       const consumption = vessel[dataKey]?.me_consumption || 0;
       const ladenCondition = vessel[dataKey]?.laden_condition;
-
+    
       // Calculate efficiency (kg/nm) - simplified calculation
       const efficiency = speed > 0 ? (consumption * 1000) / speed : 0;
-
+    
       return {
         vesselName: vessel.vesselName,
         shortName: vessel.vesselName.replace('MV ', '').substring(0, 8),
@@ -470,11 +380,11 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
         efficiency: efficiency,
         ladenCondition: ladenCondition === 1 ? 'Laden' : 'Ballast',
         qualityScore: vessel.quality.overallScore,
-        completeness: vessel.quality.completeness,
-        correctness: vessel.quality.correctness,
+        completeness: vessel.quality.completeness, // Add completeness
+        correctness: vessel.quality.correctness,   // Add correctness
         vesselId: vessel.id
       };
-    }).filter(v => v.speed > 0 || v.consumption > 0);
+    }).filter(v => v.speed > 0 || v.consumption > 0); // Filter out vessels with no data
   }, [data, selectedDataType]);
 
   if (!vesselMetrics || vesselMetrics.length === 0) return null;
@@ -532,45 +442,45 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
               <span className="text-[9px] text-slate-400">Parallel comparison</span>
             </div>
           </div>
-
+        
           <div className="relative h-32 bg-slate-800/30 rounded-lg p-2">
             {/* Y-axis labels */}
             <div className="absolute left-0 top-0 bottom-0 w-6 flex flex-col justify-between text-[8px] text-cyan-400 py-2">
               <span>{maxSpeed.toFixed(0)}</span>
-              <span>{(maxSpeed / 2).toFixed(0)}</span>
+              <span>{(maxSpeed/2).toFixed(0)}</span>
               <span>0</span>
             </div>
             <div className="absolute right-0 top-0 bottom-0 w-6 flex flex-col justify-between text-[8px] text-orange-400 py-2 text-right">
               <span>{maxConsumption.toFixed(0)}</span>
-              <span>{(maxConsumption / 2).toFixed(0)}</span>
+              <span>{(maxConsumption/2).toFixed(0)}</span>
               <span>0</span>
             </div>
-
+          
             <div className="absolute inset-0 mx-6 border-l border-b border-slate-600/50">
               {/* Grid lines */}
               <div className="absolute inset-0">
                 {[25, 50, 75].map(percent => (
-                  <div key={percent}
-                    className="absolute w-full border-t border-slate-600/20"
-                    style={{ bottom: `${percent}%` }}
+                  <div key={percent} 
+                    className="absolute w-full border-t border-slate-600/20" 
+                    style={{ bottom: `${percent}%` }} 
                   />
                 ))}
               </div>
-
+            
               <div className="flex items-end justify-between h-full gap-1 px-2">
                 {vesselMetrics.slice(0, 6).map((vessel) => {
                   const speedHeight = (vessel.speed / maxSpeed) * 85;
                   const consumptionHeight = (vessel.consumption / maxConsumption) * 85;
-
+                
                   return (
                     <div key={vessel.vesselId} className="flex items-end gap-1 group cursor-pointer" title={`${vessel.vesselName}: ${vessel.speed.toFixed(1)} kn, ${vessel.consumption.toFixed(1)} Mt`}>
                       {/* Speed bar (left) */}
-                      <div
+                      <div 
                         className="w-2 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t transition-all duration-300 group-hover:from-cyan-500 group-hover:to-cyan-300 group-hover:w-2.5"
                         style={{ height: `${speedHeight}px` }}
                       />
                       {/* Consumption bar (right) */}
-                      <div
+                      <div 
                         className="w-2 bg-gradient-to-t from-orange-600 to-orange-400 rounded-t transition-all duration-300 group-hover:from-orange-500 group-hover:to-orange-300 group-hover:w-2.5"
                         style={{ height: `${consumptionHeight}px` }}
                       />
@@ -579,7 +489,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                 })}
               </div>
             </div>
-
+          
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-6 right-6 flex justify-between">
               {vesselMetrics.slice(0, 6).map((vessel) => (
@@ -593,8 +503,12 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
           <div className="mt-3 pt-3 border-t border-cyan-500/20">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full"></div>
-                <span className="text-slate-300">Ballast</span>
+                <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                <span className="text-slate-300">Speed (kn)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                <span className="text-slate-300">Fuel (Mt)</span>
               </div>
             </div>
           </div>
@@ -618,33 +532,33 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
             {/* Y-axis labels */}
             <div className="absolute left-0 top-0 bottom-0 w-8 flex flex-col justify-between text-[8px] text-emerald-400 py-2">
               <span>{maxEfficiency.toFixed(0)}</span>
-              <span>{(maxEfficiency * 0.66).toFixed(0)}</span>
-              <span>{(maxEfficiency * 0.33).toFixed(0)}</span>
+              <span>{(maxEfficiency*0.66).toFixed(0)}</span>
+              <span>{(maxEfficiency*0.33).toFixed(0)}</span>
               <span>0</span>
             </div>
-
+          
             <div className="absolute inset-0 ml-8 border-l border-b border-slate-600/50">
               {/* Grid lines */}
               <div className="absolute inset-0">
                 {[25, 50, 75].map(percent => (
-                  <div key={percent}
-                    className="absolute w-full border-t border-slate-600/20"
-                    style={{ bottom: `${percent}%` }}
+                  <div key={percent} 
+                    className="absolute w-full border-t border-slate-600/20" 
+                    style={{ bottom: `${percent}%` }} 
                   />
                 ))}
               </div>
-
+            
               <div className="flex items-end justify-between h-full gap-1 px-2">
                 {vesselMetrics.slice(0, 7).map((vessel) => {
                   const barHeight = (vessel.efficiency / maxEfficiency) * 85;
                   const isLaden = vessel.ladenCondition === 'Laden';
-
+                
                   return (
                     <div key={vessel.vesselId} className="flex flex-col items-center group cursor-pointer" title={`${vessel.vesselName}: ${vessel.efficiency.toFixed(1)} kg/nm (${vessel.ladenCondition})`}>
-                      <div
+                      <div 
                         className={`w-3 rounded-t transition-all duration-300 group-hover:w-4 ${
-                          isLaden
-                            ? 'bg-gradient-to-t from-blue-600 to-blue-400 group-hover:from-blue-500 group-hover:to-blue-300'
+                          isLaden 
+                            ? 'bg-gradient-to-t from-blue-600 to-blue-400 group-hover:from-blue-500 group-hover:to-blue-300' 
                             : 'bg-gradient-to-t from-orange-600 to-orange-400 group-hover:from-orange-500 group-hover:to-orange-300'
                         }`}
                         style={{ height: `${barHeight}px` }}
@@ -658,7 +572,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                 })}
               </div>
             </div>
-
+          
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-8 right-0 flex justify-between pr-2">
               {vesselMetrics.slice(0, 7).map((vessel) => (
@@ -702,8 +616,8 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
             <div className="absolute inset-0 p-2">
               {/* Quadrant Lines */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="absolute w-full h-px bg-slate-600/50" style={{ top: '50%' }}></div>
-                <div className="absolute h-full w-px bg-slate-600/50" style={{ left: '50%' }}></div>
+                <div className="absolute w-full h-px bg-slate-600/50" style={{ top: '50%' }}></div> {/* Horizontal line (Completeness 50%) */}
+                <div className="absolute h-full w-px bg-slate-600/50" style={{ left: '50%' }}></div> {/* Vertical line (Correctness 50%) */}
               </div>
 
               {/* X-axis labels (Correctness) */}
@@ -721,16 +635,16 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
 
               {/* Scatter Points */}
               {vesselMetrics.map((vessel) => {
-                const xPos = (vessel.correctness / 100) * 90 + 5;
-                const yPos = 100 - ((vessel.completeness / 100) * 90 + 5);
+                const xPos = (vessel.correctness / 100) * 90 + 5; // Scale to 0-100, add padding
+                const yPos = 100 - ((vessel.completeness / 100) * 90 + 5); // Scale and invert for Y-axis, add padding
 
-                let pointColor = 'bg-slate-400';
+                let pointColor = 'bg-slate-400'; // Default
                 if (vessel.completeness >= 85 && vessel.correctness >= 85) {
-                  pointColor = 'bg-emerald-500';
+                  pointColor = 'bg-emerald-500'; // High quality
                 } else if (vessel.completeness >= 70 && vessel.correctness >= 70) {
-                  pointColor = 'bg-yellow-500';
+                  pointColor = 'bg-yellow-500'; // Medium quality
                 } else if (vessel.completeness < 70 || vessel.correctness < 70) {
-                  pointColor = 'bg-red-500';
+                  pointColor = 'bg-red-500'; // Low quality
                 }
 
                 return (
@@ -782,350 +696,11 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
   );
 };
 
-// NEW: Compact Vessel List Component (from second code)
-const CompactVesselList = ({ fleetData, onVesselClick, onIssueClick }) => {
-  const [sortBy, setSortBy] = useState('health');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterHealth, setFilterHealth] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-
-  // Filter and sort vessels
-  const filteredVessels = useMemo(() => {
-    let vessels = [...fleetData];
-
-    // Filter by status
-    if (filterStatus !== 'all') {
-      vessels = vessels.filter(vessel => vessel.status === filterStatus);
-    }
-
-    // Filter by health
-    if (filterHealth !== 'all') {
-      if (filterHealth === 'critical') {
-        vessels = vessels.filter(vessel => vessel.criticalIssues > 0);
-      } else if (filterHealth === 'warning') {
-        vessels = vessels.filter(vessel => vessel.warningIssues > 0 && vessel.criticalIssues === 0);
-      } else if (filterHealth === 'healthy') {
-        vessels = vessels.filter(vessel => vessel.criticalIssues === 0 && vessel.warningIssues === 0);
-      }
-    }
-
-    // Filter by search term
-    if (searchTerm) {
-      vessels = vessels.filter(vessel =>
-        vessel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vessel.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vessel.region.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Sort vessels
-    vessels.sort((a, b) => {
-      switch (sortBy) {
-        case 'health':
-          return a.healthScore - b.healthScore;
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'issues':
-          return (b.criticalIssues + b.warningIssues) - (a.criticalIssues + a.warningIssues);
-        case 'lastUpdate':
-          return new Date(b.lastUpdate) - new Date(a.lastUpdate);
-        default:
-          return 0;
-      }
-    });
-
-    return vessels;
-  }, [fleetData, filterStatus, filterHealth, searchTerm, sortBy]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredVessels.length / pageSize);
-  const paginatedVessels = filteredVessels.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const getHealthColor = (score) => {
-    if (score >= 85) return 'text-emerald-400';
-    if (score >= 70) return 'text-yellow-400';
-    return 'text-red-400';
-  };
-
-  const getHealthBg = (score) => {
-    if (score >= 85) return 'bg-emerald-500/10 border-emerald-500/20';
-    if (score >= 70) return 'bg-yellow-500/10 border-yellow-500/20';
-    return 'bg-red-500/10 border-red-500/20';
-  };
-
-  return (
-    <div className="bg-slate-800/50 border border-white/10 rounded-xl">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 p-4 pb-0">
-        <div className="flex items-center gap-3">
-          <Database className="w-6 h-6 text-blue-400" />
-          <h2 className="text-xl font-bold text-white">Fleet Vessel List</h2>
-          <span className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm font-medium">
-            {filteredVessels.length} vessels
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="px-3 py-1 bg-slate-700/50 border border-white/10 rounded-lg text-white text-sm focus:border-blue-500/50 focus:outline-none"
-          >
-            <option value={25}>25 per page</option>
-            <option value={50}>50 per page</option>
-            <option value={100}>100 per page</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 px-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search vessels..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-700/50 border border-white/10 rounded-lg text-white placeholder-slate-400 focus:border-blue-500/50 focus:outline-none"
-          />
-        </div>
-
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 bg-slate-700/50 border border-white/10 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
-        >
-          <option value="all">All Status</option>
-          <option value="At Sea">At Sea</option>
-          <option value="At Port">At Port</option>
-          <option value="Anchored">Anchored</option>
-          <option value="In Transit">In Transit</option>
-        </select>
-
-        <select
-          value={filterHealth}
-          onChange={(e) => setFilterHealth(e.target.value)}
-          className="px-3 py-2 bg-slate-700/50 border border-white/10 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
-        >
-          <option value="all">All Health</option>
-          <option value="critical">Critical</option>
-          <option value="warning">Warning</option>
-          <option value="healthy">Healthy</option>
-        </select>
-
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          className="px-3 py-2 bg-slate-700/50 border border-white/10 rounded-lg text-white focus:border-blue-500/50 focus:outline-none"
-        >
-          <option value="health">Sort by Health</option>
-          <option value="name">Sort by Name</option>
-          <option value="issues">Sort by Issues</option>
-          <option value="lastUpdate">Sort by Update</option>
-        </select>
-
-        <div className="flex items-center justify-center px-3 py-2 bg-slate-700/50 border border-white/10 rounded-lg">
-          <span className="text-sm text-slate-300">
-            {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredVessels.length)} of {filteredVessels.length}
-          </span>
-        </div>
-      </div>
-
-      {/* Vessel Table */}
-      <div className="overflow-x-auto px-4">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-white/10">
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Vessel</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Health</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Issues</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Performance</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Location</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Last Update</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-slate-300 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {paginatedVessels.map((vessel) => (
-              <tr key={vessel.id} className="hover:bg-slate-700/30 transition-colors">
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-3">
-                    <Ship className="w-4 h-4 text-blue-400" />
-                    <div>
-                      <button
-                        onClick={() => onVesselClick(vessel.id)}
-                        className="text-sm font-medium text-white hover:text-blue-400 transition-colors"
-                      >
-                        {vessel.name}
-                      </button>
-                      <div className="text-xs text-slate-400">{vessel.type}</div>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${
-                      vessel.status === 'At Sea' ? 'bg-emerald-400' :
-                      vessel.status === 'At Port' ? 'bg-blue-400' :
-                      vessel.status === 'Anchored' ? 'bg-orange-400' : 'bg-purple-400'
-                    }`} />
-                    <span className="text-xs text-slate-300">{vessel.status}</span>
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <div className={`px-2 py-1 rounded-full border text-xs font-medium ${getHealthBg(vessel.healthScore)}`}>
-                      <span className={getHealthColor(vessel.healthScore)}>{vessel.healthScore}%</span>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    {vessel.criticalIssues > 0 && (
-                      <button
-                        onClick={() => onIssueClick(vessel, 'critical')}
-                        className="flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-300 rounded-full text-xs hover:bg-red-500/30 transition-colors"
-                      >
-                        <AlertTriangle className="w-3 h-3" />
-                        {vessel.criticalIssues}
-                      </button>
-                    )}
-                    {vessel.warningIssues > 0 && (
-                      <button
-                        onClick={() => onIssueClick(vessel, 'warning')}
-                        className="flex items-center gap-1 px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs hover:bg-yellow-500/30 transition-colors"
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        {vessel.warningIssues}
-                      </button>
-                    )}
-                    {vessel.criticalIssues === 0 && vessel.warningIssues === 0 && (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-xs">
-                        <CheckCircle className="w-3 h-3" />
-                        OK
-                      </span>
-                    )}
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="text-xs text-slate-300 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Navigation className="w-3 h-3 text-slate-400" />
-                      <span>{vessel.speed} knts</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Fuel className="w-3 h-3 text-slate-400" />
-                      <span>{vessel.fuelEfficiency} g/kWh</span>
-                    </div>
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="text-xs text-slate-300">
-                    <div className="flex items-center gap-1 mb-1">
-                      <MapPin className="w-3 h-3 text-slate-400" />
-                      <span>{vessel.region}</span>
-                    </div>
-                    {vessel.currentPort && (
-                      <div className="text-slate-400">{vessel.currentPort}</div>
-                    )}
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="text-xs text-slate-400">
-                    {new Date(vessel.lastUpdate).toLocaleString()}
-                  </div>
-                </td>
-
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => onVesselClick(vessel.id)}
-                      className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
-                      title="View Details"
-                    >
-                      <Ship className="w-4 h-4" />
-                    </button>
-                    <button
-                      className="p-1 text-slate-400 hover:text-white transition-colors"
-                      title="More Actions"
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6 px-4 pb-4">
-          <div className="text-sm text-slate-400">
-            Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredVessels.length)} of {filteredVessels.length} vessels
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 bg-slate-700/50 text-slate-300 rounded-md text-sm hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                      currentPage === page
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 bg-slate-700/50 text-slate-300 rounded-md text-sm hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // Controls Bar Component
 const ControlsBar = ({
-  onExport = () => { },
+  onExport = () => {},
   isExporting = false,
-  onKPIChange = () => { },
+  onKPIChange = () => {},
   selectedDataType,
   setSelectedDataType,
   selectedKPIs,
@@ -1350,112 +925,12 @@ const ControlsBar = ({
   );
 };
 
-// Issue Details Modal Component
-const IssueDetailsModal = ({ vessel, issues, onClose }) => {
-  const incorrectIssues = issues.filter(issue => issue.type === 'correctness');
-  const missingIssues = issues.filter(issue => issue.type === 'completeness');
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 border border-white/10 rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b border-white/10">
-          <h3 className="text-xl font-bold text-white">Issues for {vessel.name}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-        <div className="p-4 space-y-6">
-          {incorrectIssues.length > 0 && (
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-red-400 mb-3 flex items-center gap-2">
-                <XCircle className="w-5 h-5" /> Incorrect Data
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="text-xs text-slate-400 uppercase bg-slate-700/70">
-                    <tr>
-                      <th scope="col" className="px-4 py-2">Date/Time</th>
-                      <th scope="col" className="px-4 py-2">Field Name</th>
-                      <th scope="col" className="px-4 py-2">Value</th>
-                      <th scope="col" className="px-4 py-2">Expected Range</th>
-                      <th scope="col" className="px-4 py-2">Severity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {incorrectIssues.map((issue, index) => (
-                      <tr key={index} className="border-b border-slate-600/50 hover:bg-slate-600/30">
-                        <td className="px-4 py-2">{new Date(issue.timestamp).toLocaleString()}</td>
-                        <td className="px-4 py-2">{issue.kpi}</td>
-                        <td className="px-4 py-2">{issue.originalValue || 'N/A'}</td>
-                        <td className="px-4 py-2">{issue.expectedRange || 'N/A'}</td>
-                        <td className="px-4 py-2">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            issue.severity === 'high' ? 'bg-red-500/20 text-red-300' :
-                            issue.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                            'bg-blue-500/20 text-blue-300'
-                          }`}>
-                            {issue.severity}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {missingIssues.length > 0 && (
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-lg font-semibold text-orange-400 mb-3 flex items-center gap-2">
-                <WifiOff className="w-5 h-5" /> Missing Data
-              </h4>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-slate-300">
-                  <thead className="text-xs text-slate-400 uppercase bg-slate-700/70">
-                    <tr>
-                      <th scope="col" className="px-4 py-2">Date/Time</th>
-                      <th scope="col" className="px-4 py-2">Missing Field Name</th>
-                      <th scope="col" className="px-4 py-2">Severity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {missingIssues.map((issue, index) => (
-                      <tr key={index} className="border-b border-slate-600/50 hover:bg-slate-600/30">
-                        <td className="px-4 py-2">{new Date(issue.timestamp).toLocaleString()}</td>
-                        <td className="px-4 py-2">{issue.kpi}</td>
-                        <td className="px-4 py-2">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            issue.severity === 'high' ? 'bg-red-500/20 text-red-300' :
-                            issue.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                            'bg-blue-500/20 text-blue-300'
-                          }`}>
-                            {issue.severity}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {incorrectIssues.length === 0 && missingIssues.length === 0 && (
-            <p className="text-slate-400 text-center py-4">No detailed issues found for this vessel.</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Enhanced Table View Component
 const TableView = ({
   className = '',
-  onVesselClick = () => { },
-  qualityVisible = true, // Quality toggle prop
-  onQualityToggle = () => { }, // Quality toggle handler
+  onVesselClick = () => {},
+  qualityVisible = true, // NEW: Quality toggle prop
+  onQualityToggle = () => {}, // NEW: Quality toggle handler
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
@@ -1468,12 +943,6 @@ const TableView = ({
   const [selectedKPIs, setSelectedKPIs] = useState(
     ALL_KPIS.LF.map((kpi) => kpi.id)
   );
-
-  // State for fleet vessel list and issue modal
-  const [fleetData] = useState(() => generateMockFleetData(150));
-  const [selectedVessel, setSelectedVessel] = useState(null);
-  const [showIssueModal, setShowIssueModal] = useState(false);
-  const [modalIssues, setModalIssues] = useState([]);
 
   // Helper to get KPI details by ID, considering both LF and HF
   const getKpiDetails = (kpiId, source) => {
@@ -1492,9 +961,7 @@ const TableView = ({
       // For combined, show each selected KPI (no duplication in display)
       return selectedKPIs.map((kpiId) => {
         const lfKpi = getKpiDetails(kpiId, 'LF');
-        const hfKpi = getKpiDetails(kpiId, 'HF');
-        // Prioritize LF for name/unit if both exist, but mark as combined
-        return { ...(lfKpi || hfKpi), id: kpiId, displaySource: 'COMBINED' };
+        return { ...lfKpi, id: kpiId, displaySource: 'COMBINED' };
       }).filter(Boolean);
     } else {
       // For LF or HF, show only selected KPIs from that source
@@ -1611,7 +1078,7 @@ const TableView = ({
     const dataKey = source.toLowerCase();
     const value = item[dataKey][kpiId];
 
-    // If quality is not visible, show clean values without indicators
+    // NEW: If quality is not visible, show clean values without indicators
     if (!qualityVisible) {
       if (value === null || value === undefined) {
         return (
@@ -1752,30 +1219,11 @@ const TableView = ({
     setTimeout(() => setIsExporting(false), 2000);
   };
 
-  // Handle vessel click to navigate to chart view (original functionality)
-  const handleVesselClickFromTable = (vessel) => {
+  // Handle vessel click to navigate to chart view
+  const handleVesselClick = (vessel) => {
+    // Create a vessel ID that matches the format expected by chart view
     const vesselId = `vessel_${vessel.id}`;
     onVesselClick(vesselId);
-  };
-
-  // Handle vessel click from fleet list (new functionality)
-  const handleVesselClickFromFleet = (vesselId) => {
-    onVesselClick(vesselId);
-  };
-
-  const handleIssueClick = (vessel, severity) => {
-    setSelectedVessel(vessel);
-    const issuesToShow = vessel.issues.filter(issue =>
-      severity === 'critical' ? issue.severity === 'critical' : issue.severity === 'warning'
-    );
-    setModalIssues(issuesToShow);
-    setShowIssueModal(true);
-  };
-
-  const handleCloseIssueModal = () => {
-    setShowIssueModal(false);
-    setModalIssues([]);
-    setSelectedVessel(null);
   };
 
   const paginatedData = sampleData.slice(
@@ -1815,7 +1263,7 @@ const TableView = ({
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
-          {/* Conditional rendering based on quality toggle */}
+          {/* NEW: Conditional rendering based on quality toggle */}
           {qualityVisible ? (
             // Show Data Quality Cards when quality is visible
             <DataQualityCards
@@ -1839,283 +1287,240 @@ const TableView = ({
             />
           )}
 
-          {/* Quality Controls Bar */}
-          <div className="flex items-center justify-between bg-slate-800/30 border border-white/10 rounded-lg p-3 mb-4">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={onQualityToggle}
-                className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  qualityVisible
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700'
-                }`}
-              >
-                {qualityVisible ? (
-                  <Eye className="w-3 h-3" />
-                ) : (
-                  <EyeOff className="w-3 h-3" />
-                )}
-                {qualityVisible ? 'Data Quality View' : 'Performance View'}
-              </button>
-              <div className="text-xs text-slate-400">
-                {qualityVisible
-                  ? 'Showing quality metrics and issues'
-                  : 'Showing performance charts and vessel table'
-                }
-              </div>
+          {/* Table Container */}
+          <div className="bg-slate-800/50 border border-white/10 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-800/70 border-b border-white/10">
+                  <tr>
+                    <th className="w-8 px-2 py-1 text-left">
+                      <input
+                        type="checkbox"
+                        className="rounded bg-slate-700 border-slate-600"
+                      />
+                    </th>
+                    <th className="w-40 px-2 py-1 text-left">
+                      <button
+                        onClick={() => handleSort('vesselName')}
+                        className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
+                      >
+                        <span>Vessel</span>
+                        {getSortIcon('vesselName')}
+                      </button>
+                    </th>
+                    <th className="w-28 px-2 py-1 text-left">
+                      <button
+                        onClick={() => handleSort('date')}
+                        className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
+                      >
+                        <span>Date & Time</span>
+                        {getSortIcon('date')}
+                      </button>
+                    </th>
+                    {/* NEW: Conditionally show quality column */}
+                    {qualityVisible && (
+                      <th className="w-20 px-2 py-1 text-center">
+                        <button
+                          onClick={() => handleSort('quality')}
+                          className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors group mx-auto"
+                        >
+                          <span>Quality</span>
+                          {getSortIcon('quality')}
+                        </button>
+                      </th>
+                    )}
+                    {currentKPIsToDisplay.map((kpi) => (
+                      <th
+                        key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                        className="w-24 px-2 py-1 text-center"
+                      >
+                        <button
+                          onClick={() => handleSort(kpi.id)}
+                          className="flex flex-col items-center gap-1 text-slate-300 hover:text-white transition-colors group w-full"
+                        >
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-medium">
+                              {kpi.name}
+                            </span>
+                            {getSortIcon(kpi.id)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {kpi.unit && (
+                              <span className="text-xs font-normal text-slate-500">
+                                ({kpi.unit})
+                              </span>
+                            )}
+                            {selectedDataType !== DATA_TYPES.COMBINED && 
+                             kpi.source && 
+                             getDataSourceBadge(kpi.source)}
+                          </div>
+                        </button>
+                      </th>
+                    ))}
+                    <th className="w-8 px-2 py-1 text-center">
+                      <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto" />
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {paginatedData.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-slate-800/30 transition-colors"
+                    >
+                      <td className="px-2 py-1">
+                        <input
+                          type="checkbox"
+                          className="rounded bg-slate-700 border-slate-600"
+                        />
+                      </td>
+                      <td className="px-2 py-1">
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="font-semibold text-white text-sm truncate cursor-pointer hover:text-cyan-400 transition-colors hover:underline"
+                            onClick={() => handleVesselClick(item)}
+                            title="Click to view charts for this vessel"
+                          >
+                            {item.vesselName}
+                          </div>
+                          <div className="mt-1 flex items-center gap-1 text-xs text-slate-400">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                item.vesselStatus === 'At Sea'
+                                  ? 'bg-emerald-400'
+                                  : item.vesselStatus === 'At Port'
+                                  ? 'bg-blue-400'
+                                  : 'bg-orange-400'
+                              }`}
+                            ></span>
+                            {item.vesselStatus}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-2 py-1">
+                        <div className="text-center">
+                          <div className="text-sm text-white font-medium">
+                            {new Date(item.date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            {new Date(item.date).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false,
+                            })}
+                          </div>
+                        </div>
+                      </td>
+                      {/* NEW: Conditionally show quality column */}
+                      {qualityVisible && (
+                        <td className="px-2 py-1 text-center">
+                          <EnhancedQualityIndicator
+                            completeness={item.quality.completeness}
+                            correctness={item.quality.correctness}
+                            issues={item.quality.issues}
+                            size="sm"
+                          />
+                        </td>
+                      )}
+                      {currentKPIsToDisplay.map((kpi) => (
+                        <td
+                          key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                          className="px-2 py-1 text-center"
+                        >
+                          {selectedDataType === DATA_TYPES.COMBINED ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center justify-center gap-1">
+                                {getValueDisplay(item, kpi.id, 'LF')}
+                                {getDataSourceBadge('LF')}
+                              </div>
+                              <div className="flex items-center justify-center gap-1">
+                                {getValueDisplay(item, kpi.id, 'HF')}
+                                {getDataSourceBadge('HF')}
+                              </div>
+                            </div>
+                          ) : (
+                            getValueDisplay(item, kpi.id, selectedDataType)
+                          )}
+                        </td>
+                      ))}
+                      <td className="px-2 py-1 text-center">
+                        <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto cursor-pointer hover:text-white transition-colors" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Conditional Content Based on Quality Toggle */}
-          {qualityVisible ? (
-            // Show Fleet Vessel List when quality is visible
-            <CompactVesselList
-              fleetData={fleetData}
-              onVesselClick={handleVesselClickFromFleet}
-              onIssueClick={handleIssueClick}
-            />
-          ) : (
-            // Original KPI Data Table
-            <>
-              {/* Table Container */}
-              <div className="bg-slate-800/50 border border-white/10 rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-slate-800/70 border-b border-white/10">
-                      <tr>
-                        <th className="w-8 px-2 py-1 text-left">
-                          <input
-                            type="checkbox"
-                            className="rounded bg-slate-700 border-slate-600"
-                          />
-                        </th>
-                        <th className="w-40 px-2 py-1 text-left">
-                          <button
-                            onClick={() => handleSort('vesselName')}
-                            className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
-                          >
-                            <span>Vessel</span>
-                            {getSortIcon('vesselName')}
-                          </button>
-                        </th>
-                        <th className="w-28 px-2 py-1 text-left">
-                          <button
-                            onClick={() => handleSort('date')}
-                            className="flex items-center gap-2 text-left text-slate-300 hover:text-white transition-colors group"
-                          >
-                            <span>Date & Time</span>
-                            {getSortIcon('date')}
-                          </button>
-                        </th>
-                        <th className="w-20 px-2 py-1 text-center">
-                          <button
-                            onClick={() => handleSort('quality')}
-                            className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors group mx-auto"
-                          >
-                            <span>Quality</span>
-                            {getSortIcon('quality')}
-                          </button>
-                        </th>
-                        {currentKPIsToDisplay.map((kpi) => (
-                          <th
-                            key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
-                            className="w-24 px-2 py-1 text-center"
-                          >
-                            <button
-                              onClick={() => handleSort(kpi.id)}
-                              className="flex flex-col items-center gap-1 text-slate-300 hover:text-white transition-colors group w-full"
-                            >
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium">
-                                  {kpi.name}
-                                </span>
-                                {getSortIcon(kpi.id)}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {kpi.unit && (
-                                  <span className="text-xs font-normal text-slate-500">
-                                    ({kpi.unit})
-                                  </span>
-                                )}
-                                {selectedDataType !== DATA_TYPES.COMBINED &&
-                                  kpi.source &&
-                                  getDataSourceBadge(kpi.source)}
-                              </div>
-                            </button>
-                          </th>
-                        ))}
-                        <th className="w-8 px-2 py-1 text-center">
-                          <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto" />
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {paginatedData.map((item, index) => (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-slate-800/30 transition-colors"
+          {/* Table Footer */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-xs text-slate-400">
+              Showing <span className="text-white font-semibold">1</span>-
+              <span className="text-white font-semibold">
+                {Math.min(pageSize, sampleData.length)}
+              </span>{' '}
+              of{' '}
+              <span className="text-white font-semibold">
+                {sampleData.length}
+              </span>{' '}
+              vessels
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(1, prev - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-3 h-3" />
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(3, totalPages) }).map(
+                    (_, i) => {
+                      const pageNum =
+                        Math.max(1, Math.min(totalPages - 2, currentPage - 1)) +
+                        i;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-2 py-1 text-xs rounded transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-emerald-500 text-white'
+                              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                          }`}
                         >
-                          <td className="px-2 py-1">
-                            <input
-                              type="checkbox"
-                              className="rounded bg-slate-700 border-slate-600"
-                            />
-                          </td>
-                          <td className="px-2 py-1">
-                            <div className="flex-1 min-w-0">
-                              <div
-                                className="font-semibold text-white text-sm truncate cursor-pointer hover:text-cyan-400 transition-colors hover:underline"
-                                onClick={() => handleVesselClickFromTable(item)}
-                                title="Click to view charts for this vessel"
-                              >
-                                {item.vesselName}
-                              </div>
-                              <div className="mt-1 flex items-center gap-1 text-xs text-slate-400">
-                                <span
-                                  className={`w-2 h-2 rounded-full ${
-                                    item.vesselStatus === 'At Sea'
-                                      ? 'bg-emerald-400'
-                                      : item.vesselStatus === 'At Port'
-                                      ? 'bg-blue-400'
-                                      : 'bg-orange-400'
-                                  }`}
-                                ></span>
-                                {item.vesselStatus}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-2 py-1">
-                            <div className="text-center">
-                              <div className="text-sm text-white font-medium">
-                                {new Date(item.date).toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                })}
-                              </div>
-                              <div className="text-xs text-slate-400">
-                                {new Date(item.date).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false,
-                                })}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-2 py-1 text-center">
-                            <EnhancedQualityIndicator
-                              completeness={item.quality.completeness}
-                              correctness={item.quality.correctness}
-                              issues={item.quality.issues}
-                              size="sm"
-                            />
-                          </td>
-                          {currentKPIsToDisplay.map((kpi) => (
-                            <td
-                              key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
-                              className="px-2 py-1 text-center"
-                            >
-                              {selectedDataType === DATA_TYPES.COMBINED ? (
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center justify-center gap-1">
-                                    {getValueDisplay(item, kpi.id, 'LF')}
-                                    {getDataSourceBadge('LF')}
-                                  </div>
-                                  <div className="flex items-center justify-center gap-1">
-                                    {getValueDisplay(item, kpi.id, 'HF')}
-                                    {getDataSourceBadge('HF')}
-                                  </div>
-                                </div>
-                              ) : (
-                                getValueDisplay(item, kpi.id, selectedDataType)
-                              )}
-                            </td>
-                          ))}
-                          <td className="px-2 py-1 text-center">
-                            <MoreHorizontal className="w-3 h-3 text-slate-400 mx-auto cursor-pointer hover:text-white transition-colors" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-xs text-slate-400">
-                  Showing <span className="text-white font-semibold">1</span>-
-                  <span className="text-white font-semibold">
-                    {Math.min(pageSize, sampleData.length)}
-                  </span>{' '}
-                  of{' '}
-                  <span className="text-white font-semibold">
-                    {sampleData.length}
-                  </span>{' '}
-                  vessels
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                      className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
-                    >
-                      <ChevronLeft className="w-3 h-3" />
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(3, totalPages) }).map(
-                        (_, i) => {
-                          const pageNum =
-                            Math.max(1, Math.min(totalPages - 2, currentPage - 1)) +
-                            i;
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => setCurrentPage(pageNum)}
-                              className={`px-2 py-1 text-xs rounded transition-colors ${
-                                currentPage === pageNum
-                                  ? 'bg-emerald-500 text-white'
-                                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                              }`}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
-                    >
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-2 py-1 text-xs bg-slate-700 text-slate-300 rounded hover:bg-slate-600 transition-colors disabled:opacity-50"
+                >
+                  <ChevronRight className="w-3 h-3" />
+                </button>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Issue Details Modal */}
-      {showIssueModal && selectedVessel && (
-        <IssueDetailsModal
-          vessel={selectedVessel}
-          issues={modalIssues}
-          onClose={handleCloseIssueModal}
-        />
-      )}
     </div>
   );
 };
 
-export default TableView;
+export default TableView;  
