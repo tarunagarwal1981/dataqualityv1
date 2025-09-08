@@ -28,7 +28,9 @@ import {
   SignalLow,
   Layers,
   Target,
-  Gauge
+  Gauge,
+  LineChart, // Added for chart view icon
+  Table // Added for tabular view icon
 } from 'lucide-react';
 
 // Import the shared DataQualityCards component from TableView
@@ -41,9 +43,10 @@ const mockVessels = [
     id: 1,
     name: 'MV Atlantic Pioneer',
     type: 'Container Ship',
-    status: 'At Sea',
+    // status: 'At Sea', // Removed Status
     dataIntegrity: 96,
     dataAccuracy: 98,
+    qualityIndex: 97, // Added Quality Index
     operationalAlerts: 0,
     lastUpdate: '2 mins ago'
   },
@@ -51,9 +54,10 @@ const mockVessels = [
     id: 2,
     name: 'MV Pacific Navigator',
     type: 'Bulk Carrier',
-    status: 'At Port',
+    // status: 'At Port', // Removed Status
     dataIntegrity: 89,
     dataAccuracy: 94,
+    qualityIndex: 91, // Added Quality Index
     operationalAlerts: 1,
     lastUpdate: '5 mins ago'
   },
@@ -61,9 +65,10 @@ const mockVessels = [
     id: 3,
     name: 'MV Ocean Explorer',
     type: 'Tanker',
-    status: 'At Sea',
+    // status: 'At Sea', // Removed Status
     dataIntegrity: 92,
     dataAccuracy: 96,
+    qualityIndex: 94, // Added Quality Index
     operationalAlerts: 0,
     lastUpdate: '3 mins ago'
   },
@@ -71,9 +76,10 @@ const mockVessels = [
     id: 4,
     name: 'MV Global Trader',
     type: 'Container Ship',
-    status: 'Anchored',
+    // status: 'Anchored', // Removed Status
     dataIntegrity: 87,
     dataAccuracy: 91,
+    qualityIndex: 89, // Added Quality Index
     operationalAlerts: 2,
     lastUpdate: '8 mins ago'
   },
@@ -81,25 +87,17 @@ const mockVessels = [
     id: 5,
     name: 'MV Arctic Wind',
     type: 'Bulk Carrier',
-    status: 'At Sea',
+    // status: 'At Sea', // Removed Status
     dataIntegrity: 95,
     dataAccuracy: 97,
+    qualityIndex: 96, // Added Quality Index
     operationalAlerts: 0,
     lastUpdate: '1 min ago'
   }
 ];
 
 // Simplified vessel table row component - using same styling as TableView
-const VesselRow = ({ vessel, onVesselClick }) => {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'At Sea': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'At Port': return 'bg-green-100 text-green-800 border-green-200';
-      case 'Anchored': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
+const VesselRow = ({ vessel, onVesselClick, onNavigateToCharts, onNavigateToTable }) => {
   const getQualityColor = (score) => {
     if (score >= 90) return 'text-emerald-600';
     if (score >= 75) return 'text-yellow-600';
@@ -123,9 +121,8 @@ const VesselRow = ({ vessel, onVesselClick }) => {
   };
 
   return (
-    <tr 
+    <tr
       className="hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100 group"
-      onClick={() => onVesselClick(vessel)}
     >
       <td className="px-4 py-3">
         <div className="flex items-center gap-3">
@@ -142,19 +139,14 @@ const VesselRow = ({ vessel, onVesselClick }) => {
         </div>
       </td>
       <td className="px-4 py-3">
-        <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(vessel.status)}`}>
-          {vessel.status}
-        </span>
-      </td>
-      <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className={`font-medium ${getQualityColor(vessel.dataIntegrity)}`}>
-            {vessel.dataIntegrity}%
+          <div className={`font-medium ${getQualityColor(vessel.qualityIndex)}`}>
+            {vessel.qualityIndex}%
           </div>
           <div className="w-16 bg-gray-200 rounded-full h-1.5">
-            <div 
-              className={`h-1.5 rounded-full ${vessel.dataIntegrity >= 90 ? 'bg-emerald-500' : vessel.dataIntegrity >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
-              style={{ width: `${vessel.dataIntegrity}%` }}
+            <div
+              className={`h-1.5 rounded-full ${vessel.qualityIndex >= 90 ? 'bg-emerald-500' : vessel.qualityIndex >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
+              style={{ width: `${vessel.qualityIndex}%` }}
             />
           </div>
         </div>
@@ -165,9 +157,22 @@ const VesselRow = ({ vessel, onVesselClick }) => {
             {vessel.dataAccuracy}%
           </div>
           <div className="w-16 bg-gray-200 rounded-full h-1.5">
-            <div 
+            <div
               className={`h-1.5 rounded-full ${vessel.dataAccuracy >= 90 ? 'bg-emerald-500' : vessel.dataAccuracy >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
               style={{ width: `${vessel.dataAccuracy}%` }}
+            />
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className={`font-medium ${getQualityColor(vessel.dataIntegrity)}`}>
+            {vessel.dataIntegrity}%
+          </div>
+          <div className="w-16 bg-gray-200 rounded-full h-1.5">
+            <div
+              className={`h-1.5 rounded-full ${vessel.dataIntegrity >= 90 ? 'bg-emerald-500' : vessel.dataIntegrity >= 75 ? 'bg-yellow-500' : 'bg-red-500'}`}
+              style={{ width: `${vessel.dataIntegrity}%` }}
             />
           </div>
         </div>
@@ -194,16 +199,29 @@ const VesselRow = ({ vessel, onVesselClick }) => {
         </span>
       </td>
       <td className="px-4 py-3">
-        <button className="p-1 hover:bg-gray-100 rounded transition-colors group-hover:bg-blue-100">
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onNavigateToCharts(vessel.id)}
+            className="p-1 hover:bg-gray-100 rounded transition-colors group-hover:bg-blue-100"
+            title="View Charts"
+          >
+            <LineChart className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+          </button>
+          <button
+            onClick={() => onNavigateToTable(vessel.id)}
+            className="p-1 hover:bg-gray-100 rounded transition-colors group-hover:bg-blue-100"
+            title="View Table"
+          >
+            <Table className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+          </button>
+        </div>
       </td>
     </tr>
   );
 };
 
-const LandingPage = ({ 
-  onVesselClick, 
+const LandingPage = ({
+  onVesselClick,
   className = '',
   vessels = [],
   qualityStats = {},
@@ -251,14 +269,14 @@ const LandingPage = ({
 
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return <ArrowUpDown className="w-3 h-3 text-gray-400" />;
-    return sortConfig.direction === 'asc' ? 
-      <ArrowUp className="w-3 h-3 text-blue-600" /> : 
+    return sortConfig.direction === 'asc' ?
+      <ArrowUp className="w-3 h-3 text-blue-600" /> :
       <ArrowDown className="w-3 h-3 text-blue-600" />;
   };
 
   return (
     <div className={`bg-gray-50 text-gray-900 min-h-screen flex flex-col ${className}`}>
-      
+
       {/* Add ControlsBar directly to Landing Page */}
       {/* <ControlsBar
         filters={filters}
@@ -273,7 +291,7 @@ const LandingPage = ({
         isApplyingFilters={isApplyingFilters}
         isExporting={isExporting}
       /> */}
-      
+
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
           {/* Reuse DataQualityCards component - same as other views */}
@@ -323,7 +341,7 @@ const LandingPage = ({
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th 
+                    <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort('name')}
                     >
@@ -332,25 +350,16 @@ const LandingPage = ({
                         {getSortIcon('name')}
                       </div>
                     </th>
-                    <th 
+                    <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort('status')}
+                      onClick={() => handleSort('qualityIndex')}
                     >
                       <div className="flex items-center gap-1">
-                        Status
-                        {getSortIcon('status')}
+                        Quality Index
+                        {getSortIcon('qualityIndex')}
                       </div>
                     </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() => handleSort('dataIntegrity')}
-                    >
-                      <div className="flex items-center gap-1">
-                        Data Integrity
-                        {getSortIcon('dataIntegrity')}
-                      </div>
-                    </th>
-                    <th 
+                    <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort('dataAccuracy')}
                     >
@@ -359,7 +368,16 @@ const LandingPage = ({
                         {getSortIcon('dataAccuracy')}
                       </div>
                     </th>
-                    <th 
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort('dataIntegrity')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Data Integrity
+                        {getSortIcon('dataIntegrity')}
+                      </div>
+                    </th>
+                    <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort('operationalAlerts')}
                     >
@@ -372,7 +390,7 @@ const LandingPage = ({
                       Last Update
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      Data
                     </th>
                   </tr>
                 </thead>
@@ -382,6 +400,8 @@ const LandingPage = ({
                       key={vessel.id}
                       vessel={vessel}
                       onVesselClick={onVesselClick}
+                      onNavigateToCharts={onNavigateToCharts}
+                      onNavigateToTable={onNavigateToTable}
                     />
                   ))}
                 </tbody>

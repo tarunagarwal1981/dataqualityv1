@@ -256,7 +256,7 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
 
             <div className="space-y-2 mb-3">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">Completeness</span>
+                <span className="text-gray-600">Data Integrity</span>
                 <span className="text-gray-900 font-medium">{completeness}%</span>
               </div>
               <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -273,7 +273,7 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
               </div>
 
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">Correctness</span>
+                <span className="text-gray-600">Data Accuracy</span>
                 <span className="text-gray-900 font-medium">{correctness}%</span>
               </div>
               <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -1267,7 +1267,7 @@ const TableView = ({
                           onClick={() => handleSort('quality')}
                           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
                         >
-                          <span>Quality</span>
+                          <span>Quality Index</span>
                           {getSortIcon('quality')}
                         </button>
                       </th>

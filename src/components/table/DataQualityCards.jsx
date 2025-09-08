@@ -35,27 +35,24 @@ const staticQualityData = (() => {
   ];
 
   return vessels.map((name, index) => {
-    // Generate realistic quality issues
     const issues = [];
     const kpiIssues = {};
 
-    // Create predictable issue patterns for demo
     const issuePatterns = [
-      { missing: 2, incorrect: 3 }, // Atlantic Pioneer: 5 total
-      { missing: 1, incorrect: 1 }, // Pacific Explorer: 2 total
-      { missing: 3, incorrect: 2 }, // Nordic Voyager: 5 total
-      { missing: 0, incorrect: 4 }, // Baltic Star: 4 total
-      { missing: 1, incorrect: 2 }, // Mediterranean Crown: 3 total
-      { missing: 2, incorrect: 1 }, // Arctic Wind: 3 total
-      { missing: 1, incorrect: 3 }, // Indian Ocean: 4 total
-      { missing: 0, incorrect: 2 }, // Caribbean Spirit: 2 total
-      { missing: 2, incorrect: 2 }, // Red Sea Navigator: 4 total
-      { missing: 1, incorrect: 1 }, // Bering Strait: 2 total
+      { missing: 2, incorrect: 3 },
+      { missing: 1, incorrect: 1 },
+      { missing: 3, incorrect: 2 },
+      { missing: 0, incorrect: 4 },
+      { missing: 1, incorrect: 2 },
+      { missing: 2, incorrect: 1 },
+      { missing: 1, incorrect: 3 },
+      { missing: 0, incorrect: 2 },
+      { missing: 2, incorrect: 2 },
+      { missing: 1, incorrect: 1 },
     ];
 
     const pattern = issuePatterns[index];
 
-    // Add missing data issues
     const kpiList = [
       'wind_force',
       'me_power',
@@ -78,7 +75,6 @@ const staticQualityData = (() => {
       });
     }
 
-    // Add incorrect data issues
     for (let i = 0; i < pattern.incorrect; i++) {
       const kpi = kpiList[i % kpiList.length];
       const severity = i === 0 ? 'high' : i === 1 ? 'medium' : 'low';
@@ -101,9 +97,7 @@ const staticQualityData = (() => {
       });
     }
 
-    // Calculate quality scores
     const totalKPIs = 8;
-    const issueCount = issues.length;
     const highSeverityIssues = issues.filter(
       (issue) => issue.severity === 'high'
     ).length;
@@ -160,13 +154,12 @@ const DataQualityCards = ({
   onToggleAnnotations,
   qualityOverlayVisible = false,
   onToggleQualityOverlay,
-  viewMode = 'charts', // 'charts' or 'table'
+  viewMode = 'charts',
   compactMode = false,
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
 
-  // Calculate fleet metrics
   const fleetMetrics = useMemo(() => {
     const totalVessels = staticQualityData.length;
     const avgCompleteness =
@@ -434,10 +427,10 @@ const DataQualityCards = ({
     <div className={`${spacingClass} ${compactMode ? 'mb-2' : 'mb-4'}`}>
       {/* Main Quality Cards Grid */}
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${gapClass}`}>
-        {/* Fleet Health Score Card */}
+        {/* Data Quality Index Card */}
         <Card
           gradient="health"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
+          className="hover:transform hover:translate-y-[-4px] hover:scale-[1.01] hover:shadow-xl"
           onHover={() => setHoveredCard('health')}
           style={{
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -451,10 +444,10 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    Fleet Health
+                    Data Quality Index
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
-                    Overall Score
+                    Fleet Score
                   </span>
                 </div>
               </div>
@@ -464,12 +457,10 @@ const DataQualityCards = ({
                 type="overall"
               />
             </div>
-
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.overallHealth}%
               </div>
-
               <div className="flex items-center justify-between">
                 <div className={textSizes.small + ' text-gray-600'}>
                   {fleetMetrics.healthyVessels} excellent •{' '}
@@ -478,7 +469,6 @@ const DataQualityCards = ({
                 </div>
                 <QualityDistributionChart data={fleetMetrics} type="health" />
               </div>
-
               <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div className="h-full flex">
                   <div
@@ -516,10 +506,10 @@ const DataQualityCards = ({
           </div>
         </Card>
 
-        {/* Data Completeness Card */}
+        {/* Data Integrity Card */}
         <Card
           gradient="completeness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
+          className="hover:transform hover:translate-y-[-4px] hover:scale-[1.01] hover:shadow-xl"
           onHover={() => setHoveredCard('completeness')}
           style={{
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -533,7 +523,7 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    Completeness
+                    Data Integrity
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Coverage
@@ -546,19 +536,16 @@ const DataQualityCards = ({
                 type="completeness"
               />
             </div>
-
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.avgCompleteness}%
               </div>
-
               <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
                 <WifiOff className="w-3 h-3 text-orange-500" />
                 <span className="text-gray-600">
                   {fleetMetrics.totalMissingIssues} missing data points
                 </span>
               </div>
-
               <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
@@ -575,10 +562,10 @@ const DataQualityCards = ({
           </div>
         </Card>
 
-        {/* Data Correctness Card */}
+        {/* Accuracy Card */}
         <Card
           gradient="correctness"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
+          className="hover:transform hover:translate-y-[-4px] hover:scale-[1.01] hover:shadow-xl"
           onHover={() => setHoveredCard('correctness')}
           style={{
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -592,7 +579,7 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    Correctness
+                    Data Accuracy
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Accuracy
@@ -605,19 +592,16 @@ const DataQualityCards = ({
                 type="correctness"
               />
             </div>
-
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.avgCorrectness}%
               </div>
-
               <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
                 <XCircle className="w-3 h-3 text-red-600" />
                 <span className="text-gray-600">
                   {fleetMetrics.totalIncorrectIssues} incorrect data points
                 </span>
               </div>
-
               <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
@@ -634,10 +618,10 @@ const DataQualityCards = ({
           </div>
         </Card>
 
-        {/* Active Issues Card */}
+        {/* Operational Alerts Card */}
         <Card
           gradient="issues"
-          className="hover:transform hover:translateY(-2px) hover:scale-[1.01]"
+          className="hover:transform hover:translate-y-[-4px] hover:scale-[1.01] hover:shadow-xl"
           onHover={() => setHoveredCard('issues')}
           style={{
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -651,7 +635,7 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    Active Issues
+                    Operational Alerts
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
                     Quality Alerts
@@ -669,7 +653,6 @@ const DataQualityCards = ({
                 )}
               </div>
             </div>
-
             <div className="space-y-2">
               <div className="flex items-baseline gap-2">
                 <div className={`${textSizes.value} font-bold text-gray-900`}>
@@ -681,7 +664,6 @@ const DataQualityCards = ({
                   </div>
                 )}
               </div>
-
               <div className={`grid grid-cols-2 gap-1.5 ${textSizes.small}`}>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
@@ -696,7 +678,6 @@ const DataQualityCards = ({
                   </span>
                 </div>
               </div>
-
               <div className={`${textSizes.small} text-gray-600`}>
                 Across {fleetMetrics.totalVessels} vessels
               </div>
@@ -724,7 +705,6 @@ const DataQualityCards = ({
                 <X className="w-4 h-4" />
               </button>
             </div>
-
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${compactMode ? 'gap-2' : 'gap-3'}`}>
               {[
                 {
@@ -800,7 +780,6 @@ const DataQualityCards = ({
                       </div>
                       <QualityMeter score={reliability} size="sm" type={key} />
                     </div>
-
                     <div className="space-y-2">
                       <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                         <div
@@ -814,7 +793,6 @@ const DataQualityCards = ({
                           style={{ width: `${reliability}%` }}
                         />
                       </div>
-
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-gray-600">
                           {issues} issues found
@@ -834,7 +812,6 @@ const DataQualityCards = ({
                         </span>
                       </div>
                     </div>
-
                     {/* Subtle gradient overlay */}
                     <div
                       className="absolute inset-0 opacity-20 pointer-events-none"
