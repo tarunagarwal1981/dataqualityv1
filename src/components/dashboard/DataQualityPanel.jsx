@@ -190,11 +190,11 @@ const SmartDataQualityPanel = ({
   const getTrendIcon = (trend) => {
     switch (trend) {
       case 'improving':
-        return <TrendingUp className="w-3 h-3 text-emerald-400" />;
+        return <TrendingUp className="w-3 h-3 text-emerald-600" />;
       case 'degrading':
-        return <TrendingDown className="w-3 h-3 text-red-400" />;
+        return <TrendingDown className="w-3 h-3 text-red-600" />;
       default:
-        return <Minus className="w-3 h-3 text-slate-400" />;
+        return <Minus className="w-3 h-3 text-gray-600" />;
     }
   };
 
@@ -285,8 +285,8 @@ const SmartDataQualityPanel = ({
             <div className="metrics-grid">
               <div className="metric-item">
                 <div className="metric-icons">
-                  <Database className="w-3 h-3 text-blue-400" />
-                  <TrendingUp className="w-3 h-3 text-emerald-400" />
+                  <Database className="w-3 h-3 text-blue-600" />
+                  <TrendingUp className="w-3 h-3 text-emerald-600" />
                 </div>
                 <div className="metric-value">
                   {overallMetrics.avgCompleteness}%
@@ -296,8 +296,8 @@ const SmartDataQualityPanel = ({
 
               <div className="metric-item">
                 <div className="metric-icons">
-                  <Shield className="w-3 h-3 text-emerald-400" />
-                  <CheckCircle className="w-3 h-3 text-emerald-400" />
+                  <Shield className="w-3 h-3 text-emerald-600" />
+                  <CheckCircle className="w-3 h-3 text-emerald-600" />
                 </div>
                 <div className="metric-value">
                   {overallMetrics.avgCorrectness}%
@@ -307,8 +307,8 @@ const SmartDataQualityPanel = ({
 
               <div className="metric-item">
                 <div className="metric-icons">
-                  <Users className="w-3 h-3 text-purple-400" />
-                  <Award className="w-3 h-3 text-emerald-400" />
+                  <Users className="w-3 h-3 text-purple-600" />
+                  <Award className="w-3 h-3 text-emerald-600" />
                 </div>
                 <div className="metric-value">
                   {(distribution.excellent || 0) + (distribution.good || 0)}
@@ -318,11 +318,11 @@ const SmartDataQualityPanel = ({
 
               <div className="metric-item">
                 <div className="metric-icons">
-                  <AlertTriangle className="w-3 h-3 text-amber-400" />
+                  <AlertTriangle className="w-3 h-3 text-amber-600" />
                   {overallMetrics.totalIssues > 0 ? (
-                    <XCircle className="w-3 h-3 text-red-400" />
+                    <XCircle className="w-3 h-3 text-red-600" />
                   ) : (
-                    <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    <CheckCircle className="w-3 h-3 text-emerald-600" />
                   )}
                 </div>
                 <div className="metric-value">{overallMetrics.totalIssues}</div>
@@ -501,7 +501,7 @@ const SmartDataQualityPanel = ({
               <div className="issues-section">
                 <div className="section-header">
                   <h4 className="section-title">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     Critical Issues ({Math.min(3, overallMetrics.totalIssues)})
                   </h4>
                   <button onClick={onClearAllAlerts} className="resolve-btn">
@@ -515,7 +515,7 @@ const SmartDataQualityPanel = ({
                     .map((vessel) => (
                       <div key={vessel.id} className="issue-item">
                         <div className="issue-left">
-                          <XCircle className="w-3 h-3 text-red-400" />
+                          <XCircle className="w-3 h-3 text-red-600" />
                           <span className="issue-text">
                             {vessel.name}: Data validation failed
                           </span>
@@ -537,7 +537,7 @@ const SmartDataQualityPanel = ({
             {/* Settings */}
             <div className="settings-section">
               <h4 className="section-title">
-                <Settings className="w-4 h-4 text-purple-400" />
+                <Settings className="w-4 h-4 text-purple-600" />
                 Quality Settings
               </h4>
               <div className="settings-grid">
@@ -580,23 +580,23 @@ const SmartDataQualityPanel = ({
 
       <style jsx>{`
         .smart-quality-panel {
-          background: var(--bg-gradient-1);
-          border: 1px solid var(--border-subtle);
+          background: #ffffff;
+          border: 1px solid rgba(0, 0, 0, 0.1);
           border-radius: var(--border-radius-md);
-          box-shadow: var(--shadow-md);
-          transition: var(--transition-normal);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          transition: 0.3s;
           overflow: hidden;
         }
 
         .smart-quality-panel:hover {
-          box-shadow: var(--shadow-lg), 0 0 15px rgba(77, 195, 255, 0.1);
-          border-color: var(--border-accent);
+          box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 0 15px rgba(77, 195, 255, 0.1);
+          border-color: rgba(0, 0, 0, 0.2);
         }
 
         .quality-header {
           padding: 12px 16px;
-          border-bottom: 1px solid var(--border-subtle);
-          background: linear-gradient(180deg, var(--card-bg), var(--card-dark));
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          background: linear-gradient(180deg, #f8fafc, #ffffff);
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -616,6 +616,7 @@ const SmartDataQualityPanel = ({
           align-items: center;
           justify-content: center;
           position: relative;
+          color: white;
         }
 
         .quality-icon .icon {
@@ -630,7 +631,7 @@ const SmartDataQualityPanel = ({
           right: -4px;
           width: 12px;
           height: 12px;
-          background: var(--danger-color);
+          background: #ff5252;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -652,13 +653,13 @@ const SmartDataQualityPanel = ({
           margin: 0;
           font-size: 14px;
           font-weight: 600;
-          color: var(--text-light);
+          color: #374151;
         }
 
         .quality-subtitle {
           margin: 0;
           font-size: 11px;
-          color: var(--text-muted);
+          color: #6b7280;
         }
 
         .header-right {
@@ -675,14 +676,14 @@ const SmartDataQualityPanel = ({
         }
 
         .score-text {
-          color: white;
+          color: inherit;
         }
 
         .view-toggle {
           display: flex;
-          background: rgba(255, 255, 255, 0.05);
+          background: #f3f4f6;
           border-radius: 6px;
-          border: 1px solid var(--border-subtle);
+          border: 1px solid #e5e7eb;
           overflow: hidden;
         }
 
@@ -692,41 +693,41 @@ const SmartDataQualityPanel = ({
           font-weight: 500;
           background: transparent;
           border: none;
-          color: var(--text-muted);
+          color: #6b7280;
           cursor: pointer;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .view-btn.active {
-          background: var(--primary-accent);
+          background: #3b82f6;
           color: white;
         }
 
         .view-btn:hover:not(.active) {
-          color: var(--text-light);
+          color: #374151;
         }
 
         .expand-btn {
           width: 24px;
           height: 24px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--border-subtle);
+          background: #f3f4f6;
+          border: 1px solid #e5e7eb;
           border-radius: 4px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .expand-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: #e5e7eb;
         }
 
         .expand-icon {
           width: 14px;
           height: 14px;
-          color: var(--text-light);
+          color: #374151;
           transition: transform 0.2s ease;
         }
 
@@ -765,12 +766,12 @@ const SmartDataQualityPanel = ({
         .metric-value {
           font-size: 18px;
           font-weight: bold;
-          color: var(--text-light);
+          color: #374151;
         }
 
         .metric-label {
           font-size: 11px;
-          color: var(--text-muted);
+          color: #6b7280;
         }
 
         .distribution-section {
@@ -783,7 +784,7 @@ const SmartDataQualityPanel = ({
           display: flex;
           justify-content: space-between;
           font-size: 11px;
-          color: var(--text-muted);
+          color: #6b7280;
         }
 
         .distribution-bar {
@@ -791,26 +792,26 @@ const SmartDataQualityPanel = ({
           height: 8px;
           border-radius: 4px;
           overflow: hidden;
-          background: var(--card-dark);
+          background: #f3f4f6;
         }
 
         .dist-excellent {
-          background: var(--success-color);
+          background: #28a745;
           transition: width 0.3s ease;
         }
 
         .dist-good {
-          background: var(--info-color);
+          background: #17a2b8;
           transition: width 0.3s ease;
         }
 
         .dist-acceptable {
-          background: var(--warning-color);
+          background: #ffc107;
           transition: width 0.3s ease;
         }
 
         .dist-poor {
-          background: var(--danger-color);
+          background: #dc3545;
           transition: width 0.3s ease;
         }
 
@@ -824,7 +825,7 @@ const SmartDataQualityPanel = ({
           display: flex;
           align-items: center;
           gap: 4px;
-          color: var(--text-muted);
+          color: #6b7280;
         }
 
         .legend-dot {
@@ -834,19 +835,19 @@ const SmartDataQualityPanel = ({
         }
 
         .legend-dot.excellent {
-          background: var(--success-color);
+          background: #28a745;
         }
 
         .legend-dot.good {
-          background: var(--info-color);
+          background: #17a2b8;
         }
 
         .legend-dot.acceptable {
-          background: var(--warning-color);
+          background: #ffc107;
         }
 
         .legend-dot.poor {
-          background: var(--danger-color);
+          background: #dc3545;
         }
 
         .vessels-content {
@@ -856,7 +857,7 @@ const SmartDataQualityPanel = ({
           max-height: 240px;
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: var(--primary-accent-light) transparent;
+          scrollbar-color: #88bbff transparent;
         }
 
         .vessels-content::-webkit-scrollbar {
@@ -868,7 +869,7 @@ const SmartDataQualityPanel = ({
         }
 
         .vessels-content::-webkit-scrollbar-thumb {
-          background: var(--primary-accent-light);
+          background: #88bbff;
           border-radius: 2px;
         }
 
@@ -877,14 +878,14 @@ const SmartDataQualityPanel = ({
           align-items: center;
           justify-content: space-between;
           padding: 8px;
-          background: var(--card-dark);
+          background: #f8fafc;
           border-radius: 6px;
           cursor: pointer;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .vessel-item:hover {
-          background: var(--card-bg);
+          background: #e5e7eb;
         }
 
         .vessel-left {
@@ -902,6 +903,7 @@ const SmartDataQualityPanel = ({
           display: flex;
           align-items: center;
           justify-content: center;
+          color: white;
         }
 
         .vessel-info {
@@ -912,7 +914,7 @@ const SmartDataQualityPanel = ({
         .vessel-name {
           font-size: 11px;
           font-weight: 500;
-          color: var(--text-light);
+          color: #374151;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -920,7 +922,7 @@ const SmartDataQualityPanel = ({
 
         .vessel-type {
           font-size: 10px;
-          color: var(--text-muted);
+          color: #6b7280;
         }
 
         .vessel-right {
@@ -935,25 +937,25 @@ const SmartDataQualityPanel = ({
         }
 
         .vessel-score.success {
-          color: var(--success-color);
+          color: #28a745;
         }
 
         .vessel-score.info {
-          color: var(--info-color);
+          color: #17a2b8;
         }
 
         .vessel-score.warning {
-          color: var(--warning-color);
+          color: #ffc107;
         }
 
         .vessel-score.danger {
-          color: var(--danger-color);
+          color: #dc3545;
         }
 
         .vessel-issues {
           width: 16px;
           height: 16px;
-          background: var(--danger-color);
+          background: #dc3545;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -991,11 +993,11 @@ const SmartDataQualityPanel = ({
         }
 
         .trend-title.improving {
-          color: var(--success-color);
+          color: #28a745;
         }
 
         .trend-title.degrading {
-          color: var(--danger-color);
+          color: #dc3545;
         }
 
         .trend-list {
@@ -1008,7 +1010,7 @@ const SmartDataQualityPanel = ({
           display: flex;
           justify-content: space-between;
           font-size: 10px;
-          color: var(--text-light);
+          color: #374151;
         }
 
         .trend-vessel-name {
@@ -1023,16 +1025,16 @@ const SmartDataQualityPanel = ({
         }
 
         .trend-change.positive {
-          color: var(--success-color);
+          color: #28a745;
         }
 
         .trend-change.negative {
-          color: var(--danger-color);
+          color: #dc3545;
         }
 
         .quality-details {
-          border-top: 1px solid var(--border-subtle);
-          background: var(--card-dark);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+          background: #f8fafc;
         }
 
         .details-content {
@@ -1060,21 +1062,21 @@ const SmartDataQualityPanel = ({
           gap: 6px;
           font-size: 12px;
           font-weight: 600;
-          color: var(--text-light);
+          color: #374151;
           margin: 0;
         }
 
         .resolve-btn {
           font-size: 10px;
-          color: var(--success-color);
+          color: #28a745;
           background: none;
           border: none;
           cursor: pointer;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .resolve-btn:hover {
-          color: var(--text-light);
+          color: #374151;
         }
 
         .issues-list {
@@ -1084,7 +1086,7 @@ const SmartDataQualityPanel = ({
           max-height: 120px;
           overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: var(--primary-accent-light) transparent;
+          scrollbar-color: #88bbff transparent;
         }
 
         .issues-list::-webkit-scrollbar {
@@ -1096,7 +1098,7 @@ const SmartDataQualityPanel = ({
         }
 
         .issues-list::-webkit-scrollbar-thumb {
-          background: var(--primary-accent-light);
+          background: #88bbff;
           border-radius: 2px;
         }
 
@@ -1105,7 +1107,7 @@ const SmartDataQualityPanel = ({
           align-items: center;
           justify-content: space-between;
           padding: 6px;
-          background: var(--card-bg);
+          background: #ffffff;
           border-radius: 4px;
         }
 
@@ -1119,7 +1121,7 @@ const SmartDataQualityPanel = ({
 
         .issue-text {
           font-size: 10px;
-          color: var(--text-light);
+          color: #374151;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1133,7 +1135,7 @@ const SmartDataQualityPanel = ({
 
         .issue-count-text {
           font-size: 10px;
-          color: var(--danger-color);
+          color: #dc3545;
         }
 
         .dismiss-btn {
@@ -1141,15 +1143,15 @@ const SmartDataQualityPanel = ({
           height: 16px;
           background: none;
           border: none;
-          color: var(--text-muted);
+          color: #6b7280;
           cursor: pointer;
           border-radius: 2px;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .dismiss-btn:hover {
-          background: var(--card-dark);
-          color: var(--text-light);
+          background: #e5e7eb;
+          color: #374151;
         }
 
         .settings-section {
@@ -1169,28 +1171,28 @@ const SmartDataQualityPanel = ({
           align-items: center;
           justify-content: space-between;
           padding: 6px;
-          background: var(--card-bg);
+          background: #ffffff;
           border-radius: 4px;
         }
 
         .setting-label {
           font-size: 10px;
-          color: var(--text-light);
+          color: #374151;
         }
 
         .toggle-switch {
           position: relative;
           width: 32px;
           height: 16px;
-          background: var(--border-subtle);
+          background: rgba(0, 0, 0, 0.1);
           border-radius: 8px;
           border: none;
           cursor: pointer;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .toggle-switch.active {
-          background: var(--success-color);
+          background: #28a745;
         }
 
         .toggle-slider {
@@ -1201,7 +1203,7 @@ const SmartDataQualityPanel = ({
           height: 12px;
           background: white;
           border-radius: 50%;
-          transition: var(--transition-fast);
+          transition: 0.15s;
         }
 
         .toggle-switch.active .toggle-slider {
@@ -1209,27 +1211,27 @@ const SmartDataQualityPanel = ({
         }
 
         .badge-success {
-          background: linear-gradient(to bottom, rgba(46, 224, 134, 0.15), rgba(46, 224, 134, 0.1));
-          color: var(--success-color);
-          border: 1px solid rgba(46, 224, 134, 0.3);
+          background: #d4edda;
+          color: #155724;
+          border: 1px solid #c3e6cb;
         }
 
         .badge-info {
-          background: linear-gradient(to bottom, rgba(77, 195, 255, 0.15), rgba(77, 195, 255, 0.1));
-          color: var(--primary-accent);
-          border: 1px solid rgba(77, 195, 255, 0.3);
+          background: #d1ecf1;
+          color: #0c5460;
+          border: 1px solid #bee5eb;
         }
 
         .badge-warning {
-          background: linear-gradient(to bottom, rgba(255, 212, 38, 0.15), rgba(255, 212, 38, 0.1));
-          color: var(--warning-color);
-          border: 1px solid rgba(255, 212, 38, 0.3);
+          background: #fff3cd;
+          color: #856404;
+          border: 1px solid #ffeeba;
         }
 
         .badge-danger {
-          background: linear-gradient(to bottom, rgba(255, 82, 82, 0.15), rgba(255, 82, 82, 0.1));
-          color: var(--danger-color);
-          border: 1px solid rgba(255, 82, 82, 0.3);
+          background: #f8d7da;
+          color: #721c24;
+          border: 1px solid #f5c6cb;
         }
 
         /* Responsive Design */

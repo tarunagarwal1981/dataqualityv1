@@ -1,3 +1,4 @@
+// Light Theme QualityBadge.jsx
 import React from 'react';
 import {
   CheckCircle,
@@ -34,17 +35,17 @@ const QualityBadge = ({
     }
   };
 
-  // Determine colors based on grade
+  // Light theme colors based on grade
   const getColors = (grade) => {
     switch (grade) {
       case QUALITY_GRADES.GOOD:
-        return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/20';
+        return 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100';
       case QUALITY_GRADES.ACCEPTABLE:
-        return 'text-amber-400 bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/20';
+        return 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100';
       case QUALITY_GRADES.POOR:
-        return 'text-red-400 bg-red-500/10 border-red-500/30 hover:bg-red-500/20';
+        return 'text-red-700 bg-red-50 border-red-200 hover:bg-red-100';
       default:
-        return 'text-slate-400 bg-slate-500/10 border-slate-500/30 hover:bg-slate-500/20';
+        return 'text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100';
     }
   };
 
@@ -119,15 +120,15 @@ const QualityBadge = ({
         )}
       </Component>
 
-      {/* Enhanced tooltip */}
+      {/* Enhanced tooltip for light theme */}
       {(completeness !== null || correctness !== null || tooltip) && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-          <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 shadow-xl min-w-max">
-            <div className="text-xs text-slate-300 whitespace-pre-line">
+          <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl min-w-max">
+            <div className="text-xs text-gray-100 whitespace-pre-line">
               {getTooltipContent()}
             </div>
             {/* Tooltip arrow */}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
           </div>
         </div>
       )}
@@ -135,7 +136,7 @@ const QualityBadge = ({
   );
 };
 
-// Specialized quality badge variants
+// Specialized quality badge variants for light theme
 export const QualityScore = ({ score, size = 'md', showLabel = true }) => {
   const getGradeFromScore = (score) => {
     if (score >= 95) return QUALITY_GRADES.GOOD;
@@ -148,21 +149,21 @@ export const QualityScore = ({ score, size = 'md', showLabel = true }) => {
   return (
     <div className="flex items-center gap-2">
       {showLabel && (
-        <span className="text-slate-400 text-sm font-medium">Quality:</span>
+        <span className="text-gray-600 text-sm font-medium">Quality:</span>
       )}
       <QualityBadge
         grade={grade}
         size={size}
         tooltip={`Quality Score: ${score.toFixed(1)}%`}
       />
-      <span className="text-slate-300 font-mono text-sm">
+      <span className="text-gray-900 font-mono text-sm">
         {score.toFixed(1)}%
       </span>
     </div>
   );
 };
 
-export const CompacQualityIndicator = ({
+export const CompactQualityIndicator = ({
   completeness,
   correctness,
   size = 'xs',
@@ -179,114 +180,9 @@ export const CompacQualityIndicator = ({
     <QualityBadge
       grade={grade}
       size={size}
-      showText={false}
       completeness={completeness}
       correctness={correctness}
-      tooltip={`C: ${completeness.toFixed(1)}% | R: ${correctness.toFixed(1)}%`}
     />
-  );
-};
-
-export const DetailedQualityBadge = ({
-  grade,
-  completeness,
-  correctness,
-  issues = [],
-  size = 'md',
-}) => {
-  const tooltipContent = [
-    `Grade: ${grade}`,
-    `Completeness: ${completeness?.toFixed(1) || 'N/A'}%`,
-    `Correctness: ${correctness?.toFixed(1) || 'N/A'}%`,
-    issues.length > 0 ? `Issues: ${issues.length}` : 'No issues',
-  ].join('\n');
-
-  return (
-    <QualityBadge
-      grade={grade}
-      size={size}
-      completeness={completeness}
-      correctness={correctness}
-      issueCount={issues.length}
-      tooltip={tooltipContent}
-    />
-  );
-};
-
-export const TrendQualityBadge = ({
-  grade,
-  trend,
-  size = 'sm',
-  showTrend = true,
-}) => {
-  const getTrendIcon = (trend) => {
-    switch (trend) {
-      case 'improving':
-        return '↗';
-      case 'degrading':
-        return '↘';
-      default:
-        return '→';
-    }
-  };
-
-  const getTrendColor = (trend) => {
-    switch (trend) {
-      case 'improving':
-        return 'text-emerald-400';
-      case 'degrading':
-        return 'text-red-400';
-      default:
-        return 'text-slate-400';
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <QualityBadge grade={grade} size={size} />
-      {showTrend && (
-        <span className={`text-sm font-mono ${getTrendColor(trend)}`}>
-          {getTrendIcon(trend)}
-        </span>
-      )}
-    </div>
-  );
-};
-
-export const QualityProgress = ({
-  completeness,
-  correctness,
-  target = 95,
-  size = 'md',
-}) => {
-  const avgScore = (completeness + correctness) / 2;
-  const progress = Math.min(100, (avgScore / target) * 100);
-
-  const getProgressColor = (progress) => {
-    if (progress >= 95) return 'bg-emerald-500';
-    if (progress >= 80) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  return (
-    <div className="flex items-center gap-3">
-      <CompacQualityIndicator
-        completeness={completeness}
-        correctness={correctness}
-        size={size}
-      />
-      <div className="flex-1 bg-slate-700 rounded-full h-2">
-        <div
-          className={`h-full rounded-full transition-all duration-300 ${getProgressColor(
-            progress
-          )}`}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <span className="text-slate-400 text-sm font-mono min-w-[3rem] text-right">
-        {avgScore.toFixed(1)}%
-      </span>
-    </div>
   );
 };
 

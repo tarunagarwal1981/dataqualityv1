@@ -271,7 +271,7 @@ const DataQualityCards = ({
             cx="20"
             cy="20"
             r={radius}
-            stroke="rgba(71, 85, 105, 0.5)"
+            stroke="rgba(229, 231, 235, 0.5)"
             strokeWidth="2"
             fill="none"
           />
@@ -297,7 +297,7 @@ const DataQualityCards = ({
                 : size === 'md'
                 ? 'text-sm'
                 : 'text-base'
-            } text-white drop-shadow-sm`}
+            } text-gray-900 drop-shadow-sm`}
           >
             {score}
           </span>
@@ -356,15 +356,15 @@ const DataQualityCards = ({
   }) => {
     const gradients = {
       default:
-        'linear-gradient(145deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+        'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.98) 100%)',
       health:
-        'linear-gradient(145deg, rgba(6, 182, 212, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+        'linear-gradient(145deg, rgba(6, 182, 212, 0.05) 0%, rgba(255, 255, 255, 0.95) 100%)',
       completeness:
-        'linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+        'linear-gradient(145deg, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0.95) 100%)',
       correctness:
-        'linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+        'linear-gradient(145deg, rgba(139, 92, 246, 0.05) 0%, rgba(255, 255, 255, 0.95) 100%)',
       issues:
-        'linear-gradient(145deg, rgba(251, 146, 60, 0.1) 0%, rgba(30, 41, 59, 0.95) 100%)',
+        'linear-gradient(145deg, rgba(251, 146, 60, 0.05) 0%, rgba(255, 255, 255, 0.95) 100%)',
     };
 
     return (
@@ -374,11 +374,11 @@ const DataQualityCards = ({
         onMouseEnter={onHover}
         style={{
           background: gradients[gradient],
-          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderColor: 'rgba(0, 0, 0, 0.1)',
           boxShadow: `
-            0 8px 32px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 4px 8px rgba(0, 0, 0, 0.2)
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            0 4px 8px rgba(0, 0, 0, 0.05)
           `,
           transform: 'translateZ(0)',
           ...style,
@@ -401,7 +401,7 @@ const DataQualityCards = ({
           }`}
           style={{
             background:
-              'radial-gradient(circle at center, rgba(76, 201, 240, 0.3) 0%, transparent 70%)',
+              'radial-gradient(circle at center, rgba(76, 201, 240, 0.1) 0%, transparent 70%)',
           }}
         />
 
@@ -446,14 +446,14 @@ const DataQualityCards = ({
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-2' : 'mb-3'}`}>
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
-                  <Gauge className={textSizes.icon + ' text-cyan-400'} />
+                <div className="p-1.5 rounded-md bg-cyan-100 border border-cyan-200">
+                  <Gauge className={textSizes.icon + ' text-cyan-600'} />
                 </div>
                 <div>
-                  <span className={`${textSizes.header} font-medium text-slate-200 block`}>
+                  <span className={`${textSizes.header} font-medium text-gray-800 block`}>
                     Fleet Health
                   </span>
-                  <span className={`${textSizes.subheader} text-slate-400`}>
+                  <span className={`${textSizes.subheader} text-gray-600`}>
                     Overall Score
                   </span>
                 </div>
@@ -466,12 +466,12 @@ const DataQualityCards = ({
             </div>
 
             <div className="space-y-2">
-              <div className={`${textSizes.value} font-bold text-white`}>
+              <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.overallHealth}%
               </div>
 
               <div className="flex items-center justify-between">
-                <div className={textSizes.small + ' text-slate-400'}>
+                <div className={textSizes.small + ' text-gray-600'}>
                   {fleetMetrics.healthyVessels} excellent •{' '}
                   {fleetMetrics.averageVessels} good •{' '}
                   {fleetMetrics.poorVessels} attention needed
@@ -479,7 +479,7 @@ const DataQualityCards = ({
                 <QualityDistributionChart data={fleetMetrics} type="health" />
               </div>
 
-              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-slate-700/50 rounded-full overflow-hidden`}>
+              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div className="h-full flex">
                   <div
                     className="bg-emerald-500 transition-all duration-1000 ease-out"
@@ -528,14 +528,14 @@ const DataQualityCards = ({
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-2' : 'mb-3'}`}>
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-emerald-500/20 border border-emerald-500/30">
-                  <Database className={textSizes.icon + ' text-emerald-400'} />
+                <div className="p-1.5 rounded-md bg-emerald-100 border border-emerald-200">
+                  <Database className={textSizes.icon + ' text-emerald-600'} />
                 </div>
                 <div>
-                  <span className={`${textSizes.header} font-medium text-slate-200 block`}>
+                  <span className={`${textSizes.header} font-medium text-gray-800 block`}>
                     Completeness
                   </span>
-                  <span className={`${textSizes.subheader} text-slate-400`}>
+                  <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Coverage
                   </span>
                 </div>
@@ -548,18 +548,18 @@ const DataQualityCards = ({
             </div>
 
             <div className="space-y-2">
-              <div className={`${textSizes.value} font-bold text-white`}>
+              <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.avgCompleteness}%
               </div>
 
               <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
-                <WifiOff className="w-3 h-3 text-orange-400" />
-                <span className="text-slate-400">
+                <WifiOff className="w-3 h-3 text-orange-500" />
+                <span className="text-gray-600">
                   {fleetMetrics.totalMissingIssues} missing data points
                 </span>
               </div>
 
-              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-slate-700/50 rounded-full overflow-hidden`}>
+              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
                     fleetMetrics.avgCompleteness >= 85
@@ -587,14 +587,14 @@ const DataQualityCards = ({
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-2' : 'mb-3'}`}>
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-purple-500/20 border border-purple-500/30">
-                  <Target className={textSizes.icon + ' text-purple-400'} />
+                <div className="p-1.5 rounded-md bg-purple-100 border border-purple-200">
+                  <Target className={textSizes.icon + ' text-purple-600'} />
                 </div>
                 <div>
-                  <span className={`${textSizes.header} font-medium text-slate-200 block`}>
+                  <span className={`${textSizes.header} font-medium text-gray-800 block`}>
                     Correctness
                   </span>
-                  <span className={`${textSizes.subheader} text-slate-400`}>
+                  <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Accuracy
                   </span>
                 </div>
@@ -607,18 +607,18 @@ const DataQualityCards = ({
             </div>
 
             <div className="space-y-2">
-              <div className={`${textSizes.value} font-bold text-white`}>
+              <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.avgCorrectness}%
               </div>
 
               <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
-                <XCircle className="w-3 h-3 text-red-400" />
-                <span className="text-slate-400">
+                <XCircle className="w-3 h-3 text-red-600" />
+                <span className="text-gray-600">
                   {fleetMetrics.totalIncorrectIssues} incorrect data points
                 </span>
               </div>
 
-              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-slate-700/50 rounded-full overflow-hidden`}>
+              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div
                   className={`h-full transition-all duration-1000 ease-out ${
                     fleetMetrics.avgCorrectness >= 85
@@ -646,23 +646,23 @@ const DataQualityCards = ({
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-2' : 'mb-3'}`}>
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-md bg-orange-500/20 border border-orange-500/30">
-                  <AlertTriangle className={textSizes.icon + ' text-orange-400'} />
+                <div className="p-1.5 rounded-md bg-orange-100 border border-orange-200">
+                  <AlertTriangle className={textSizes.icon + ' text-orange-600'} />
                 </div>
                 <div>
-                  <span className={`${textSizes.header} font-medium text-slate-200 block`}>
+                  <span className={`${textSizes.header} font-medium text-gray-800 block`}>
                     Active Issues
                   </span>
-                  <span className={`${textSizes.subheader} text-slate-400`}>
+                  <span className={`${textSizes.subheader} text-gray-600`}>
                     Quality Alerts
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
                 {fleetMetrics.criticalIssues > 0 && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 border border-red-500/30 rounded-full">
-                    <AlertCircle className="w-2.5 h-2.5 text-red-400" />
-                    <span className={`${textSizes.small} text-red-400 font-medium`}>
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-100 border border-red-200 rounded-full">
+                    <AlertCircle className="w-2.5 h-2.5 text-red-600" />
+                    <span className={`${textSizes.small} text-red-600 font-medium`}>
                       {fleetMetrics.criticalIssues}
                     </span>
                   </div>
@@ -672,11 +672,11 @@ const DataQualityCards = ({
 
             <div className="space-y-2">
               <div className="flex items-baseline gap-2">
-                <div className={`${textSizes.value} font-bold text-white`}>
+                <div className={`${textSizes.value} font-bold text-gray-900`}>
                   {fleetMetrics.totalIssues}
                 </div>
                 {fleetMetrics.criticalIssues > 0 && (
-                  <div className="text-sm font-medium text-red-400">
+                  <div className="text-sm font-medium text-red-600">
                     {fleetMetrics.criticalIssues} critical
                   </div>
                 )}
@@ -685,19 +685,19 @@ const DataQualityCards = ({
               <div className={`grid grid-cols-2 gap-1.5 ${textSizes.small}`}>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                  <span className="text-slate-400">
+                  <span className="text-gray-600">
                     {fleetMetrics.totalMissingIssues} missing
                   </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                  <span className="text-slate-400">
+                  <span className="text-gray-600">
                     {fleetMetrics.totalIncorrectIssues} incorrect
                   </span>
                 </div>
               </div>
 
-              <div className={`${textSizes.small} text-slate-400`}>
+              <div className={`${textSizes.small} text-gray-600`}>
                 Across {fleetMetrics.totalVessels} vessels
               </div>
             </div>
@@ -713,13 +713,13 @@ const DataQualityCards = ({
         >
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-3' : 'mb-4'}`}>
-              <h3 className={`${compactMode ? 'text-base' : 'text-lg'} font-semibold text-white flex items-center gap-2`}>
-                <BarChart2 className="w-5 h-5 text-cyan-400" />
+              <h3 className={`${compactMode ? 'text-base' : 'text-lg'} font-semibold text-gray-900 flex items-center gap-2`}>
+                <BarChart2 className="w-5 h-5 text-cyan-600" />
                 KPI Reliability Analysis
               </h3>
               <button
                 onClick={() => setShowDetails(false)}
-                className="p-1.5 text-slate-400 hover:text-white transition-colors rounded-md hover:bg-slate-700/50"
+                className="p-1.5 text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100/50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -775,9 +775,9 @@ const DataQualityCards = ({
                 }) => (
                   <div
                     key={key}
-                    className={`relative overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-slate-800/50 to-slate-900/50 ${compactMode ? 'p-2' : 'p-3'} transition-all duration-300 hover:border-white/20 hover:scale-[1.02]`}
+                    className={`relative overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-white/50 to-gray-50/50 ${compactMode ? 'p-2' : 'p-3'} transition-all duration-300 hover:border-gray-300 hover:scale-[1.02]`}
                     style={{
-                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
+                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.05)',
                     }}
                   >
                     <div className={`flex items-center gap-2 ${compactMode ? 'mb-1.5' : 'mb-2'}`}>
@@ -791,10 +791,10 @@ const DataQualityCards = ({
                         <Icon className="w-4 h-4" style={{ color }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-white">
+                        <div className="text-sm font-medium text-gray-900">
                           {label}
                         </div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-gray-600">
                           {reliability}% reliable
                         </div>
                       </div>
@@ -802,7 +802,7 @@ const DataQualityCards = ({
                     </div>
 
                     <div className="space-y-2">
-                      <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-slate-700/50 rounded-full overflow-hidden`}>
+                      <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                         <div
                           className={`h-full transition-all duration-1000 ease-out ${
                             reliability >= 85
@@ -816,18 +816,18 @@ const DataQualityCards = ({
                       </div>
 
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-400">
+                        <span className="text-gray-600">
                           {issues} issues found
                         </span>
                         <span
                           className={`px-1.5 py-0.5 rounded-full font-medium ${
                             status === 'excellent'
-                              ? 'bg-emerald-500/20 text-emerald-400'
+                              ? 'bg-emerald-100 text-emerald-600'
                               : status === 'good'
-                              ? 'bg-cyan-500/20 text-cyan-400'
+                              ? 'bg-cyan-100 text-cyan-600'
                               : status === 'average'
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-red-500/20 text-red-400'
+                              ? 'bg-yellow-100 text-yellow-600'
+                              : 'bg-red-100 text-red-600'
                           }`}
                         >
                           {status}
@@ -852,14 +852,14 @@ const DataQualityCards = ({
 
       {/* Quality Controls Bar */}
       {viewMode === 'table' && (
-        <div className="flex items-center justify-between bg-slate-800/30 border border-white/10 rounded-lg p-3">
+        <div className="flex items-center justify-between bg-white/95 border border-gray-200 rounded-lg p-3 shadow-sm">
           <div className="flex items-center gap-4">
             <button
               onClick={onToggleQuality}
               className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 qualityVisible
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700'
+                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                  : 'bg-gray-100/50 text-gray-600 border border-gray-200 hover:bg-gray-100'
               }`}
             >
               {qualityVisible ? (
@@ -871,17 +871,17 @@ const DataQualityCards = ({
             </button>
             <button
               onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors bg-slate-700/50 text-slate-400 border border-white/10 hover:bg-slate-700"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-100/50 text-gray-600 border border-gray-200 hover:bg-gray-100"
             >
               <BarChart2 className="w-3 h-3" />
               {showDetails ? 'Hide' : 'Show'} KPI Details
             </button>
-            <div className="text-xs text-slate-400">Last updated: 2 mins ago</div>
+            <div className="text-xs text-gray-600">Last updated: 2 mins ago</div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onQualityFilter && onQualityFilter('excellent')}
-              className="px-2 py-1 text-xs bg-slate-700/50 text-slate-300 rounded hover:bg-slate-700 transition-colors"
+              className="px-2 py-1 text-xs bg-gray-100/50 text-gray-700 rounded hover:bg-gray-100 transition-colors"
             >
               Filter High Quality
             </button>

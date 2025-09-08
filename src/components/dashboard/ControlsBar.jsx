@@ -104,7 +104,7 @@ const ControlsBar = ({
     viewMode: filters.viewMode || VIEW_MODES.TABLE,
     qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Quality toggle state
   }));
-  
+
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
   const [showFuelAnomalyConfig, setShowFuelAnomalyConfig] = useState(false);
   const vesselDropdownRef = useRef(null);
@@ -222,24 +222,24 @@ const ControlsBar = ({
     return (
       <div className="flex items-center gap-3">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Primary Vessel</label>
-          <select 
+          <label className="text-xs text-gray-600">Primary Vessel</label>
+          <select
             value={fuelAnomalyConfig.selectedVessel}
             onChange={(e) => onFuelAnomalyConfigChange('selectedVessel', e.target.value)}
-            className="bg-slate-700 border border-white/20 rounded-md px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
+            className="bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
           >
             {sampleVessels.map(vessel => (
               <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
             ))}
           </select>
         </div>
-        
+
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-400">Sister Vessel</label>
-          <select 
+          <label className="text-xs text-gray-600">Sister Vessel</label>
+          <select
             value={fuelAnomalyConfig.sisterVessel}
             onChange={(e) => onFuelAnomalyConfigChange('sisterVessel', e.target.value)}
-            className="bg-slate-700 border border-white/20 rounded-md px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
+            className="bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-[160px]"
           >
             {sampleVessels.filter(v => v.id !== fuelAnomalyConfig.selectedVessel).map(vessel => (
               <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
@@ -250,34 +250,34 @@ const ControlsBar = ({
         <div className="relative" ref={fuelConfigRef}>
           <button
             onClick={() => setShowFuelAnomalyConfig(!showFuelAnomalyConfig)}
-            className="w-8 h-8 flex items-center justify-center bg-slate-700/50 border border-white/10 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200/50 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             title="Fuel Analysis Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
 
           {showFuelAnomalyConfig && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-white/10 rounded-lg shadow-xl z-50">
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Fuel className="w-4 h-4 text-orange-400" />
+            <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <Fuel className="w-4 h-4 text-orange-600" />
                   Analysis Configuration
                 </h4>
                 <button onClick={() => setShowFuelAnomalyConfig(false)}>
-                  <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                  <X className="w-4 h-4 text-gray-600 hover:text-gray-900" />
                 </button>
               </div>
 
               <div className="p-4 space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-slate-300 mb-2 block">Analysis Period</label>
-                  <select 
+                  <label className="text-xs font-medium text-gray-700 mb-2 block">Analysis Period</label>
+                  <select
                     value={fuelAnomalyConfig.analysisConfig.period}
                     onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
                       ...fuelAnomalyConfig.analysisConfig,
                       period: e.target.value
                     })}
-                    className="w-full bg-slate-700 border border-white/20 rounded-md px-3 py-2 text-sm text-white"
+                    className="w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900"
                   >
                     <option value="last_6_months">Last 6 Months</option>
                     <option value="last_3_months">Last 3 Months</option>
@@ -285,25 +285,25 @@ const ControlsBar = ({
                     <option value="custom">Custom Range</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 mb-2 block">Detection Sensitivity</label>
-                  <select 
+                  <label className="text-xs font-medium text-gray-700 mb-2 block">Detection Sensitivity</label>
+                  <select
                     value={fuelAnomalyConfig.analysisConfig.sensitivity}
                     onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
                       ...fuelAnomalyConfig.analysisConfig,
                       sensitivity: e.target.value
                     })}
-                    className="w-full bg-slate-700 border border-white/20 rounded-md px-3 py-2 text-sm text-white"
+                    className="w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900"
                   >
                     <option value="low">Low - Major anomalies only</option>
                     <option value="medium">Medium - Balanced detection</option>
                     <option value="high">High - Sensitive detection</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="text-xs font-medium text-slate-300 mb-2 block">Analysis Levels</label>
+                  <label className="text-xs font-medium text-gray-700 mb-2 block">Analysis Levels</label>
                   <div className="space-y-2">
                     {[
                       { key: 'lf_vs_hf', label: 'LF vs HF Sync', icon: Radio },
@@ -313,11 +313,11 @@ const ControlsBar = ({
                       const IconComponent = level.icon;
                       return (
                         <label key={level.key} className="flex items-center gap-2 text-xs">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={fuelAnomalyConfig.analysisConfig.enabledLevels.includes(level.key)}
                             onChange={(e) => {
-                              const newLevels = e.target.checked 
+                              const newLevels = e.target.checked
                                 ? [...fuelAnomalyConfig.analysisConfig.enabledLevels, level.key]
                                 : fuelAnomalyConfig.analysisConfig.enabledLevels.filter(l => l !== level.key);
                               onFuelAnomalyConfigChange('analysisConfig', {
@@ -325,10 +325,10 @@ const ControlsBar = ({
                                 enabledLevels: newLevels
                               });
                             }}
-                            className="rounded text-orange-500 bg-slate-700 border-slate-600"
+                            className="rounded text-orange-600 bg-gray-100 border-gray-300"
                           />
-                          <IconComponent className="w-3 h-3 text-slate-400" />
-                          <span className="text-slate-300">{level.label}</span>
+                          <IconComponent className="w-3 h-3 text-gray-600" />
+                          <span className="text-gray-700">{level.label}</span>
                         </label>
                       );
                     })}
@@ -336,10 +336,10 @@ const ControlsBar = ({
                 </div>
               </div>
 
-              <div className="p-4 border-t border-white/10 flex justify-end gap-2">
+              <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
                 <button
                   onClick={() => setShowFuelAnomalyConfig(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 >
                   Done
                 </button>
@@ -555,7 +555,7 @@ const ControlsBar = ({
           )}
         </button>
       </div>
-      
+
       <style jsx>{`
         :root {
           --primary-accent: #66aaff;
@@ -564,16 +564,16 @@ const ControlsBar = ({
           --success-color: #28a745;
           --fuel-anomaly-color: #f97316; /* Orange for fuel anomaly */
           --quality-color: #10b981; /* Emerald for data quality */
-          --card-bg: #1a1a2e;
-          --card-dark: #0f0f1a;
-          --bg-gradient-1: linear-gradient(135deg, #0a0a1a, #1a1a2e);
-          --text-light: #e0e0e0;
-          --text-muted: #a0a0a0;
-          --border-subtle: rgba(255, 255, 255, 0.1);
+          --card-bg: #f8fafc; /* light theme card bg */
+          --card-dark: #ffffff; /* light theme card bg */
+          --bg-gradient-1: linear-gradient(135deg, #f8fafc, #ffffff);
+          --text-light: #1a1a2e; /* dark text for light theme */
+          --text-muted: #6b7280; /* muted dark text */
+          --border-subtle: rgba(0, 0, 0, 0.1);
           --border-accent: rgba(102, 170, 255, 0.4);
-          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-          --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2);
-          --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+          --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+          --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+          --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
           --transition-fast: all 0.15s ease-out;
           --transition-medium: all 0.3s ease-out;
         }
@@ -602,7 +602,7 @@ const ControlsBar = ({
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%);
           pointer-events: none;
           border-radius: 4px;
         }
@@ -676,7 +676,7 @@ const ControlsBar = ({
         .nav-icon {
           width: 12px;
           height: 12px;
-          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.1));
         }
 
         .nav-btn.active .nav-icon {
@@ -700,7 +700,7 @@ const ControlsBar = ({
           border-radius: 6px;
           min-width: 14px;
           text-align: center;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .filter-dropdown {
@@ -725,12 +725,12 @@ const ControlsBar = ({
 
         .filter-header {
           padding: 8px 12px;
-          background: linear-gradient(135deg, var(--card-dark), var(--primary-dark));
+          background: linear-gradient(135deg, var(--card-dark), var(--card-bg));
           border-bottom: 1px solid var(--border-subtle);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          box-shadow: inset 0 -1px 0 rgba(255,255,255,0.05);
+          box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
         }
 
         .filter-title {
@@ -751,7 +751,7 @@ const ControlsBar = ({
         .filter-close {
           width: 20px;
           height: 20px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.05);
           border: none;
           border-radius: 3px;
           display: flex;
@@ -763,14 +763,14 @@ const ControlsBar = ({
         }
 
         .filter-close:hover {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(0, 0, 0, 0.1);
           transform: scale(1.05);
         }
 
         .filter-close-icon {
           width: 10px;
           height: 10px;
-          color: var(--text-light);
+          color: var(--text-muted);
         }
 
         .filter-body {
@@ -831,7 +831,7 @@ const ControlsBar = ({
         }
 
         .checkbox-item:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.05);
         }
 
         .checkbox-input {
@@ -846,15 +846,15 @@ const ControlsBar = ({
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.2);
+          background: rgba(255, 255, 255, 0.5);
           transition: var(--transition-fast);
-          box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .checkbox-input:checked + .checkbox-custom {
           border-color: var(--primary-accent);
           background: var(--primary-accent);
-          box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 0 5px var(--primary-accent-light);
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 0 5px var(--primary-accent-light);
         }
 
         .checkbox-icon {
@@ -877,12 +877,12 @@ const ControlsBar = ({
 
         .filter-footer {
           padding: 8px 12px;
-          background: linear-gradient(135deg, var(--card-dark), var(--primary-dark));
+          background: linear-gradient(135deg, var(--card-dark), var(--card-bg));
           border-top: 1px solid var(--border-subtle);
           display: flex;
           gap: 6px;
           justify-content: flex-end;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+          box-shadow: inset 0 1px 0 rgba(0,0,0,0.05);
         }
 
         .reset-btn {
@@ -890,10 +890,10 @@ const ControlsBar = ({
           align-items: center;
           gap: 3px;
           padding: 4px 10px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.05);
           border: 1px solid var(--border-subtle);
           border-radius: 3px;
-          color: var(--text-light);
+          color: var(--text-muted);
           cursor: pointer;
           transition: var(--transition-fast);
           font-size: 10px;
@@ -902,7 +902,7 @@ const ControlsBar = ({
         }
 
         .reset-btn:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(0, 0, 0, 0.1);
           transform: translateY(-1px);
           box-shadow: var(--shadow-md);
         }
@@ -988,7 +988,7 @@ const ControlsBar = ({
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          background: linear-gradient(45deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(255,255,255,0.1) 100%);
           opacity: 0;
           transition: opacity var(--transition-fast);
         }
@@ -998,7 +998,7 @@ const ControlsBar = ({
         }
 
         .view-toggle-btn:hover:not(.active) {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.05);
           transform: translateY(-1px);
         }
 
@@ -1022,7 +1022,7 @@ const ControlsBar = ({
         .view-toggle-icon {
           width: 12px;
           height: 12px;
-          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.1));
         }
 
         .view-toggle-btn:not(.active) .view-toggle-icon {
@@ -1064,7 +1064,7 @@ const ControlsBar = ({
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          background: linear-gradient(45deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 50%, rgba(255,255,255,0.1) 100%);
           opacity: 0;
           transition: opacity var(--transition-fast);
         }
@@ -1074,7 +1074,7 @@ const ControlsBar = ({
         }
 
         .quality-toggle-btn:hover:not(.active) {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(0, 0, 0, 0.05);
           border-color: var(--quality-color);
           transform: translateY(-1px) translateZ(2px);
           box-shadow: var(--shadow-md);
@@ -1089,14 +1089,14 @@ const ControlsBar = ({
         }
 
         .quality-toggle-btn.active::before {
-          background: linear-gradient(45deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+          background: linear-gradient(45deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(255,255,255,0.1) 100%);
           opacity: 1;
         }
 
         .quality-toggle-icon {
           width: 14px;
           height: 14px;
-          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.1));
           transition: var(--transition-fast);
         }
 
@@ -1137,7 +1137,7 @@ const ControlsBar = ({
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(45deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 100%);
+          background: linear-gradient(45deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 50%, rgba(255,255,255,0.05) 100%);
           pointer-events: none;
         }
 
@@ -1152,7 +1152,7 @@ const ControlsBar = ({
           height: 12px;
           color: var(--primary-accent);
           flex-shrink: 0;
-          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.1));
         }
 
         .date-inputs {
@@ -1170,16 +1170,16 @@ const ControlsBar = ({
           padding: 1px 3px;
           border-radius: 2px;
           transition: var(--transition-fast);
-          text-shadow: 0 0 1px rgba(0,0,0,0.5);
+          text-shadow: 0 0 1px rgba(255,255,255,0.5);
         }
 
         .date-input:focus {
           outline: none;
-          background: rgba(0, 0, 0, 0.2);
+          background: rgba(0, 0, 0, 0.05);
         }
 
         .date-input::-webkit-calendar-picker-indicator {
-          filter: invert(0.7);
+          filter: invert(0.2);
           cursor: pointer;
         }
 
@@ -1237,7 +1237,7 @@ const ControlsBar = ({
         .export-icon {
           width: 14px;
           height: 14px;
-          filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 0 1px rgba(0,0,0,0.1));
         }
 
         .export-icon.spinning {

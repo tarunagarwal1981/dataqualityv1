@@ -54,7 +54,7 @@ const LoadingSpinner = ({
       {getSpinner(type)}
       {showMessage && message && (
         <div
-          className={`font-medium text-slate-300 ${config.text} ${
+          className={`font-medium text-gray-700 ${config.text} ${
             inline ? '' : 'text-center'
           }`}
         >
@@ -144,7 +144,7 @@ export const TableLoadingSkeleton = ({ rows = 5, columns = 6 }) => (
         {Array.from({ length: columns }).map((_, colIndex) => (
           <div
             key={colIndex}
-            className="h-4 bg-slate-700/50 rounded animate-pulse"
+            className="h-4 bg-gray-100/50 rounded animate-pulse"
             style={{ width: `${Math.random() * 40 + 60}%` }}
           />
         ))}
@@ -156,17 +156,17 @@ export const TableLoadingSkeleton = ({ rows = 5, columns = 6 }) => (
 export const ChartLoadingSkeleton = () => (
   <div className="space-y-4">
     {/* Chart title skeleton */}
-    <div className="h-6 bg-slate-700/50 rounded w-1/3 animate-pulse"></div>
+    <div className="h-6 bg-gray-100/50 rounded w-1/3 animate-pulse"></div>
 
     {/* Chart area skeleton */}
-    <div className="relative h-64 bg-slate-800/30 rounded-xl border border-slate-700/30 overflow-hidden">
+    <div className="relative h-64 bg-white/95 rounded-xl border border-gray-200/50 overflow-hidden">
       <div className="absolute inset-4">
         {/* Y-axis labels */}
         <div className="absolute left-0 top-0 bottom-0 w-12 space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-3 bg-slate-700/50 rounded animate-pulse"
+              className="h-3 bg-gray-100/50 rounded animate-pulse"
             ></div>
           ))}
         </div>
@@ -190,7 +190,7 @@ export const ChartLoadingSkeleton = () => (
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-3 w-16 bg-slate-700/50 rounded animate-pulse"
+              className="h-3 w-16 bg-gray-100/50 rounded animate-pulse"
             ></div>
           ))}
         </div>
@@ -201,8 +201,8 @@ export const ChartLoadingSkeleton = () => (
     <div className="flex items-center justify-center space-x-6">
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-slate-700/50 rounded animate-pulse"></div>
-          <div className="h-3 w-20 bg-slate-700/50 rounded animate-pulse"></div>
+          <div className="w-3 h-3 bg-gray-100/50 rounded animate-pulse"></div>
+          <div className="h-3 w-20 bg-gray-100/50 rounded animate-pulse"></div>
         </div>
       ))}
     </div>
@@ -210,24 +210,24 @@ export const ChartLoadingSkeleton = () => (
 );
 
 export const QualityPanelLoadingSkeleton = () => (
-  <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6">
+  <div className="bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-xl p-6">
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-slate-700/50 rounded-xl animate-pulse"></div>
-        <div className="h-6 w-48 bg-slate-700/50 rounded animate-pulse"></div>
+        <div className="w-10 h-10 bg-gray-100/50 rounded-xl animate-pulse"></div>
+        <div className="h-6 w-48 bg-gray-100/50 rounded animate-pulse"></div>
       </div>
-      <div className="h-4 w-32 bg-slate-700/50 rounded animate-pulse"></div>
+      <div className="h-4 w-32 bg-gray-100/50 rounded animate-pulse"></div>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={i}
-          className="bg-slate-700/30 rounded-xl p-4 border border-slate-600/30"
+          className="bg-gray-100/30 rounded-xl p-4 border border-gray-200/30"
         >
-          <div className="h-8 w-16 bg-slate-600/50 rounded animate-pulse mb-2"></div>
-          <div className="h-4 w-24 bg-slate-600/50 rounded animate-pulse mb-1"></div>
-          <div className="h-3 w-32 bg-slate-600/50 rounded animate-pulse"></div>
+          <div className="h-8 w-16 bg-gray-200/50 rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-24 bg-gray-200/50 rounded animate-pulse mb-1"></div>
+          <div className="h-3 w-32 bg-gray-200/50 rounded animate-pulse"></div>
         </div>
       ))}
     </div>
@@ -235,29 +235,29 @@ export const QualityPanelLoadingSkeleton = () => (
 );
 
 export const SidebarLoadingSkeleton = () => (
-  <div className="w-80 bg-slate-800/30 border-r border-slate-700/30 p-6 space-y-6">
+  <div className="w-80 bg-white/95 border-r border-gray-200/50 p-6 space-y-6">
     {/* Filter header */}
-    <div className="flex items-center gap-3 pb-4 border-b border-slate-700/50">
-      <div className="w-8 h-8 bg-slate-700/50 rounded-xl animate-pulse"></div>
-      <div className="h-5 w-32 bg-slate-700/50 rounded animate-pulse"></div>
+    <div className="flex items-center gap-3 pb-4 border-b border-gray-200/50">
+      <div className="w-8 h-8 bg-gray-100/50 rounded-xl animate-pulse"></div>
+      <div className="h-5 w-32 bg-gray-100/50 rounded animate-pulse"></div>
     </div>
 
     {/* Search */}
     <div>
-      <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse mb-3"></div>
-      <div className="h-10 w-full bg-slate-700/50 rounded-xl animate-pulse"></div>
+      <div className="h-4 w-24 bg-gray-100/50 rounded animate-pulse mb-3"></div>
+      <div className="h-10 w-full bg-gray-100/50 rounded-xl animate-pulse"></div>
     </div>
 
     {/* Vessel selection */}
     <div>
-      <div className="h-4 w-32 bg-slate-700/50 rounded animate-pulse mb-3"></div>
+      <div className="h-4 w-32 bg-gray-100/50 rounded animate-pulse mb-3"></div>
       <div className="space-y-3 max-h-48">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w-4 h-4 bg-slate-700/50 rounded animate-pulse"></div>
+            <div className="w-4 h-4 bg-gray-100/50 rounded animate-pulse"></div>
             <div className="flex-1">
-              <div className="h-3 w-3/4 bg-slate-700/50 rounded animate-pulse mb-1"></div>
-              <div className="h-2 w-1/2 bg-slate-700/50 rounded animate-pulse"></div>
+              <div className="h-3 w-3/4 bg-gray-100/50 rounded animate-pulse mb-1"></div>
+              <div className="h-2 w-1/2 bg-gray-100/50 rounded animate-pulse"></div>
             </div>
           </div>
         ))}
@@ -266,19 +266,19 @@ export const SidebarLoadingSkeleton = () => (
 
     {/* KPI selection */}
     <div>
-      <div className="h-4 w-28 bg-slate-700/50 rounded animate-pulse mb-3"></div>
+      <div className="h-4 w-28 bg-gray-100/50 rounded animate-pulse mb-3"></div>
       <div className="space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/30"
+            className="bg-white/95 rounded-xl p-3 border border-gray-200/50"
           >
-            <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-24 bg-gray-100/50 rounded animate-pulse mb-2"></div>
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, j) => (
                 <div key={j} className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-slate-700/50 rounded animate-pulse"></div>
-                  <div className="h-3 w-2/3 bg-slate-700/50 rounded animate-pulse"></div>
+                  <div className="w-3 h-3 bg-gray-100/50 rounded animate-pulse"></div>
+                  <div className="h-3 w-2/3 bg-gray-100/50 rounded animate-pulse"></div>
                 </div>
               ))}
             </div>
@@ -305,7 +305,7 @@ export const LoadingOverlay = ({
       ${backdrop ? 'bg-black/50 backdrop-blur-sm' : ''}
     `}
     >
-      <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 shadow-2xl">
+      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-2xl">
         <LoadingSpinner size="xl" message={message} type={type} />
       </div>
     </div>
@@ -320,14 +320,14 @@ export const ProgressLoader = ({
 }) => (
   <div className="space-y-3">
     <div className="flex items-center justify-between">
-      <span className="text-slate-300 font-medium">{message}</span>
+      <span className="text-gray-700 font-medium">{message}</span>
       {showPercentage && (
-        <span className="text-slate-400 font-mono text-sm">
+        <span className="text-gray-600 font-mono text-sm">
           {Math.round(progress)}%
         </span>
       )}
     </div>
-    <div className="w-full bg-slate-700 rounded-full h-2">
+    <div className="w-full bg-gray-100 rounded-full h-2">
       <div
         className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
         style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}

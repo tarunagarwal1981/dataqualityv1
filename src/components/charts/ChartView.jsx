@@ -254,22 +254,22 @@ const ALL_KPIS = {
 
 // Vessel Colors for Chart Lines
 const VESSEL_COLORS = [
-  '#8884d8',
-  '#82ca9d',
-  '#ffc658',
-  '#ff7c7c',
-  '#8dd1e1',
-  '#83a6ed',
-  '#8884d8',
-  '#d084d0',
-  '#ffb347',
-  '#87ceeb',
+  '#3b82f6', // Primary blue
+  '#10b981', // Emerald 
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#8b5cf6', // Purple
+  '#06b6d4', // Cyan
+  '#84cc16', // Lime
+  '#f97316', // Orange
+  '#22d3ee', // Cyan
+  '#a78bfa', // Violet
 ];
 
 // LF and HF colors for combined mode
 const LF_HF_COLORS = {
-  LF: '#4CC9F0',
-  HF: '#F07167',
+  LF: '#3b82f6',
+  HF: '#ef4444',
 };
 
 // Helper Functions
@@ -315,10 +315,10 @@ const generateMockChartData = (
 
             const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
             let value = generateKPIValue(kpiId, currentDate, sourceType);
-            
+             
             // Apply quality issues
             const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
-            
+             
             const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
             entry[dataKey] = finalValue;
             entry[`${dataKey}_quality`] = qualityInfo.qualityType;
@@ -333,10 +333,10 @@ const generateMockChartData = (
 
           const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
           let value = generateKPIValue(kpiId, currentDate, dataType.toUpperCase());
-          
+           
           // Apply quality issues
           const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
-          
+           
           const dataKey = `${vesselId}_${kpiId}`;
           entry[dataKey] = finalValue;
           entry[`${dataKey}_quality`] = qualityInfo.qualityType;
@@ -348,18 +348,18 @@ const generateMockChartData = (
     });
 
     data.push(entry);
-    
+     
     // Increment by the specified interval
     currentDate.setHours(currentDate.getHours() + intervalHours);
   }
-  
+   
   return data;
 };
 
 const generateKPIValue = (kpiId, currentDate, sourceType) => {
   const timeComponent = currentDate.getTime() / (1000 * 60 * 60);
   const sourceMultiplier = sourceType === 'HF' ? 1.1 : 1.0; // HF slightly higher values
-  
+   
   switch (kpiId) {
     case 'obs_speed':
       return (10 + Math.random() * 5 + Math.sin(timeComponent / 24) * 2) * sourceMultiplier;
@@ -545,7 +545,7 @@ const ControlsBar = ({
         selectedVessels: singleVessel.length > 0 ? singleVessel : [defaultSelectedVessels[0].id],
         selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
       }));
-      
+       
       onShowNotification(
         'Combined mode shows both LF and HF data for a single vessel per chart. Only one vessel has been selected.',
         'info'
@@ -560,7 +560,7 @@ const ControlsBar = ({
         selectedKPIs: ALL_KPIS.HF.map((kpi) => kpi.id),
         hfInterval: HF_INTERVALS.DAILY,
       }));
-      
+       
       if (localFilters.selectedVessels.length > 3) {
         onShowNotification(
           'HF mode supports maximum 3 vessels for optimal performance. Selection has been limited to first 3 vessels.',
@@ -579,18 +579,18 @@ const ControlsBar = ({
 
   const handleHFIntervalChange = (interval) => {
     const config = HF_INTERVAL_CONFIGS[interval];
-    
+     
     if (config.maxDays) {
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - config.maxDays);
-      
+       
       setLocalFilters((prev) => ({
         ...prev,
         hfInterval: interval,
         dateRange: { startDate, endDate },
       }));
-      
+       
       onShowNotification(
         `${config.label}: ${config.description}. Date range has been adjusted accordingly.`,
         'info'
@@ -637,15 +637,15 @@ const ControlsBar = ({
   }, [localFilters.dataType]);
 
   return (
-    <div className="bg-slate-800/50 border-b border-white/10 backdrop-blur-md relative">
+    <div className="bg-white/95 border-b border-gray-200 backdrop-blur-md relative">
       <div className="flex items-center justify-between w-full p-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-cyan-500/20 border border-cyan-500/30">
-              <BarChart3 className="w-5 h-5 text-cyan-400" />
+            <div className="p-1.5 rounded-md bg-blue-500/20 border border-blue-500/30">
+              <BarChart3 className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Fleet Analytics</h3>
+              <h3 className="text-lg font-bold text-gray-900">Fleet Analytics</h3>
             </div>
           </div>
         </div>
@@ -655,7 +655,7 @@ const ControlsBar = ({
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="w-8 h-8 flex items-center justify-center bg-slate-700/50 border border-white/10 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+              className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
               title="Configure KPIs"
             >
               <Settings className="w-4 h-4" />
@@ -664,41 +664,41 @@ const ControlsBar = ({
             {showKPIDropdown && (
               <>
                 {/* Backdrop overlay to prevent click-through */}
-                <div 
+                <div
                   className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
                   onClick={() => setShowKPIDropdown(false)}
                 />
-                
+                 
                 {/* Dropdown positioned to be fully visible */}
-                <div 
+                <div
                   className="fixed right-4 top-16 w-80 max-h-[calc(100vh-80px)] rounded-lg shadow-2xl z-50 overflow-hidden"
                   style={{
-                    background: 'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%)',
+                    border: '1px solid rgba(0, 0, 0, 0.15)',
                     backdropFilter: 'blur(16px)',
-                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)'
                   }}
                 >
                   {/* Header */}
-                  <div className="flex items-center justify-between p-4 border-b border-white/20 bg-slate-800/30">
-                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-cyan-400" />
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/30">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-blue-600" />
                       Configure KPIs
                     </h4>
-                    <button 
+                    <button
                       onClick={() => setShowKPIDropdown(false)}
-                      className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
+                      className="p-1.5 rounded-md hover:bg-gray-100/10 transition-colors"
                     >
-                      <X className="w-4 h-4 text-slate-400 hover:text-white" />
+                      <X className="w-4 h-4 text-gray-600 hover:text-gray-900" />
                     </button>
                   </div>
 
                   {/* Scrollable content */}
                   <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
                     {/* Data Source Selection */}
-                    <div className="p-4 border-b border-white/10">
-                      <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center gap-2">
-                        <Radio className="w-3 h-3 text-cyan-400" />
+                    <div className="p-4 border-b border-gray-200">
+                      <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center gap-2">
+                        <Radio className="w-3 h-3 text-blue-600" />
                         Data Source
                       </label>
                       <div className="grid grid-cols-3 gap-2">
@@ -714,22 +714,22 @@ const ControlsBar = ({
                               onClick={() => handleDataTypeChange(type.key.toLowerCase())}
                               className={`px-3 py-3 text-xs font-medium rounded-lg transition-all duration-200 border-2 ${
                                 isSelected
-                                  ? 'bg-emerald-500/30 text-emerald-100 border-emerald-400/70 shadow-lg transform scale-105'
-                                  : 'bg-slate-700/40 text-slate-300 border-slate-600/50 hover:bg-slate-600/60 hover:border-slate-500/70 hover:scale-102'
+                                  ? 'bg-blue-600/10 text-blue-700 border-blue-400/70 shadow-lg transform scale-105'
+                                  : 'bg-gray-100/40 text-gray-700 border-gray-300/50 hover:bg-gray-200/60 hover:border-gray-300/70 hover:scale-102'
                               }`}
                             >
                               <div className="flex flex-col items-center gap-1.5">
-                                <type.icon className={`w-4 h-4 ${isSelected ? 'text-emerald-200' : 'text-slate-400'}`} />
+                                <type.icon className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
                                 <span className="text-[11px] font-semibold">{type.label}</span>
                               </div>
                             </button>
                           );
                         })}
                       </div>
-                      
+                       
                       {/* Data type info */}
-                      <div className="mt-3 p-2 bg-slate-700/30 rounded-md">
-                        <p className="text-[10px] text-slate-400">
+                      <div className="mt-3 p-2 bg-gray-100/30 rounded-md">
+                        <p className="text-[10px] text-gray-600">
                           {localFilters.dataType === 'lf' && '📊 Low Frequency data - Multiple vessels supported'}
                           {localFilters.dataType === 'hf' && '⚡ High Frequency data - Max 3 vessels, configurable intervals'}
                           {localFilters.dataType === 'combined' && '🔄 Shows both LF & HF data - Single vessel only'}
@@ -739,9 +739,9 @@ const ControlsBar = ({
 
                     {/* HF Interval Selection */}
                     {localFilters.dataType === DATA_TYPES.HF && (
-                      <div className="p-4 border-b border-white/10">
-                        <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center gap-2">
-                          <Clock className="w-3 h-3 text-orange-400" />
+                      <div className="p-4 border-b border-gray-200">
+                        <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center gap-2">
+                          <Clock className="w-3 h-3 text-orange-600" />
                           HF Data Interval
                         </label>
                         <div className="space-y-2">
@@ -754,22 +754,22 @@ const ControlsBar = ({
                                 onClick={() => handleHFIntervalChange(value)}
                                 className={`w-full px-3 py-2 text-xs text-left rounded-lg transition-all duration-200 border ${
                                   isSelected
-                                    ? 'bg-orange-500/25 text-orange-100 border-orange-400/50 shadow-md'
-                                    : 'bg-slate-700/30 text-slate-300 border-slate-600/30 hover:bg-slate-600/50'
+                                    ? 'bg-orange-600/10 text-orange-700 border-orange-400/50 shadow-md'
+                                    : 'bg-gray-100/30 text-gray-700 border-gray-300/30 hover:bg-gray-200/50'
                                 }`}
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="font-medium">{config.label}</span>
                                   <div className="flex items-center gap-1">
                                     {config.maxDays && (
-                                      <span className="text-[9px] bg-slate-600/50 px-1 py-0.5 rounded">
+                                      <span className="text-[9px] bg-gray-300/50 px-1 py-0.5 rounded">
                                         {config.maxDays}d max
                                       </span>
                                     )}
                                     <Clock className="w-3 h-3" />
                                   </div>
                                 </div>
-                                <div className="text-[10px] text-slate-400 mt-1">
+                                <div className="text-[10px] text-gray-600 mt-1">
                                   {config.description}
                                 </div>
                               </button>
@@ -781,30 +781,30 @@ const ControlsBar = ({
 
                     {/* KPI Selection */}
                     <div className="p-4">
-                      <label className="text-xs font-medium text-slate-300 mb-3 block flex items-center justify-between">
+                      <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center justify-between">
                         <span className="flex items-center gap-2">
-                          <Target className="w-3 h-3 text-cyan-400" />
+                          <Target className="w-3 h-3 text-blue-600" />
                           Select KPIs
                         </span>
-                        <span className="text-emerald-400 font-semibold">
+                        <span className="text-emerald-600 font-semibold">
                           {localFilters.selectedKPIs?.length || 0} selected
                         </span>
                       </label>
-                      
+                       
                       {/* Select All / None buttons */}
                       <div className="flex gap-2 mb-3">
                         <button
-                          onClick={() => setLocalFilters(prev => ({ 
-                            ...prev, 
-                            selectedKPIs: availableKPIs.map(kpi => kpi.id) 
+                          onClick={() => setLocalFilters(prev => ({
+                            ...prev,
+                            selectedKPIs: availableKPIs.map(kpi => kpi.id)
                           }))}
-                          className="text-[10px] px-2 py-1 bg-emerald-600/20 text-emerald-300 rounded hover:bg-emerald-600/30 transition-colors"
+                          className="text-[10px] px-2 py-1 bg-emerald-600/20 text-emerald-700 rounded hover:bg-emerald-600/30 transition-colors"
                         >
                           Select All
                         </button>
                         <button
                           onClick={() => setLocalFilters(prev => ({ ...prev, selectedKPIs: [] }))}
-                          className="text-[10px] px-2 py-1 bg-red-600/20 text-red-300 rounded hover:bg-red-600/30 transition-colors"
+                          className="text-[10px] px-2 py-1 bg-red-600/20 text-red-700 rounded hover:bg-red-600/30 transition-colors"
                         >
                           Clear All
                         </button>
@@ -818,8 +818,8 @@ const ControlsBar = ({
                               key={`${kpi.id}-${kpi.source}`}
                               className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 border ${
                                 isSelected
-                                  ? 'bg-emerald-500/20 border-emerald-400/40 shadow-sm'
-                                  : 'bg-slate-700/20 border-slate-600/30 hover:bg-slate-600/40 hover:border-slate-500/50'
+                                  ? 'bg-blue-600/10 border-blue-400/40 shadow-sm'
+                                  : 'bg-gray-100/20 border-gray-300/30 hover:bg-gray-200/40 hover:border-gray-300/50'
                               }`}
                             >
                               <div className="relative">
@@ -827,23 +827,23 @@ const ControlsBar = ({
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={() => handleKPISelection(kpi.id)}
-                                  className="w-4 h-4 text-emerald-500 bg-slate-700 border-slate-500 rounded focus:ring-emerald-500 focus:ring-2 focus:ring-offset-0"
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-600 focus:ring-2 focus:ring-offset-0"
                                 />
                                 {isSelected && (
-                                  <Check className="w-3 h-3 text-emerald-400 absolute top-0.5 left-0.5 pointer-events-none" />
+                                  <Check className="w-3 h-3 text-blue-600 absolute top-0.5 left-0.5 pointer-events-none" />
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium text-white truncate">
+                                  <span className="text-sm font-medium text-gray-900 truncate">
                                     {kpi.name}
                                   </span>
                                   {kpi.source !== 'COMBINED' && (
                                     <span
                                       className={`text-[8px] px-1.5 py-0.5 rounded-full border font-semibold ${
                                         kpi.source === 'LF'
-                                          ? 'bg-blue-500/25 text-blue-200 border-blue-400/50'
-                                          : 'bg-orange-500/25 text-orange-200 border-orange-400/50'
+                                          ? 'bg-blue-600/10 text-blue-700 border-blue-600/30'
+                                          : 'bg-orange-600/10 text-orange-700 border-orange-600/30'
                                       }`}
                                     >
                                       {kpi.source}
@@ -851,11 +851,11 @@ const ControlsBar = ({
                                   )}
                                 </div>
                                 {kpi.unit && (
-                                  <span className="text-xs text-slate-400">
+                                  <span className="text-xs text-gray-600">
                                     Unit: {kpi.unit}
                                   </span>
                                 )}
-                                <span className="text-[10px] text-slate-500 capitalize">
+                                <span className="text-[10px] text-gray-500 capitalize">
                                   {kpi.category} metric
                                 </span>
                               </div>
@@ -867,14 +867,14 @@ const ControlsBar = ({
                   </div>
 
                   {/* Footer */}
-                  <div className="p-4 border-t border-white/10 bg-slate-800/30 flex justify-between items-center">
-                    <div className="text-[10px] text-slate-400">
+                  <div className="p-4 border-t border-gray-200 bg-gray-50/30 flex justify-between items-center">
+                    <div className="text-[10px] text-gray-600">
                       {localFilters.selectedKPIs?.length || 0} KPIs • {localFilters.dataType.toUpperCase()} mode
                     </div>
                     <div className="flex gap-3">
                       <button
                         onClick={() => setShowKPIDropdown(false)}
-                        className="px-3 py-2 text-xs font-medium text-slate-300 bg-slate-700/50 border border-slate-600/50 rounded-md hover:bg-slate-600/70 transition-colors"
+                        className="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100/50 border border-gray-300/50 rounded-md hover:bg-gray-200/70 transition-colors"
                       >
                         Cancel
                       </button>
@@ -894,7 +894,7 @@ const ControlsBar = ({
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="w-8 h-8 flex items-center justify-center bg-slate-700/50 border border-white/10 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-300"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -908,7 +908,7 @@ const ControlsBar = ({
           <button
             onClick={() => onExport('csv')}
             disabled={isExporting}
-            className="w-8 h-8 flex items-center justify-center bg-slate-700/50 border border-white/10 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-all duration-300 disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
             title="Export Data"
           >
             {isExporting ? (
@@ -946,7 +946,7 @@ const QualityDot = ({
     if (value === null || value === undefined) {
       return null; // Don't render missing data dots when quality is off
     }
-    
+     
     return (
       <g>
         <circle
@@ -1036,10 +1036,10 @@ const CustomTooltip = ({
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800/98 border border-white/25 rounded-lg p-3 shadow-2xl backdrop-blur-md">
-        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-white/15">
-          <Calendar className="w-3.5 h-3.5 text-cyan-400" />
-          <p className="text-xs font-semibold text-white">
+      <div className="bg-gray-900/98 border border-gray-700/25 rounded-lg p-3 shadow-2xl backdrop-blur-md">
+        <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-gray-700/15">
+          <Calendar className="w-3.5 h-3.5 text-blue-400" />
+          <p className="text-xs font-semibold text-gray-100">
             {new Date(label).toLocaleDateString('en-US', {
               weekday: 'short',
               month: 'short',
@@ -1055,14 +1055,14 @@ const CustomTooltip = ({
           {payload.map((entry, index) => {
             const parts = entry.dataKey.split('_');
             let vesselId, kpiId, sourceType;
-            
+             
             if (dataType === DATA_TYPES.COMBINED) {
               [vesselId, kpiId, sourceType] = parts;
             } else {
               [vesselId, kpiId] = parts;
               sourceType = dataType.toUpperCase();
             }
-            
+             
             const vessel = sampleVessels.find((v) => v.id === vesselId);
             const qualityType = entry.payload[`${entry.dataKey}_quality`];
             const hasIssue = entry.payload[`${entry.dataKey}_hasIssue`];
@@ -1072,14 +1072,14 @@ const CustomTooltip = ({
 
             return (
               <div key={`item-${index}`} className="group">
-                <div className="flex items-center justify-between p-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 transition-colors">
+                <div className="flex items-center justify-between p-1.5 rounded-md bg-gray-700/40 hover:bg-gray-700/60 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="relative">
                       {/* NEW: Conditional quality indicator rendering */}
                       {!qualityVisible ? (
                         // Clean dot when quality is off
                         <div
-                          className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
+                          className="w-3.5 h-3.5 rounded-full border-2 border-gray-100/30"
                           style={{
                             backgroundColor: entry.color,
                             boxShadow: `0 0 8px ${entry.color}40`,
@@ -1088,8 +1088,8 @@ const CustomTooltip = ({
                       ) : (
                         // Quality-aware indicators when quality is on
                         entry.value === null ? (
-                          <div className="w-3.5 h-3.5 border-2 border-red-400 border-dashed rounded-full bg-transparent flex items-center justify-center">
-                            <WifiOff className="w-2 h-2 text-red-400" />
+                          <div className="w-3.5 h-3.5 border-2 border-red-600 border-dashed rounded-full bg-transparent flex items-center justify-center">
+                            <WifiOff className="w-2 h-2 text-red-600" />
                           </div>
                         ) : hasIssue && qualityType === 'incorrect' ? (
                           <div className="relative">
@@ -1104,7 +1104,7 @@ const CustomTooltip = ({
                         ) : (
                           <div className="relative">
                             <div
-                              className="w-3.5 h-3.5 rounded-full border-2 border-white/30"
+                              className="w-3.5 h-3.5 rounded-full border-2 border-gray-100/30"
                               style={{
                                 backgroundColor: entry.color,
                                 boxShadow: `0 0 8px ${entry.color}40`,
@@ -1127,8 +1127,8 @@ const CustomTooltip = ({
                           <span
                             className={`text-[8px] px-1 py-0.5 rounded-full border ${
                               sourceType === 'LF'
-                                ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                                : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                                ? 'bg-blue-600/20 text-blue-700 border-blue-600/30'
+                                : 'bg-orange-600/20 text-orange-700 border-orange-600/30'
                             }`}
                           >
                             {sourceType}
@@ -1138,7 +1138,7 @@ const CustomTooltip = ({
 
                       {/* NEW: Only show quality issues when quality is visible */}
                       {qualityVisible && hasIssue && issueDetails && (
-                        <div className="text-[10px] text-orange-300 flex items-center gap-0.5 mt-0.5">
+                        <div className="text-[10px] text-orange-600 flex items-center gap-0.5 mt-0.5">
                           <AlertCircle className="w-2.5 h-2.5" />
                           {issueDetails.message}
                         </div>
@@ -1147,15 +1147,15 @@ const CustomTooltip = ({
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xs text-white font-semibold">
+                    <span className="text-xs text-gray-100 font-semibold">
                       {entry.value === null ? (
                         qualityVisible ? (
-                          <span className="text-red-400 flex items-center gap-0.5">
+                          <span className="text-red-600 flex items-center gap-0.5">
                             <X className="w-2.5 h-2.5" />
                             Missing
                           </span>
                         ) : (
-                          <span className="text-slate-400">--</span>
+                          <span className="text-gray-400">--</span>
                         )
                       ) : (
                         entry.value
@@ -1165,7 +1165,7 @@ const CustomTooltip = ({
                     {qualityVisible && entry.value !== null &&
                       hasIssue &&
                       qualityType === 'incorrect' && (
-                        <div className="text-[10px] text-yellow-400 flex items-center gap-0.5 justify-end mt-0.5">
+                        <div className="text-[10px] text-yellow-600 flex items-center gap-0.5 justify-end mt-0.5">
                           <AlertTriangle className="w-2.5 h-2.5" />
                           Flagged
                         </div>
@@ -1183,7 +1183,7 @@ const CustomTooltip = ({
 };
 
 // Main ChartView Component
-const ChartView = ({ 
+const ChartView = ({
   initialVesselId = null,
   className = '',
   qualityVisible = true, // NEW: Quality toggle prop
@@ -1193,9 +1193,9 @@ const ChartView = ({
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
-    
-    const selectedVessels = initialVesselId 
-      ? [initialVesselId] 
+     
+    const selectedVessels = initialVesselId
+      ? [initialVesselId]
       : defaultSelectedVessels.map((v) => v.id);
 
     return {
@@ -1269,7 +1269,7 @@ const ChartView = ({
   }, [chartFilters]);
 
   return (
-    <div className="bg-slate-900 text-white min-h-screen flex flex-col">
+    <div className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
       {/* Notifications */}
       {notifications.map((notification) => (
         <NotificationPopup
@@ -1314,21 +1314,21 @@ const ChartView = ({
         <div className="px-1 pb-1">
           {chartFilters.selectedKPIs.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <BarChart3 className="w-8 h-8 text-slate-500 mb-2" />
-              <h3 className="text-sm font-semibold text-white mb-1">
+              <BarChart3 className="w-8 h-8 text-gray-500 mb-2" />
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
                 No KPIs Selected
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-gray-600">
                 Please select at least one KPI to display charts.
               </p>
             </div>
           ) : chartData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
-              <TrendingUp className="w-8 h-8 text-slate-500 mb-2" />
-              <h3 className="text-sm font-semibold text-white mb-1">
+              <TrendingUp className="w-8 h-8 text-gray-500 mb-2" />
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
                 No Data Available
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-gray-600">
                 No data available for the selected filters. Try adjusting your
                 date range or vessel selection.
               </p>
@@ -1345,14 +1345,14 @@ const ChartView = ({
                     key={kpiId}
                     style={{
                       background:
-                        'linear-gradient(145deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
+                        'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%)',
                       borderRadius: '10px',
                       boxShadow: `
-                        0 12px 25px rgba(0, 0, 0, 0.35),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-                        0 5px 10px rgba(0, 0, 0, 0.3)
+                        0 12px 25px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                        0 5px 10px rgba(0, 0, 0, 0.1)
                       `,
-                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
                     }}
                   >
                     <div className="relative p-3">
@@ -1387,9 +1387,9 @@ const ChartView = ({
                               )}
                             </div>
                             <div>
-                              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
                                 {kpiMeta.name}
-                                <span className="text-xs text-slate-400 font-normal">
+                                <span className="text-xs text-gray-600 font-normal">
                                   ({kpiMeta.unit || 'N/A'})
                                 </span>
                               </h3>
@@ -1399,8 +1399,8 @@ const ChartView = ({
                                   <span
                                     className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 ${
                                       kpiMeta.source === 'LF'
-                                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
-                                        : 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+                                        ? 'bg-blue-600/10 text-blue-700 border-blue-600/30'
+                                        : 'bg-orange-600/10 text-orange-700 border-orange-600/30'
                                     }`}
                                   >
                                     {kpiMeta.source === 'LF' && (
@@ -1413,11 +1413,11 @@ const ChartView = ({
                                   </span>
                                 )}
                                 {chartFilters.dataType === DATA_TYPES.HF && (
-                                  <span className="text-xs text-slate-400 bg-slate-700/50 px-1 py-0.5 rounded-full">
+                                  <span className="text-xs text-gray-600 bg-gray-200/50 px-1 py-0.5 rounded-full">
                                     {HF_INTERVAL_CONFIGS[chartFilters.hfInterval].label}
                                   </span>
                                 )}
-                                <span className="text-xs text-slate-400 capitalize bg-slate-700/50 px-1 py-0.5 rounded-full">
+                                <span className="text-xs text-gray-600 capitalize bg-gray-200/50 px-1 py-0.5 rounded-full">
                                   {kpiMeta.category}
                                 </span>
                               </div>
@@ -1440,7 +1440,7 @@ const ChartView = ({
                           >
                             <CartesianGrid
                               strokeDasharray="3 6"
-                              stroke="rgba(255, 255, 255, 0.1)"
+                              stroke="#e5e7eb"
                               strokeWidth={0.6}
                             />
 
@@ -1448,7 +1448,7 @@ const ChartView = ({
                               dataKey="date"
                               tickFormatter={(tick) => {
                                 const date = new Date(tick);
-                                if (chartFilters.hfInterval === HF_INTERVALS.RAW || 
+                                if (chartFilters.hfInterval === HF_INTERVALS.RAW ||
                                     chartFilters.hfInterval === HF_INTERVALS.HOURLY) {
                                   return date.toLocaleTimeString('en-US', {
                                     hour: '2-digit',
@@ -1461,16 +1461,16 @@ const ChartView = ({
                                 });
                               }}
                               tick={{
-                                fill: '#cbd5e1',
+                                fill: '#6b7280',
                                 fontSize: 10,
                                 fontWeight: 500,
                               }}
                               axisLine={{
-                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                stroke: '#d1d5db',
                                 strokeWidth: 1,
                               }}
                               tickLine={{
-                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                stroke: '#d1d5db',
                                 strokeWidth: 1,
                               }}
                             />
@@ -1478,16 +1478,16 @@ const ChartView = ({
                             <YAxis
                               domain={kpiMeta.yAxisRange || ['auto', 'auto']}
                               tick={{
-                                fill: '#cbd5e1',
+                                fill: '#6b7280',
                                 fontSize: 10,
                                 fontWeight: 500,
                               }}
                               axisLine={{
-                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                stroke: '#d1d5db',
                                 strokeWidth: 1,
                               }}
                               tickLine={{
-                                stroke: 'rgba(255, 255, 255, 0.15)',
+                                stroke: '#d1d5db',
                                 strokeWidth: 1,
                               }}
                             />
@@ -1514,7 +1514,7 @@ const ChartView = ({
                                 const vesselId = chartFilters.selectedVessels[0];
                                 const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
                                 const color = LF_HF_COLORS[sourceType];
-                                
+                                 
                                 return (
                                   <Line
                                     key={dataKey}
@@ -1545,7 +1545,7 @@ const ChartView = ({
                               chartFilters.selectedVessels.map((vesselId, index) => {
                                 const dataKey = `${vesselId}_${kpiId}`;
                                 const color = getVesselColor(vesselId);
-                                
+                                 
                                 return (
                                   <Line
                                     key={dataKey}
@@ -1579,25 +1579,25 @@ const ChartView = ({
                         {qualityVisible && (
                           <div className="absolute top-0 left-0 right-0 flex items-center justify-end gap-3 text-[10px] p-1.5">
                             <div className="flex items-center gap-0.5">
-                              <div className="w-2 h-2 rounded-full bg-emerald-400 border border-white/30"></div>
-                              <span className="text-slate-300">Normal</span>
+                              <div className="w-2 h-2 rounded-full bg-emerald-600 border border-gray-400/30"></div>
+                              <span className="text-gray-700">Normal</span>
                             </div>
                             <div className="flex items-center gap-0.5">
                               <div
-                                className="w-2 h-2 bg-yellow-400"
+                                className="w-2 h-2 bg-yellow-600"
                                 style={{
                                   clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
                                 }}
                               ></div>
-                              <span className="text-slate-300">Incorrect</span>
+                              <span className="text-gray-700">Incorrect</span>
                             </div>
                             <div className="flex items-center gap-0.5">
-                              <div className="w-2 h-2 border-2 border-red-400 border-dashed rounded-full bg-transparent relative">
+                              <div className="w-2 h-2 border-2 border-red-600 border-dashed rounded-full bg-transparent relative">
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-red-400 text-[9px] leading-none">×</span>
+                                  <span className="text-red-600 text-[9px] leading-none">×</span>
                                 </div>
                               </div>
-                              <span className="text-slate-300">Missing</span>
+                              <span className="text-gray-700">Missing</span>
                             </div>
                           </div>
                         )}
@@ -1610,17 +1610,17 @@ const ChartView = ({
                               ['LF', 'HF'].map((sourceType) => {
                                 const vessel = sampleVessels.find(v => v.id === chartFilters.selectedVessels[0]);
                                 const color = LF_HF_COLORS[sourceType];
-                                
+                                 
                                 return (
                                   <div key={sourceType} className="flex items-center gap-1">
                                     <div
-                                      className="w-2 h-2 rounded-full border border-white/30"
+                                      className="w-2 h-2 rounded-full border border-gray-400/30"
                                       style={{
                                         backgroundColor: color,
                                         boxShadow: `0 0 4px ${color}40`,
                                       }}
                                     />
-                                    <span className="text-slate-300">
+                                    <span className="text-gray-700">
                                       {vessel?.name} ({sourceType})
                                     </span>
                                   </div>
@@ -1631,17 +1631,17 @@ const ChartView = ({
                               chartFilters.selectedVessels.map((vesselId) => {
                                 const vessel = sampleVessels.find(v => v.id === vesselId);
                                 const color = getVesselColor(vesselId);
-                                
+                                 
                                 return (
                                   <div key={vesselId} className="flex items-center gap-1">
                                     <div
-                                      className="w-2 h-2 rounded-full border border-white/30"
+                                      className="w-2 h-2 rounded-full border border-gray-400/30"
                                       style={{
                                         backgroundColor: color,
                                         boxShadow: `0 0 4px ${color}40`,
                                       }}
                                     />
-                                    <span className="text-slate-300">
+                                    <span className="text-gray-700">
                                       {vessel?.name || vesselId}
                                     </span>
                                   </div>

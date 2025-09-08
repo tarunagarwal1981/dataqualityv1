@@ -56,15 +56,7 @@ import {
   Pause
 } from 'lucide-react';
 
-// Import our fuel anomaly data generation
-import { 
-  generateFuelAnomalyData, 
-  generateAnomalySummary, 
-  ANOMALY_LEVELS,
-  ANOMALY_TYPES,
-  RISK_LEVELS,
-  SISTER_VESSEL_MAP
-} from '../../hooks/FuelAnomalyData';
+// --- MOCK DATA AND FUNCTIONS TO REPLACE FAILED IMPORT ---
 
 // Sample vessels for selection
 const sampleVessels = [
@@ -74,6 +66,65 @@ const sampleVessels = [
   { id: 'vessel_4', name: 'MV Global Trader' },
   { id: 'vessel_5', name: 'MV Northern Star' }
 ];
+
+const SISTER_VESSEL_MAP = {
+  vessel_1: 'vessel_2',
+  vessel_2: 'vessel_1',
+  vessel_3: 'vessel_4',
+  vessel_4: 'vessel_3',
+  vessel_5: 'vessel_1',
+};
+
+// Generates mock data for the fuel anomaly dashboard
+const generateFuelAnomalyData = (primaryVesselId, sisterVesselId, months) => {
+  const data = [];
+  const days = months * 30;
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  for (let i = 0; i < days; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+    const dateString = date.toISOString().split('T')[0];
+
+    const lfFuelConsumption = 30 + Math.random() * 5;
+    const hfFuelFlowRate = (lfFuelConsumption / 24) * (1 + (Math.random() - 0.5) * 0.1);
+    const theoreticalFuel = lfFuelConsumption * (1 - (Math.random() * 0.1));
+    const sisterConsumption = lfFuelConsumption * (1 - (Math.random() * 0.1) - 0.05);
+
+    data.push({
+      date: dateString,
+      lf: {
+        fuel_consumption: lfFuelConsumption,
+        me_consumption: lfFuelConsumption * 0.9,
+        total_consumption: lfFuelConsumption,
+        me_power: 6000 + Math.random() * 1000,
+        weather_bf: 3 + Math.random() * 2,
+        speed_obs: 12 + Math.random() * 2,
+        rpm: 80 + Math.random() * 5
+      },
+      hf: {
+        fuel_flow_rate: hfFuelFlowRate,
+        engine_power: 6000 + Math.random() * 1000,
+        weather_actual: 3 + Math.random() * 2,
+        speed_obs: 12 + Math.random() * 2,
+        rpm_actual: 80 + Math.random() * 5
+      },
+      calculated: {
+        theoretical_fuel: theoreticalFuel
+      },
+      sister: {
+        fuel_consumption: sisterConsumption
+      },
+      anomalies: {
+        risk_score: Math.random() > 0.8 ? 5 : (Math.random() > 0.5 ? 2 : 1)
+      }
+    });
+  }
+  return data;
+};
+
+// --- END OF MOCK DATA AND FUNCTIONS ---
 
 // Enhanced confidence calculation with new methodology
 const calculateEnhancedConfidence = (anomalyData) => {
@@ -206,7 +257,7 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
   };
 
   return (
-    <div className="bg-gradient-to-r from-slate-800/95 to-slate-900/95 backdrop-blur-xl border-b border-white/10 px-6 py-3">
+    <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200 px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Left: Title & Status */}
         <div className="flex items-center gap-4">
@@ -215,22 +266,22 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
               <Fuel className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-white">Fuel Anomaly Detection</h1>
-              <p className="text-xs text-slate-400">Advanced fraud detection system</p>
+              <h1 className="text-lg font-bold text-gray-900">Fuel Anomaly Detection</h1>
+              <p className="text-xs text-gray-600">Advanced fraud detection system</p>
             </div>
           </div>
           
           {/* Compact Status Badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-700/40 rounded-lg border border-white/10">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100/60 rounded-lg border border-gray-200">
             <div 
               className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: getStatusColor(confidence.overall) }}
             />
-            <span className="text-xs font-medium text-white">{getStatusText(confidence.overall)}</span>
-            <div className="w-px h-4 bg-white/20 mx-1" />
+            <span className="text-xs font-medium text-gray-900">{getStatusText(confidence.overall)}</span>
+            <div className="w-px h-4 bg-gray-400/50 mx-1" />
             <div className="text-center">
-              <div className="text-sm font-bold text-white">{confidence.overall}%</div>
-              <div className="text-[10px] text-slate-400">Confidence</div>
+              <div className="text-sm font-bold text-gray-900">{confidence.overall}%</div>
+              <div className="text-[10px] text-gray-600">Confidence</div>
             </div>
           </div>
         </div>
@@ -239,11 +290,11 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
         <div className="flex items-center gap-3">
           {/* Vessel Selection */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">Primary:</span>
+            <span className="text-gray-600">Primary:</span>
             <select 
               value={selectedVessel}
               onChange={(e) => onVesselChange(e.target.value)}
-              className="bg-slate-700/60 border border-white/20 rounded-md px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
+              className="bg-gray-100/60 border border-gray-300 rounded-md px-2 py-1 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
             >
               {sampleVessels.map(vessel => (
                 <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
@@ -252,11 +303,11 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
           </div>
           
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400">vs</span>
+            <span className="text-gray-600">vs</span>
             <select 
               value={sisterVessel}
               onChange={(e) => onSisterVesselChange(e.target.value)}
-              className="bg-slate-700/60 border border-white/20 rounded-md px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
+              className="bg-gray-100/60 border border-gray-300 rounded-md px-2 py-1 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
             >
               {sampleVessels.filter(v => v.id !== selectedVessel).map(vessel => (
                 <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
@@ -264,34 +315,34 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
             </select>
           </div>
 
-          <div className="w-px h-6 bg-white/20" />
+          <div className="w-px h-6 bg-gray-400/50" />
 
           {/* Date Picker */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-700/40 rounded-lg border border-white/10">
-            <Calendar className="w-3 h-3 text-slate-400" />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100/60 rounded-lg border border-gray-200">
+            <Calendar className="w-3 h-3 text-gray-600" />
             <div className="flex items-center gap-1 text-xs">
               <input
                 type="date"
                 value={dateRange.startDate}
                 onChange={(e) => handleDateChange('startDate', e.target.value)}
-                className="bg-transparent border-none text-white text-xs focus:outline-none w-24"
+                className="bg-transparent border-none text-gray-900 text-xs focus:outline-none w-24"
               />
-              <span className="text-slate-500">–</span>
+              <span className="text-gray-500">–</span>
               <input
                 type="date"
                 value={dateRange.endDate}
                 onChange={(e) => handleDateChange('endDate', e.target.value)}
-                className="bg-transparent border-none text-white text-xs focus:outline-none w-24"
+                className="bg-transparent border-none text-gray-900 text-xs focus:outline-none w-24"
               />
             </div>
           </div>
 
-          <div className="w-px h-6 bg-white/20" />
+          <div className="w-px h-6 bg-gray-400/50" />
           
           {/* Export Button */}
           <button
             onClick={onExport}
-            className="px-3 py-1.5 bg-slate-700/60 hover:bg-slate-600/60 text-white rounded-md transition-all duration-200 flex items-center gap-1.5 text-xs font-medium"
+            className="px-3 py-1.5 bg-gray-200/60 hover:bg-gray-300/60 text-gray-900 rounded-md transition-all duration-200 flex items-center gap-1.5 text-xs font-medium"
           >
             <Download className="w-3 h-3" />
             Export
@@ -311,8 +362,8 @@ const ConfidenceBreakdown = ({ confidence }) => {
   ];
 
   return (
-    <div className="bg-slate-800/40 rounded-xl p-4 border border-white/10">
-      <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+    <div className="bg-white/95 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+      <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
         <Target className="w-4 h-4 text-cyan-400" />
         Confidence Breakdown
       </h3>
@@ -329,12 +380,12 @@ const ConfidenceBreakdown = ({ confidence }) => {
                 >
                   <IconComponent className="w-3 h-3" style={{ color: comp.color }} />
                 </div>
-                <span className="text-sm text-slate-300">{comp.name}</span>
-                <span className="text-xs text-slate-500">({comp.weight}%)</span>
+                <span className="text-sm text-gray-700">{comp.name}</span>
+                <span className="text-xs text-gray-500">({comp.weight}%)</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                   <div 
                     className="h-full rounded-full transition-all duration-500"
                     style={{ 
@@ -343,7 +394,7 @@ const ConfidenceBreakdown = ({ confidence }) => {
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-white w-10 text-right">{comp.score}%</span>
+                <span className="text-sm font-medium text-gray-900 w-10 text-right">{comp.score}%</span>
               </div>
             </div>
           );
@@ -354,14 +405,14 @@ const ConfidenceBreakdown = ({ confidence }) => {
 };
 
 // Sleek Card Component
-const SleekCard = ({ title, children, icon: Icon, accent = '#4CC9F0', compact = false }) => {
+const SleekCard = ({ title, children, icon: Icon, accent = '#3b82f6', compact = false }) => {
   return (
-    <div className="bg-slate-800/40 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div 
-        className="px-4 py-3 border-b border-white/10"
-        style={{ background: `linear-gradient(135deg, ${accent}15, ${accent}05)` }}
+        className="px-4 py-3 border-b border-gray-200"
+        style={{ background: `linear-gradient(135deg, ${accent}08, ${accent}03)` }}
       >
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4" style={{ color: accent }} />}
           {title}
         </h3>
@@ -395,8 +446,8 @@ const HFLFAnalysis = ({ anomalyData, confidence }) => {
   return (
     <SleekCard title="HF vs LF Data Sync" icon={Radio} accent="#4CC9F0" compact>
       {/* Explanation */}
-      <div className="mb-3 p-2 bg-slate-700/20 rounded-lg">
-        <p className="text-xs text-slate-300">
+      <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
+        <p className="text-xs text-gray-700">
           <strong className="text-cyan-400">Accuracy %:</strong> How closely crew-reported data (LF) matches sensor data (HF)
         </p>
       </div>
@@ -417,18 +468,18 @@ const HFLFAnalysis = ({ anomalyData, confidence }) => {
               <div className={`text-xs font-semibold ${isGood ? 'text-green-400' : 'text-yellow-400'}`}>
                 {accuracy.toFixed(1)}%
               </div>
-              <div className="text-xs text-slate-500">{param.name}</div>
+              <div className="text-xs text-gray-500">{param.name}</div>
             </div>
           );
         })}
       </div>
       
-      <div className="mt-4 pt-3 border-t border-white/10">
+      <div className="mt-4 pt-3 border-t border-gray-200">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">Overall Sync Rate</span>
-          <span className="text-white font-semibold">{confidence.hfLfScore}%</span>
+          <span className="text-gray-600">Overall Sync Rate</span>
+          <span className="text-gray-900 font-semibold">{confidence.hfLfScore}%</span>
         </div>
-        <div className="text-xs text-slate-500 mt-1">
+        <div className="text-xs text-gray-500 mt-1">
           Higher % = More accurate reporting
         </div>
       </div>
@@ -477,18 +528,18 @@ const PredictiveAnalysis = ({ anomalyData, confidence }) => {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-lg font-bold text-white">{accuracy.toFixed(0)}%</div>
-            <div className="text-xs text-slate-400">Accuracy</div>
+            <div className="text-lg font-bold text-gray-900">{accuracy.toFixed(0)}%</div>
+            <div className="text-xs text-gray-600">Accuracy</div>
           </div>
           <div>
             <div className="text-lg font-bold text-orange-400">{avgVariance.toFixed(1)}%</div>
-            <div className="text-xs text-slate-400">Avg Variance</div>
+            <div className="text-xs text-gray-600">Avg Variance</div>
           </div>
           <div>
             <div className="text-lg font-bold text-red-400">
               {predictionData.filter(d => d.variance > 20).length}
             </div>
-            <div className="text-xs text-slate-400">High Variance Days</div>
+            <div className="text-xs text-gray-600">High Variance Days</div>
           </div>
         </div>
       </div>
@@ -508,25 +559,25 @@ const SisterVesselAnalysis = ({ anomalyData, sisterVesselName }) => {
       <div className="space-y-3">
         {/* Performance Comparison */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-700/30 rounded-lg p-3 text-center">
+          <div className="bg-gray-100/60 rounded-lg p-3 text-center">
             <div className="text-lg font-bold text-red-400">+{ladenExcess}%</div>
-            <div className="text-xs text-slate-400">Laden Excess</div>
+            <div className="text-xs text-gray-600">Laden Excess</div>
           </div>
-          <div className="bg-slate-700/30 rounded-lg p-3 text-center">
+          <div className="bg-gray-100/60 rounded-lg p-3 text-center">
             <div className="text-lg font-bold text-orange-400">+{ballastExcess}%</div>
-            <div className="text-xs text-slate-400">Ballast Excess</div>
+            <div className="text-xs text-gray-600">Ballast Excess</div>
           </div>
         </div>
         
         {/* Financial Impact */}
-        <div className="pt-3 border-t border-white/10">
+        <div className="pt-3 border-t border-gray-200">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-400">Est. Excess Cost</span>
+            <span className="text-sm text-gray-600">Est. Excess Cost</span>
             <span className="text-sm font-semibold text-red-400">${(totalExcess * 600).toLocaleString()}</span>
           </div>
           <div className="flex items-center justify-between mt-1">
-            <span className="text-sm text-slate-400">Total Excess Fuel</span>
-            <span className="text-sm font-semibold text-white">{totalExcess} MT</span>
+            <span className="text-sm text-gray-600">Total Excess Fuel</span>
+            <span className="text-sm font-semibold text-gray-900">{totalExcess} MT</span>
           </div>
         </div>
       </div>
@@ -546,8 +597,8 @@ const MainTimelineChart = ({ anomalyData }) => {
 
   return (
     <SleekCard title="HF vs LF vs Predictive Analysis - Fuel Consumption Timeline" icon={TrendingUp} accent="#6366f1">
-      <div className="mb-3 p-2 bg-slate-700/20 rounded-lg">
-        <p className="text-xs text-slate-300">
+      <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
+        <p className="text-xs text-gray-700">
           <strong className="text-indigo-400">Analysis Type:</strong> Comparing sensor data (HF), reported data (LF), and AI predictions over time
         </p>
       </div>
@@ -562,31 +613,31 @@ const MainTimelineChart = ({ anomalyData }) => {
               </linearGradient>
             </defs>
             
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
             
             <XAxis 
               dataKey="date" 
-              tick={{ fill: '#cbd5e1', fontSize: 11 }}
+              tick={{ fill: '#4a5568', fontSize: 11 }}
               tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             />
             
             <YAxis 
               yAxisId="fuel"
-              tick={{ fill: '#cbd5e1', fontSize: 11 }}
-              label={{ value: 'Fuel (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#cbd5e1' } }}
+              tick={{ fill: '#4a5568', fontSize: 11 }}
+              label={{ value: 'Fuel (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#4a5568' } }}
             />
             
             <YAxis 
               yAxisId="confidence"
               orientation="right"
-              tick={{ fill: '#cbd5e1', fontSize: 11 }}
-              label={{ value: 'Confidence %', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#cbd5e1' } }}
+              tick={{ fill: '#4a5568', fontSize: 11 }}
+              label={{ value: 'Confidence %', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#4a5568' } }}
             />
             
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(30, 41, 59, 0.95)', 
-                border: '1px solid rgba(255,255,255,0.2)', 
+                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                border: '1px solid rgba(0,0,0,0.2)', 
                 borderRadius: '8px',
                 fontSize: '12px'
               }}
@@ -640,19 +691,19 @@ const MainTimelineChart = ({ anomalyData }) => {
       <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 bg-orange-500"></div>
-          <span className="text-slate-300">LF Reported (Crew Data)</span>
+          <span className="text-gray-700">LF Reported (Crew Data)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 bg-cyan-500"></div>
-          <span className="text-slate-300">HF Sensor (Actual)</span>
+          <span className="text-gray-700">HF Sensor (Actual)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 bg-green-500 border-dashed border-b-2 border-green-500"></div>
-          <span className="text-slate-300">AI Predicted</span>
+          <span className="text-gray-700">AI Predicted</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-2 bg-indigo-500 opacity-30"></div>
-          <span className="text-slate-300">Data Confidence</span>
+          <span className="text-gray-700">Data Confidence</span>
         </div>
       </div>
     </SleekCard>
@@ -678,7 +729,7 @@ const FuelAnomalyView = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen ${className}`}>
+    <div className={`bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 text-gray-900 min-h-screen ${className}`}>
       {/* Sleek Header */}
       <SleekHeader 
         selectedVessel={selectedVessel}
@@ -709,8 +760,8 @@ const FuelAnomalyView = ({ className = '' }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Speed vs Consumption Scatter Plot */}
           <SleekCard title="Sister Vessel Analysis - Speed vs Consumption Comparison" icon={Ship} accent="#8b5cf6">
-            <div className="mb-3 p-2 bg-slate-700/20 rounded-lg">
-              <p className="text-xs text-slate-300">
+            <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
+              <p className="text-xs text-gray-700">
                 <strong className="text-purple-400">Analysis Type:</strong> Comparing vessel performance against similar sister vessel in laden and ballast conditions
               </p>
             </div>
@@ -718,25 +769,25 @@ const FuelAnomalyView = ({ className = '' }) => {
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                   <XAxis 
                     type="number"
                     dataKey="speed"
                     domain={[10, 16]}
-                    tick={{ fill: '#cbd5e1', fontSize: 11 }}
-                    label={{ value: 'Speed (knots)', position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fill: '#cbd5e1' } }}
+                    tick={{ fill: '#4a5568', fontSize: 11 }}
+                    label={{ value: 'Speed (knots)', position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fill: '#4a5568' } }}
                   />
                   <YAxis 
                     type="number"
                     dataKey="consumption"
                     domain={[25, 40]}
-                    tick={{ fill: '#cbd5e1', fontSize: 11 }}
-                    label={{ value: 'Consumption (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#cbd5e1' } }}
+                    tick={{ fill: '#4a5568', fontSize: 11 }}
+                    label={{ value: 'Consumption (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#4a5568' } }}
                   />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: 'rgba(30, 41, 59, 0.95)', 
-                      border: '1px solid rgba(255,255,255,0.2)', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                      border: '1px solid rgba(0,0,0,0.2)', 
                       borderRadius: '8px',
                       fontSize: '12px'
                     }}
@@ -801,19 +852,19 @@ const FuelAnomalyView = ({ className = '' }) => {
             <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                <span className="text-slate-300">Primary (Laden)</span>
+                <span className="text-gray-700">Primary (Laden)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
-                <span className="text-slate-300">Primary (Ballast)</span>
+                <span className="text-gray-700">Primary (Ballast)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-slate-300">Sister (Laden)</span>
+                <span className="text-gray-700">Sister (Laden)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                <span className="text-slate-300">Sister (Ballast)</span>
+                <span className="text-gray-700">Sister (Ballast)</span>
               </div>
             </div>
           </SleekCard>
@@ -825,26 +876,26 @@ const FuelAnomalyView = ({ className = '' }) => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left py-2 text-slate-300 font-medium">Condition</th>
-                      <th className="text-center py-2 text-slate-300 font-medium">Primary</th>
-                      <th className="text-center py-2 text-slate-300 font-medium">Sister</th>
-                      <th className="text-center py-2 text-slate-300 font-medium">Excess</th>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 text-gray-700 font-medium">Condition</th>
+                      <th className="text-center py-2 text-gray-700 font-medium">Primary</th>
+                      <th className="text-center py-2 text-gray-700 font-medium">Sister</th>
+                      <th className="text-center py-2 text-gray-700 font-medium">Excess</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-200">
                     <tr>
-                      <td className="py-2 text-white font-medium">Laden</td>
-                      <td className="py-2 text-center text-slate-300">33.8 MT</td>
-                      <td className="py-2 text-center text-slate-300">31.0 MT</td>
+                      <td className="py-2 text-gray-900 font-medium">Laden</td>
+                      <td className="py-2 text-center text-gray-700">33.8 MT</td>
+                      <td className="py-2 text-center text-gray-700">31.0 MT</td>
                       <td className="py-2 text-center">
                         <span className="text-red-400 font-semibold">+9.0%</span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-2 text-white font-medium">Ballast</td>
-                      <td className="py-2 text-center text-slate-300">31.5 MT</td>
-                      <td className="py-2 text-center text-slate-300">28.6 MT</td>
+                      <td className="py-2 text-gray-900 font-medium">Ballast</td>
+                      <td className="py-2 text-center text-gray-700">31.5 MT</td>
+                      <td className="py-2 text-center text-gray-700">28.6 MT</td>
                       <td className="py-2 text-center">
                         <span className="text-orange-400 font-semibold">+10.1%</span>
                       </td>
@@ -854,21 +905,21 @@ const FuelAnomalyView = ({ className = '' }) => {
               </div>
 
               {/* Financial Impact */}
-              <div className="bg-slate-700/30 rounded-lg p-3">
-                <h4 className="text-sm font-medium text-white mb-3">Financial Impact Analysis</h4>
+              <div className="bg-gray-100/60 rounded-lg p-3">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Financial Impact Analysis</h4>
                 <div className="grid grid-cols-2 gap-3 text-center">
                   <div>
                     <div className="text-lg font-bold text-red-400">$76,200</div>
-                    <div className="text-xs text-slate-400">Estimated Excess Cost</div>
+                    <div className="text-xs text-gray-600">Estimated Excess Cost</div>
                   </div>
                   <div>
                     <div className="text-lg font-bold text-orange-400">127 MT</div>
-                    <div className="text-xs text-slate-400">Total Excess Fuel</div>
+                    <div className="text-xs text-gray-600">Total Excess Fuel</div>
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-white/10">
+                <div className="mt-3 pt-3 border-t border-gray-200">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Avg Performance Gap</span>
+                    <span className="text-gray-600">Avg Performance Gap</span>
                     <span className="text-yellow-400 font-semibold">+9.6%</span>
                   </div>
                 </div>
