@@ -579,7 +579,7 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    Data Accuracy
+                    DataAccuracy
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Accuracy
