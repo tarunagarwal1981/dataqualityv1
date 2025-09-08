@@ -131,7 +131,7 @@ export default function FleetHeader() {
       </div>
 
       {/* Secondary Navigation Tabs */}
-      <div className="bg-gray-50 border-b border-gray-200">
+      {/* <div className="bg-gray-50 border-b border-gray-200">
         <div className="flex items-center px-6 h-12 max-w-7xl mx-auto overflow-x-auto">
           <div className="flex space-x-6 min-w-max">
             <button className="text-xs text-gray-600 hover:text-gray-900 transition-colors py-3 px-2 border-b-2 border-transparent hover:border-gray-300">
@@ -148,7 +148,7 @@ export default function FleetHeader() {
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

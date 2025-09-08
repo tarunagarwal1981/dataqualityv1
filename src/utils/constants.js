@@ -14,8 +14,10 @@ export const DATA_TYPES = {
 };
 
 export const VIEW_MODES = {
+  LANDING: 'landing',  // NEW: Landing page view
   TABLE: 'table',
   CHART: 'chart',
+  FUEL_ANOMALY: 'fuel_anomaly',
 };
 
 export const QUALITY_GRADES = {
@@ -164,10 +166,10 @@ export const VALIDATION_RANGES = {
   sea_state: { min: 0, max: 9 },
 };
 
-// Default filter selections
+// Default filter selections - START WITH LANDING PAGE
 export const DEFAULT_FILTERS = {
   dataType: DATA_TYPES.LF,
-  viewMode: VIEW_MODES.TABLE,
+  viewMode: VIEW_MODES.LANDING,  // NEW: Default to landing page
   qualityVisible: true,
   showFilters: true,
   selectedVessels: [],
@@ -211,6 +213,14 @@ export const LOADING_STATES = {
   REFRESHING: 'refreshing',
 };
 
+// NEW: KPI Names Mapping - Updated Maritime Names
+export const KPI_NAMES = {
+  COMPLETENESS: 'Data Integrity',
+  CORRECTNESS: 'Data Accuracy', 
+  FLEET_HEALTH: 'Data Quality Index',
+  ACTIVE_ISSUES: 'Operational Alerts'
+};
+
 export default {
   APP_CONFIG,
   DATA_TYPES,
@@ -236,4 +246,5 @@ export default {
   ERROR_MESSAGES,
   SUCCESS_MESSAGES,
   LOADING_STATES,
+  KPI_NAMES,
 };

@@ -8,26 +8,26 @@ import { useDataQuality } from './hooks/useDataQuality.js';
 
 // Import components
 import FleetHeader from './components/common/FleetHeader.jsx';
-import ControlsBar, { VIEW_MODES } from './components/dashboard/ControlsBar.jsx'; // Updated ControlsBar
+import ControlsBar, { VIEW_MODES } from './components/dashboard/ControlsBar.jsx';
+import LandingPage from './components/dashboard/LandingPage.jsx';
 import TableView from './components/table/TableView.jsx';
 import ChartView from './components/charts/ChartView.jsx';
-import FuelAnomalyView from './components/fuel-anomaly/FuelAnomalyView.jsx'; // NEW: Fuel Anomaly View
+import FuelAnomalyView from './components/fuel-anomaly/FuelAnomalyView.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 
 // Import constants
 import {
   LOADING_STATES,
   ERROR_MESSAGES,
+  DEFAULT_FILTERS
 } from './utils/constants.js';
 
 const App = () => {
-  // State for vessel navigation
   const [selectedVesselForCharts, setSelectedVesselForCharts] = useState(null);
 
-  // NEW: Fuel Anomaly specific state
   const [fuelAnomalyConfig, setFuelAnomalyConfig] = useState({
-    selectedVessel: 'vessel_1', // Default to MV Atlantic Pioneer
-    sisterVessel: 'vessel_2',   // Default to MV Pacific Navigator
+    selectedVessel: 'vessel_1',
+    sisterVessel: 'vessel_2',
     analysisConfig: {
       period: 'last_6_months',
       sensitivity: 'medium',
@@ -35,7 +35,6 @@ const App = () => {
     }
   });
 
-  // Initialize custom hooks
   const {
     vessels,
     kpis,
@@ -88,7 +87,6 @@ const App = () => {
     qualityScore,
   } = useDataQuality(filteredData, filters);
 
-  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey || event.metaKey) {
@@ -101,15 +99,15 @@ const App = () => {
             event.preventDefault();
             handleQualityToggle(!filters.qualityVisible);
             break;
-          case 'a': // NEW: Shortcut for fuel anomaly
+          case 'a':
             event.preventDefault();
             updateFilter('viewMode', VIEW_MODES.FUEL_ANOMALY);
             break;
-          case '1': // Shortcut for table view
+          case '1':
             event.preventDefault();
             updateFilter('viewMode', VIEW_MODES.TABLE);
             break;
-          case '2': // Shortcut for chart view
+          case '2':
             event.preventDefault();
             updateFilter('viewMode', VIEW_MODES.CHART);
             break;
@@ -123,7 +121,6 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [refreshData, updateFilter, filters.qualityVisible]);
 
-  // Error boundary for component errors
   const [componentError, setComponentError] = useState(null);
 
   const handleComponentError = (error, errorInfo) => {
@@ -131,12 +128,10 @@ const App = () => {
     setComponentError(error);
   };
 
-  // Reset component error
   const resetComponentError = () => {
     setComponentError(null);
   };
 
-  // Handle filter changes with validation
   const handleFilterChange = (key, value) => {
     try {
       updateFilter(key, value);
@@ -145,13 +140,11 @@ const App = () => {
     }
   };
 
-  // NEW: Handle quality toggle
   const handleQualityToggle = (qualityVisible) => {
     console.log('Quality toggle changed:', qualityVisible);
     updateFilter('qualityVisible', qualityVisible);
   };
 
-  // NEW: Handle fuel anomaly configuration changes
   const handleFuelAnomalyConfigChange = (key, value) => {
     setFuelAnomalyConfig(prev => ({
       ...prev,
@@ -159,11 +152,9 @@ const App = () => {
     }));
   };
 
-  // Handle export operations
   const handleExport = async (format) => {
     try {
       if (filters.viewMode === VIEW_MODES.FUEL_ANOMALY) {
-        // Generate fuel anomaly specific export
         console.log('Exporting fuel anomaly report...', {
           vessel: fuelAnomalyConfig.selectedVessel,
           sisterVessel: fuelAnomalyConfig.sisterVessel,
@@ -171,21 +162,18 @@ const App = () => {
           format
         });
         
-        // Create investigation report
         const reportData = {
           vesselName: vessels?.find(v => v.id === fuelAnomalyConfig.selectedVessel)?.name || 'Unknown',
           sisterVesselName: vessels?.find(v => v.id === fuelAnomalyConfig.sisterVessel)?.name || 'Unknown',
           analysisDate: new Date().toISOString(),
           config: fuelAnomalyConfig.analysisConfig,
           qualityEnabled: filters.qualityVisible,
-          // Add more report data as needed
         };
         
         downloadJSON(reportData, 'fuel-anomaly-report');
         return;
       }
 
-      // For table and chart exports, include quality state
       const exportData = {
         ...getExportData(filters, format),
         qualityEnabled: filters.qualityVisible,
@@ -203,14 +191,10 @@ const App = () => {
     }
   };
 
-  // CSV download helper
   const downloadCSV = (exportData) => {
-    // Implementation would convert data to CSV format
     console.log('CSV export:', exportData);
-    // For now, just log - implement actual CSV generation as needed
   };
 
-  // JSON download helper
   const downloadJSON = (exportData, filename = 'maritime-data') => {
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
       type: 'application/json',
@@ -225,47 +209,40 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Function to handle navigation to chart view
+  const handleNavigateToLanding = () => {
+    updateFilter('viewMode', VIEW_MODES.LANDING);
+    setSelectedVesselForCharts(null);
+  };
+
   const handleNavigateToCharts = () => {
     updateFilter('viewMode', VIEW_MODES.CHART);
-    // Clear selected vessel when navigating to charts normally
     setSelectedVesselForCharts(null);
   };
 
-  // Function to handle navigation to table view
   const handleNavigateToTable = () => {
     updateFilter('viewMode', VIEW_MODES.TABLE);
-    // Clear selected vessel when going back to table
     setSelectedVesselForCharts(null);
   };
 
-  // NEW: Function to handle navigation to fuel anomaly view
   const handleNavigateToFuelAnomaly = () => {
     updateFilter('viewMode', VIEW_MODES.FUEL_ANOMALY);
-    // Clear selected vessel for charts when switching to fuel anomaly
     setSelectedVesselForCharts(null);
   };
 
-  // Handle vessel click from table view
-  const handleVesselClick = (vesselId) => {
-    console.log('Vessel clicked:', vesselId);
-    // Set the selected vessel for charts
-    setSelectedVesselForCharts(vesselId);
-    // Navigate to chart view
+  const handleVesselClick = (vessel) => {
+    console.log('Vessel clicked:', vessel);
+    setSelectedVesselForCharts(vessel.id);
     updateFilter('viewMode', VIEW_MODES.CHART);
   };
 
-  // NEW: Handle vessel click from fuel anomaly view (if needed)
   const handleFuelAnomalyVesselClick = (vesselId) => {
     console.log('Fuel anomaly vessel clicked:', vesselId);
-    // Update the primary vessel in fuel anomaly config
     setFuelAnomalyConfig(prev => ({
       ...prev,
       selectedVessel: vesselId
     }));
   };
 
-  // Render error state
   if (componentError) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6">
@@ -289,7 +266,6 @@ const App = () => {
     );
   }
 
-  // Render loading state
   if (loadingState === LOADING_STATES.LOADING) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -301,7 +277,6 @@ const App = () => {
     );
   }
 
-  // Render error state
   if (hasError) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -331,13 +306,10 @@ const App = () => {
     );
   }
 
-  // Render main application
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
-      {/* Header */}
       <FleetHeader />
       
-      {/* Enhanced Controls Bar with Data Quality Toggle and Fuel Anomaly Support */}
       <ControlsBar
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -350,13 +322,12 @@ const App = () => {
         warnings={warnings}
         isValidForCharts={isValidForCharts}
         hasPerformanceWarning={hasPerformanceWarning}
+        onNavigateToLanding={handleNavigateToLanding}
         onNavigateToCharts={handleNavigateToCharts}
         onNavigateToTable={handleNavigateToTable}
-        onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly} // NEW
+        onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly}
         currentView={filters.viewMode}
-        // NEW: Quality toggle handler
         onQualityToggle={handleQualityToggle}
-        // NEW: Fuel anomaly specific props
         fuelAnomalyConfig={fuelAnomalyConfig}
         onFuelAnomalyConfigChange={handleFuelAnomalyConfigChange}
         vessels={vessels || []}
@@ -364,18 +335,32 @@ const App = () => {
         isExporting={false}
       />
       
-      {/* Main Content - Single container, no sidebar */}
       <div className="flex-1 p-2 space-y-6">
-        {/* Main View Rendering */}
-        {filters.viewMode === VIEW_MODES.TABLE ? (
+        {filters.viewMode === VIEW_MODES.LANDING ? (
+           <LandingPage 
+             onVesselClick={handleVesselClick}
+             vessels={vessels || []}
+             filters={filters}
+             onFilterChange={handleFilterChange}
+             qualityVisible={filters.qualityVisible}
+             onQualityToggle={handleQualityToggle}
+             onExport={handleExport}
+             onNavigateToLanding={handleNavigateToLanding}
+             onNavigateToCharts={handleNavigateToCharts}
+             onNavigateToTable={handleNavigateToTable}
+             onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly}
+             isApplyingFilters={isLoading}
+             isExporting={false}
+           />
+        ) : filters.viewMode === VIEW_MODES.TABLE ? (
           <TableView
             data={filteredData}
             vessels={vessels || []}
             kpis={kpis}
             filters={filters}
             onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
-            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
+            qualityVisible={filters.qualityVisible}
+            onQualityToggle={handleQualityToggle}
             onExport={handleExport}
             onVesselClick={handleVesselClick}
             performanceSummary={getKPIPerformanceSummary(
@@ -392,15 +377,14 @@ const App = () => {
             onFilterChange={handleFilterChange}
             isValidForCharts={isValidForCharts}
             initialVesselId={selectedVesselForCharts}
-            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
-            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
+            qualityVisible={filters.qualityVisible}
+            onQualityToggle={handleQualityToggle}
             performanceSummary={getKPIPerformanceSummary(
               filters,
               filters.selectedKPIs
             )}
           />
         ) : filters.viewMode === VIEW_MODES.FUEL_ANOMALY ? (
-          // NEW: Fuel Anomaly View - Quality toggle not applicable here
           <FuelAnomalyView
             selectedVessel={fuelAnomalyConfig.selectedVessel}
             sisterVessel={fuelAnomalyConfig.sisterVessel}
@@ -411,15 +395,14 @@ const App = () => {
             vessels={vessels || []}
           />
         ) : (
-          // Fallback to table view
           <TableView
             data={filteredData}
             vessels={vessels || []}
             kpis={kpis}
             filters={filters}
             onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible} // NEW: Pass quality visibility
-            onQualityToggle={handleQualityToggle} // NEW: Pass quality toggle handler
+            qualityVisible={filters.qualityVisible}
+            onQualityToggle={handleQualityToggle}
             onExport={handleExport}
             onVesselClick={handleVesselClick}
             performanceSummary={getKPIPerformanceSummary(
@@ -429,8 +412,7 @@ const App = () => {
           />
         )}
 
-        {/* No Data State - Only for Table/Chart views */}
-        {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
+        {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && filters.viewMode !== VIEW_MODES.LANDING && (
           <div className="bg-white border border-gray-200 rounded-lg p-16 text-center">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-10 h-10 text-gray-600" />
@@ -460,10 +442,9 @@ const App = () => {
         )}
       </div>
       
-      {/* Global notifications for critical alerts - Enhanced for fuel anomaly and quality toggle */}
       {hasCriticalIssues && 
        filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && 
-       filters.qualityVisible && ( // NEW: Only show when quality is visible
+       filters.qualityVisible && (
         <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-red-600 border border-red-500 rounded-xl p-4 shadow-xl max-w-sm">
             <div className="flex items-center gap-3">
@@ -482,9 +463,8 @@ const App = () => {
         </div>
       )}
 
-      {/* NEW: Data Quality Status Notification - When quality is disabled */}
       {!filters.qualityVisible && 
-       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
+       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && filters.viewMode !== VIEW_MODES.LANDING && (
         <div className="fixed bottom-4 left-4 z-50">
           <div className="bg-blue-600 border border-blue-500 rounded-xl p-4 shadow-xl max-w-sm">
             <div className="flex items-center gap-3">
@@ -508,7 +488,6 @@ const App = () => {
         </div>
       )}
 
-      {/* NEW: Fuel Anomaly Alert Notification */}
       {filters.viewMode === VIEW_MODES.FUEL_ANOMALY && (
         <div className="fixed bottom-4 right-4 z-50">
           <div className="bg-orange-600 border border-orange-500 rounded-xl p-4 shadow-xl max-w-sm">
@@ -527,7 +506,6 @@ const App = () => {
         </div>
       )}
 
-      {/* NEW: Keyboard Shortcuts Help (shown on Ctrl+/) */}
       <div className="fixed bottom-4 right-4 z-40 opacity-0 hover:opacity-100 transition-opacity">
         <div className="bg-gray-800/90 border border-gray-200/20 rounded-lg p-3 text-xs text-gray-700">
           <div className="font-semibold mb-1">Keyboard Shortcuts:</div>
@@ -538,7 +516,6 @@ const App = () => {
   );
 };
 
-// Error boundary wrapper
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -581,7 +558,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// Export wrapped with error boundary
 export default function AppWithErrorBoundary() {
   return (
     <ErrorBoundary>

@@ -18,7 +18,8 @@ import {
   Layers,
   Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  Home // NEW: Import Home icon
 } from 'lucide-react';
 
 // Mock data and constants
@@ -30,6 +31,7 @@ const DATA_TYPES = {
 
 // View modes including our fuel anomaly view
 const VIEW_MODES = {
+  LANDING: 'landing', // NEW: Add landing page view mode
   TABLE: 'table',
   CHART: 'chart',
   FUEL_ANOMALY: 'fuel_anomaly'
@@ -56,7 +58,7 @@ const ControlsBar = ({
     selectedVessels: [],
     dateRange: { startDate: null, endDate: null },
     viewMode: VIEW_MODES.TABLE,
-    qualityVisible: true, // NEW: Default to true to maintain current behavior
+    qualityVisible: true,
   },
   onFilterChange = () => {},
   kpis = {},
@@ -66,6 +68,7 @@ const ControlsBar = ({
   isApplyingFilters = false,
   onExport = () => {},
   isExporting = false,
+  onNavigateToLanding = () => {}, // NEW: Landing page navigation
   onNavigateToCharts = () => {},
   onNavigateToTable = () => {},
   onNavigateToFuelAnomaly = () => {},
@@ -102,7 +105,7 @@ const ControlsBar = ({
         ? filters.dateRange
         : getInitialDateRange(),
     viewMode: filters.viewMode || VIEW_MODES.TABLE,
-    qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Quality toggle state
+    qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true,
   }));
 
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
@@ -122,7 +125,7 @@ const ControlsBar = ({
           ? filters.dateRange
           : getInitialDateRange(),
       viewMode: filters.viewMode || VIEW_MODES.TABLE,
-      qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true, // NEW: Update quality state
+      qualityVisible: filters.qualityVisible !== undefined ? filters.qualityVisible : true,
     }));
   }, [filters]);
 
@@ -182,13 +185,12 @@ const ControlsBar = ({
       selectedVessels: sampleVessels.map((v) => v.id),
       dateRange: getInitialDateRange(),
       viewMode: VIEW_MODES.TABLE,
-      qualityVisible: true, // NEW: Reset quality toggle to true
+      qualityVisible: true,
     }));
     onFilterChange('viewMode', VIEW_MODES.TABLE);
-    onFilterChange('qualityVisible', true); // NEW: Reset quality in parent
+    onFilterChange('qualityVisible', true);
   };
 
-  // NEW: Handle quality toggle
   const handleQualityToggle = () => {
     const newQualityState = !localFilters.qualityVisible;
     setLocalFilters((prev) => ({
@@ -198,9 +200,11 @@ const ControlsBar = ({
     onQualityToggle(newQualityState);
   };
 
-  // Handle navigation to different views
   const handleViewChange = (viewMode) => {
     switch (viewMode) {
+      case VIEW_MODES.LANDING:
+        onNavigateToLanding();
+        break;
       case VIEW_MODES.TABLE:
         onNavigateToTable();
         break;
@@ -215,7 +219,6 @@ const ControlsBar = ({
     }
   };
 
-  // Fuel Anomaly Configuration Panel
   const renderFuelAnomalyConfig = () => {
     if (currentView !== VIEW_MODES.FUEL_ANOMALY) return null;
 
@@ -376,7 +379,7 @@ const ControlsBar = ({
     <div className="sleek-controls-bar">
       {/* Left Section - Vessel Selection (only for Table/Chart views) */}
       <div className="controls-left">
-        {currentView !== VIEW_MODES.FUEL_ANOMALY ? (
+        {currentView !== VIEW_MODES.FUEL_ANOMALY && currentView !== VIEW_MODES.LANDING ? (
           <div className="filter-container" ref={vesselDropdownRef}>
             <button
               onClick={() => setShowVesselDropdown(!showVesselDropdown)}
@@ -437,16 +440,25 @@ const ControlsBar = ({
               </div>
             )}
           </div>
-        ) : (
+        ) : currentView === VIEW_MODES.FUEL_ANOMALY ? (
           // Fuel Anomaly specific controls
           renderFuelAnomalyConfig()
-        )}
+        ) : null}
       </div>
 
       {/* Right Section - View Toggle, Data Quality Toggle, Date Range & Actions */}
       <div className="controls-right">
-        {/* View Toggle with Fuel Anomaly */}
+        {/* View Toggle with Home and Fuel Anomaly */}
         <div className="view-toggle-group">
+          <button
+            onClick={() => handleViewChange(VIEW_MODES.LANDING)}
+            className={`view-toggle-btn ${
+              currentView === VIEW_MODES.LANDING ? 'active' : ''
+            }`}
+            title="Home"
+          >
+            <Home className="view-toggle-icon" />
+          </button>
           <button
             onClick={() => handleViewChange(VIEW_MODES.TABLE)}
             className={`view-toggle-btn ${
@@ -476,8 +488,8 @@ const ControlsBar = ({
           </button>
         </div>
 
-        {/* NEW: Data Quality Toggle - Only show for Table and Chart views */}
-        {currentView !== VIEW_MODES.FUEL_ANOMALY && (
+        {/* Data Quality Toggle - Only show for Table and Chart views */}
+        {currentView !== VIEW_MODES.FUEL_ANOMALY && currentView !== VIEW_MODES.LANDING && (
           <div className="quality-toggle-container">
             <button
               onClick={handleQualityToggle}
