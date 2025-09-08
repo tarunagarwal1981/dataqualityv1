@@ -268,13 +268,13 @@ const App = () => {
   // Render error state
   if (componentError) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-2">
+          <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Application Error
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-gray-600 mb-6">
             An unexpected error occurred. Please refresh the page or contact
             support.
           </p>
@@ -292,7 +292,7 @@ const App = () => {
   // Render loading state
   if (loadingState === LOADING_STATES.LOADING) {
     return (
-      <div className="min-h-screen bg-slate-900">
+      <div className="min-h-screen bg-gray-50">
         <FleetHeader />
         <div className="flex items-center justify-center h-[calc(100vh-80px)]">
           <LoadingSpinner size="large" message="Loading maritime data..." />
@@ -304,15 +304,15 @@ const App = () => {
   // Render error state
   if (hasError) {
     return (
-      <div className="min-h-screen bg-slate-900">
+      <div className="min-h-screen bg-gray-50">
         <FleetHeader />
         <div className="flex items-center justify-center h-[calc(100vh-80px)] p-6">
           <div className="text-center max-w-md">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">
+            <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
               Failed to Load Data
             </h2>
-            <p className="text-slate-400 mb-6">
+            <p className="text-gray-600 mb-6">
               {error || ERROR_MESSAGES.DATA_LOAD_FAILED}
             </p>
             <button
@@ -333,7 +333,7 @@ const App = () => {
 
   // Render main application
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
       {/* Header */}
       <FleetHeader />
       
@@ -431,21 +431,21 @@ const App = () => {
 
         {/* No Data State - Only for Table/Chart views */}
         {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
-          <div className="bg-slate-800/50 border border-white/10 rounded-lg p-16 text-center">
-            <div className="w-20 h-20 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-10 h-10 text-slate-400" />
+          <div className="bg-white border border-gray-200 rounded-lg p-16 text-center">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-10 h-10 text-gray-600" />
             </div>
-            <h3 className="text-xl font-medium text-slate-300 mb-2">
+            <h3 className="text-xl font-medium text-gray-700 mb-2">
               No Data Found
             </h3>
-            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
               No data matches your current filter criteria. Try adjusting your
               vessel selection, date range, or search terms.
             </p>
             <div className="flex items-center justify-center gap-4">
               <button 
                 onClick={resetFilters} 
-                className="px-4 py-2 bg-slate-700 text-slate-300 rounded-md hover:bg-slate-600 transition-colors"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
               >
                 Reset Filters
               </button>
@@ -529,7 +529,7 @@ const App = () => {
 
       {/* NEW: Keyboard Shortcuts Help (shown on Ctrl+/) */}
       <div className="fixed bottom-4 right-4 z-40 opacity-0 hover:opacity-100 transition-opacity">
-        <div className="bg-slate-800/90 border border-white/20 rounded-lg p-3 text-xs text-slate-300">
+        <div className="bg-gray-800/90 border border-gray-200/20 rounded-lg p-3 text-xs text-gray-700">
           <div className="font-semibold mb-1">Keyboard Shortcuts:</div>
           <div>Ctrl+Q: Toggle Quality • Ctrl+1: Table • Ctrl+2: Charts • Ctrl+A: Fuel Anomaly</div>
         </div>
@@ -556,13 +556,13 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="text-center max-w-md">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <AlertTriangle className="w-16 h-16 text-red-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Something went wrong
             </h1>
-            <p className="text-slate-400 mb-6">
+            <p className="text-gray-600 mb-6">
               The application encountered an unexpected error. Please refresh
               the page.
             </p>
