@@ -1,4 +1,3 @@
-// ChartView.jsx
 import React, {
   useState,
   useEffect,
@@ -56,12 +55,10 @@ import DataQualityCards, { staticQualityData } from '../table/DataQualityCards';
 
 // Constants and Data Types
 const DATA_TYPES = {
-  COMBINED: 'combined',
   LF: 'lf',
-  HF: 'hf',
 };
 
-// HF Data Intervals
+// HF Data Intervals - These are no longer used in the UI, but kept for function logic compatibility
 const HF_INTERVALS = {
   RAW: 'raw',
   HOURLY: '1hr',
@@ -186,71 +183,7 @@ const ALL_KPIS = {
       yAxisRange: [0, 150],
     },
   ],
-  HF: [
-    {
-      id: 'obs_speed',
-      name: 'Obs Speed',
-      unit: 'knts',
-      category: 'performance',
-      source: 'HF',
-      color: '#4CC9F0',
-      yAxisRange: [0, 25],
-    },
-    {
-      id: 'me_consumption',
-      name: 'ME Consumption',
-      unit: 'Mt',
-      category: 'fuel',
-      source: 'HF',
-      color: '#F07167',
-      yAxisRange: [0, 50],
-    },
-    {
-      id: 'total_consumption',
-      name: 'Total Consumption',
-      unit: 'Mt',
-      category: 'fuel',
-      source: 'HF',
-      color: '#FFC300',
-      yAxisRange: [0, 60],
-    },
-    {
-      id: 'wind_force',
-      name: 'Wind Force',
-      unit: 'Beaufort',
-      category: 'weather',
-      source: 'HF',
-      color: '#8D8DDA',
-      yAxisRange: [0, 12],
-    },
-    {
-      id: 'me_power',
-      name: 'ME Power',
-      unit: 'kW',
-      category: 'performance',
-      source: 'HF',
-      color: '#2ECC71',
-      yAxisRange: [0, 20000],
-    },
-    {
-      id: 'me_sfoc',
-      name: 'ME SFOC',
-      unit: 'gm/kWhr',
-      category: 'performance',
-      source: 'HF',
-      color: '#E74C3C',
-      yAxisRange: [160, 220],
-    },
-    {
-      id: 'rpm',
-      name: 'RPM',
-      unit: 'rpm',
-      category: 'performance',
-      source: 'HF',
-      color: '#9B59B6',
-      yAxisRange: [0, 150],
-    },
-  ],
+  HF: [], // Empty HF array as it's no longer a selectable source
 };
 
 // Vessel Colors for Chart Lines
@@ -267,7 +200,7 @@ const VESSEL_COLORS = [
   '#a78bfa', // Violet
 ];
 
-// LF and HF colors for combined mode
+// LF and HF colors for combined mode - No longer relevant but kept for code stability
 const LF_HF_COLORS = {
   LF: '#3b82f6',
   HF: '#ef4444',
@@ -276,10 +209,6 @@ const LF_HF_COLORS = {
 // Helper Functions
 const getKPIById = (kpiId, dataType) => {
   const kpisForType = ALL_KPIS[dataType.toUpperCase()] || [];
-  if (dataType === DATA_TYPES.COMBINED) {
-    const combinedKpis = [...ALL_KPIS.LF, ...ALL_KPIS.HF];
-    return combinedKpis.find((kpi) => kpi.id === kpiId);
-  }
   return kpisForType.find((kpi) => kpi.id === kpiId);
 };
 
@@ -299,8 +228,7 @@ const generateMockChartData = (
 ) => {
   const data = [];
   const currentDate = new Date(startDate);
-  const intervalConfig = HF_INTERVAL_CONFIGS[hfInterval];
-  const intervalHours = intervalConfig.dataPointInterval;
+  const intervalHours = 24; // Always use daily interval for LF data
 
   while (currentDate <= endDate) {
     const dateString = currentDate.toISOString();
@@ -308,49 +236,25 @@ const generateMockChartData = (
 
     selectedVesselIds.forEach((vesselId, vesselIndex) => {
       selectedKPIs.forEach((kpiId) => {
-        if (dataType === DATA_TYPES.COMBINED) {
-          // For combined mode, generate both LF and HF data
-          ['LF', 'HF'].forEach((sourceType) => {
-            const kpiMeta = ALL_KPIS[sourceType].find(kpi => kpi.id === kpiId);
-            if (!kpiMeta) return;
+        const kpiMeta = getKPIById(kpiId, dataType);
+        if (!kpiMeta) return;
 
-            const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
-            let value = generateKPIValue(kpiId, currentDate, sourceType);
-             
-            // Apply quality issues
-            const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
-             
-            const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
-            entry[dataKey] = finalValue;
-            entry[`${dataKey}_quality`] = qualityInfo.qualityType;
-            entry[`${dataKey}_hasIssue`] = qualityInfo.hasQualityIssue;
-            entry[`${dataKey}_issueDetails`] = qualityInfo.issueDetails;
-            entry[`${dataKey}_vesselQuality`] = vesselQuality;
-          });
-        } else {
-          // For LF or HF mode
-          const kpiMeta = getKPIById(kpiId, dataType);
-          if (!kpiMeta) return;
-
-          const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
-          let value = generateKPIValue(kpiId, currentDate, dataType.toUpperCase());
+        const vesselQuality = staticQualityData[vesselIndex % staticQualityData.length];
+        let value = generateKPIValue(kpiId, currentDate, dataType.toUpperCase());
            
-          // Apply quality issues
-          const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
+        const { finalValue, qualityInfo } = applyQualityIssues(value, kpiId, vesselQuality);
            
-          const dataKey = `${vesselId}_${kpiId}`;
-          entry[dataKey] = finalValue;
-          entry[`${dataKey}_quality`] = qualityInfo.qualityType;
-          entry[`${dataKey}_hasIssue`] = qualityInfo.hasQualityIssue;
-          entry[`${dataKey}_issueDetails`] = qualityInfo.issueDetails;
-          entry[`${dataKey}_vesselQuality`] = vesselQuality;
-        }
+        const dataKey = `${vesselId}_${kpiId}`;
+        entry[dataKey] = finalValue;
+        entry[`${dataKey}_quality`] = qualityInfo.qualityType;
+        entry[`${dataKey}_hasIssue`] = qualityInfo.hasQualityIssue;
+        entry[`${dataKey}_issueDetails`] = qualityInfo.issueDetails;
+        entry[`${dataKey}_vesselQuality`] = vesselQuality;
       });
     });
 
     data.push(entry);
      
-    // Increment by the specified interval
     currentDate.setHours(currentDate.getHours() + intervalHours);
   }
    
@@ -359,25 +263,24 @@ const generateMockChartData = (
 
 const generateKPIValue = (kpiId, currentDate, sourceType) => {
   const timeComponent = currentDate.getTime() / (1000 * 60 * 60);
-  const sourceMultiplier = sourceType === 'HF' ? 1.1 : 1.0; // HF slightly higher values
    
   switch (kpiId) {
     case 'obs_speed':
-      return (10 + Math.random() * 5 + Math.sin(timeComponent / 24) * 2) * sourceMultiplier;
+      return 10 + Math.random() * 5 + Math.sin(timeComponent / 24) * 2;
     case 'me_consumption':
-      return (20 + Math.random() * 10 + Math.sin(timeComponent / 12) * 3) * sourceMultiplier;
+      return 20 + Math.random() * 10 + Math.sin(timeComponent / 12) * 3;
     case 'total_consumption':
-      return (25 + Math.random() * 15 + Math.sin(timeComponent / 8) * 4) * sourceMultiplier;
+      return 25 + Math.random() * 15 + Math.sin(timeComponent / 8) * 4;
     case 'wind_force':
       return Math.floor(Math.random() * 8) + Math.sin(timeComponent / 6) * 2;
     case 'me_power':
-      return (5000 + Math.random() * 2000 + Math.sin(timeComponent / 4) * 500) * sourceMultiplier;
+      return 5000 + Math.random() * 2000 + Math.sin(timeComponent / 4) * 500;
     case 'me_sfoc':
-      return (160 + Math.random() * 10 + Math.sin(timeComponent / 24) * 3) * sourceMultiplier;
+      return 160 + Math.random() * 10 + Math.sin(timeComponent / 24) * 3;
     case 'rpm':
-      return (80 + Math.random() * 20 + Math.sin(timeComponent / 6) * 5) * sourceMultiplier;
+      return 80 + Math.random() * 20 + Math.sin(timeComponent / 6) * 5;
     default:
-      return Math.random() * 100 * sourceMultiplier;
+      return Math.random() * 100;
   }
 };
 
@@ -400,7 +303,6 @@ const applyQualityIssues = (value, kpiId, vesselQuality) => {
       qualityType = 'missing';
       issueDetails = missingIssue;
     } else if (incorrectIssue && Math.random() < 0.2) {
-      // Apply incorrect values based on KPI type
       switch (kpiId) {
         case 'obs_speed':
           finalValue = -2.5;
@@ -412,7 +314,7 @@ const applyQualityIssues = (value, kpiId, vesselQuality) => {
           finalValue = 250;
           break;
         default:
-          finalValue = value * 1.5; // 50% higher than normal
+          finalValue = value * 1.5;
       }
       hasQualityIssue = true;
       qualityType = 'incorrect';
@@ -430,7 +332,6 @@ const applyQualityIssues = (value, kpiId, vesselQuality) => {
   };
 };
 
-// Notification Component
 const NotificationPopup = ({ message, type = 'info', onClose, duration = 5000 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -473,23 +374,19 @@ const NotificationPopup = ({ message, type = 'info', onClose, duration = 5000 })
   );
 };
 
-// Controls Bar Component
 const ControlsBar = ({
   filters = {
     dataType: DATA_TYPES.LF,
     selectedKPIs: [],
     selectedVessels: [],
     dateRange: { startDate: null, endDate: null },
-    hfInterval: HF_INTERVALS.DAILY,
   },
   onFilterChange = () => {},
   vessels = sampleVessels,
   onApplyFilters = () => {},
-  onResetFilters = () => {},
   isApplyingFilters = false,
   onExport = () => {},
   isExporting = false,
-  currentView = 'charts',
   onShowNotification = () => {},
 }) => {
   const getInitialDateRange = () => {
@@ -514,7 +411,6 @@ const ControlsBar = ({
       filters.selectedKPIs.length > 0
         ? filters.selectedKPIs
         : ALL_KPIS.LF.map((kpi) => kpi.id),
-    hfInterval: filters.hfInterval || HF_INTERVALS.DAILY,
   }));
 
   const [showKPIDropdown, setShowKPIDropdown] = useState(false);
@@ -537,71 +433,11 @@ const ControlsBar = ({
   }, []);
 
   const handleDataTypeChange = (type) => {
-    if (type === DATA_TYPES.COMBINED) {
-      // For combined mode, limit to single vessel
-      const singleVessel = localFilters.selectedVessels.slice(0, 1);
-      setLocalFilters((prev) => ({
-        ...prev,
-        dataType: type,
-        selectedVessels: singleVessel.length > 0 ? singleVessel : [defaultSelectedVessels[0].id],
-        selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-      }));
-       
-      onShowNotification(
-        'Combined mode shows both LF and HF data for a single vessel per chart. Only one vessel has been selected.',
-        'info'
-      );
-    } else if (type === DATA_TYPES.HF) {
-      // For HF mode, limit to 3 vessels
-      const limitedVessels = localFilters.selectedVessels.slice(0, 3);
-      setLocalFilters((prev) => ({
-        ...prev,
-        dataType: type,
-        selectedVessels: limitedVessels.length > 0 ? limitedVessels : defaultSelectedVessels.slice(0, 3).map((v) => v.id),
-        selectedKPIs: ALL_KPIS.HF.map((kpi) => kpi.id),
-        hfInterval: HF_INTERVALS.DAILY,
-      }));
-       
-      if (localFilters.selectedVessels.length > 3) {
-        onShowNotification(
-          'HF mode supports maximum 3 vessels for optimal performance. Selection has been limited to first 3 vessels.',
-          'warning'
-        );
-      }
-    } else {
-      // LF mode
-      setLocalFilters((prev) => ({
-        ...prev,
-        dataType: type,
-        selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
-      }));
-    }
-  };
-
-  const handleHFIntervalChange = (interval) => {
-    const config = HF_INTERVAL_CONFIGS[interval];
-     
-    if (config.maxDays) {
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - config.maxDays);
-       
-      setLocalFilters((prev) => ({
-        ...prev,
-        hfInterval: interval,
-        dateRange: { startDate, endDate },
-      }));
-       
-      onShowNotification(
-        `${config.label}: ${config.description}. Date range has been adjusted accordingly.`,
-        'info'
-      );
-    } else {
-      setLocalFilters((prev) => ({
-        ...prev,
-        hfInterval: interval,
-      }));
-    }
+    setLocalFilters((prev) => ({
+      ...prev,
+      dataType: type,
+      selectedKPIs: ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id),
+    }));
   };
 
   const handleKPISelection = (kpiId) => {
@@ -624,16 +460,6 @@ const ControlsBar = ({
   };
 
   const availableKPIs = useMemo(() => {
-    if (localFilters.dataType === DATA_TYPES.COMBINED) {
-      // For combined, show unique KPIs
-      const uniqueKPIs = {};
-      [...ALL_KPIS.LF, ...ALL_KPIS.HF].forEach((kpi) => {
-        if (!uniqueKPIs[kpi.id]) {
-          uniqueKPIs[kpi.id] = { ...kpi, source: 'COMBINED' };
-        }
-      });
-      return Object.values(uniqueKPIs);
-    }
     return ALL_KPIS[localFilters.dataType.toUpperCase()] || [];
   }, [localFilters.dataType]);
 
@@ -664,13 +490,11 @@ const ControlsBar = ({
 
             {showKPIDropdown && (
               <>
-                {/* Backdrop overlay to prevent click-through */}
                 <div
                   className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
                   onClick={() => setShowKPIDropdown(false)}
                 />
                  
-                {/* Dropdown positioned to be fully visible */}
                 <div
                   className="fixed right-4 top-16 w-80 max-h-[calc(100vh-80px)] rounded-lg shadow-2xl z-50 overflow-hidden"
                   style={{
@@ -680,7 +504,6 @@ const ControlsBar = ({
                     boxShadow: '0 25px 50px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)'
                   }}
                 >
-                  {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/30">
                     <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                       <Settings className="w-4 h-4 text-blue-600" />
@@ -694,7 +517,6 @@ const ControlsBar = ({
                     </button>
                   </div>
 
-                  {/* Scrollable content */}
                   <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
                     {/* Data Source Selection */}
                     <div className="p-4 border-b border-gray-200">
@@ -702,11 +524,9 @@ const ControlsBar = ({
                         <Radio className="w-3 h-3 text-blue-600" />
                         Data Source
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-1 gap-2">
                         {[
-                          { key: 'LF', label: 'LF', icon: Radio, color: 'blue' },
-                          { key: 'HF', label: 'HF', icon: Zap, color: 'orange' },
-                          { key: 'COMBINED', label: 'Combined', icon: Layers, color: 'purple' }
+                          { key: 'LF', label: 'Reported Data', icon: Radio, color: 'blue' },
                         ].map((type) => {
                           const isSelected = localFilters.dataType === type.key.toLowerCase();
                           return (
@@ -728,58 +548,12 @@ const ControlsBar = ({
                         })}
                       </div>
                        
-                      {/* Data type info */}
                       <div className="mt-3 p-2 bg-gray-100/30 rounded-md">
                         <p className="text-[10px] text-gray-600">
-                          {localFilters.dataType === 'lf' && '📊 Low Frequency data - Multiple vessels supported'}
-                          {localFilters.dataType === 'hf' && '⚡ High Frequency data - Max 3 vessels, configurable intervals'}
-                          {localFilters.dataType === 'combined' && '🔄 Shows both LF & HF data - Single vessel only'}
+                          📊 Reported Data - Multiple vessels supported
                         </p>
                       </div>
                     </div>
-
-                    {/* HF Interval Selection */}
-                    {localFilters.dataType === DATA_TYPES.HF && (
-                      <div className="p-4 border-b border-gray-200">
-                        <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center gap-2">
-                          <Clock className="w-3 h-3 text-orange-600" />
-                          HF Data Interval
-                        </label>
-                        <div className="space-y-2">
-                          {Object.entries(HF_INTERVALS).map(([key, value]) => {
-                            const config = HF_INTERVAL_CONFIGS[value];
-                            const isSelected = localFilters.hfInterval === value;
-                            return (
-                              <button
-                                key={key}
-                                onClick={() => handleHFIntervalChange(value)}
-                                className={`w-full px-3 py-2 text-xs text-left rounded-lg transition-all duration-200 border ${
-                                  isSelected
-                                    ? 'bg-orange-600/10 text-orange-700 border-orange-400/50 shadow-md'
-                                    : 'bg-gray-100/30 text-gray-700 border-gray-300/30 hover:bg-gray-200/50'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span className="font-medium">{config.label}</span>
-                                  <div className="flex items-center gap-1">
-                                    {config.maxDays && (
-                                      <span className="text-[9px] bg-gray-300/50 px-1 py-0.5 rounded">
-                                        {config.maxDays}d max
-                                      </span>
-                                    )}
-                                    <Clock className="w-3 h-3" />
-                                  </div>
-                                </div>
-                                <div className="text-[10px] text-gray-600 mt-1">
-                                  {config.description}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
                     {/* KPI Selection */}
                     <div className="p-4">
                       <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center justify-between">
@@ -792,7 +566,6 @@ const ControlsBar = ({
                         </span>
                       </label>
                        
-                      {/* Select All / None buttons */}
                       <div className="flex gap-2 mb-3">
                         <button
                           onClick={() => setLocalFilters(prev => ({
@@ -924,7 +697,6 @@ const ControlsBar = ({
   );
 };
 
-// Chart Components - Enhanced with Quality Toggle Support
 const QualityDot = ({
   cx,
   cy,
@@ -942,10 +714,9 @@ const QualityDot = ({
   const issueDetails = payload[issueDetailsKey];
   const value = payload[dataKey];
 
-  // NEW: If quality is not visible, show clean dots
   if (!qualityVisible) {
     if (value === null || value === undefined) {
-      return null; // Don't render missing data dots when quality is off
+      return null;
     }
      
     return (
@@ -965,7 +736,6 @@ const QualityDot = ({
     );
   }
 
-  // Original quality-aware dot rendering
   if (value === null || value === undefined) {
     return (
       <g>
@@ -1033,7 +803,7 @@ const CustomTooltip = ({
   payload,
   label,
   dataType,
-  qualityVisible, // NEW: Quality visibility prop
+  qualityVisible,
 }) => {
   if (active && payload && payload.length) {
     return (
@@ -1057,12 +827,8 @@ const CustomTooltip = ({
             const parts = entry.dataKey.split('_');
             let vesselId, kpiId, sourceType;
              
-            if (dataType === DATA_TYPES.COMBINED) {
-              [vesselId, kpiId, sourceType] = parts;
-            } else {
-              [vesselId, kpiId] = parts;
-              sourceType = dataType.toUpperCase();
-            }
+            [vesselId, kpiId] = parts;
+            sourceType = dataType.toUpperCase();
              
             const vessel = sampleVessels.find((v) => v.id === vesselId);
             const qualityType = entry.payload[`${entry.dataKey}_quality`];
@@ -1076,9 +842,7 @@ const CustomTooltip = ({
                 <div className="flex items-center justify-between p-1.5 rounded-md bg-gray-700/40 hover:bg-gray-700/60 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="relative">
-                      {/* NEW: Conditional quality indicator rendering */}
                       {!qualityVisible ? (
-                        // Clean dot when quality is off
                         <div
                           className="w-3.5 h-3.5 rounded-full border-2 border-gray-100/30"
                           style={{
@@ -1087,7 +851,6 @@ const CustomTooltip = ({
                           }}
                         />
                       ) : (
-                        // Quality-aware indicators when quality is on
                         entry.value === null ? (
                           <div className="w-3.5 h-3.5 border-2 border-red-600 border-dashed rounded-full bg-transparent flex items-center justify-center">
                             <WifiOff className="w-2 h-2 text-red-600" />
@@ -1124,20 +887,8 @@ const CustomTooltip = ({
                         >
                           {vessel.name}
                         </span>
-                        {dataType === DATA_TYPES.COMBINED && (
-                          <span
-                            className={`text-[8px] px-1 py-0.5 rounded-full border ${
-                              sourceType === 'LF'
-                                ? 'bg-blue-600/20 text-blue-700 border-blue-600/30'
-                                : 'bg-orange-600/20 text-orange-700 border-orange-600/30'
-                            }`}
-                          >
-                            {sourceType}
-                          </span>
-                        )}
                       </div>
 
-                      {/* NEW: Only show quality issues when quality is visible */}
                       {qualityVisible && hasIssue && issueDetails && (
                         <div className="text-[10px] text-orange-600 flex items-center gap-0.5 mt-0.5">
                           <AlertCircle className="w-2.5 h-2.5" />
@@ -1162,7 +913,6 @@ const CustomTooltip = ({
                         entry.value
                       )}
                     </span>
-                    {/* NEW: Only show quality flags when quality is visible */}
                     {qualityVisible && entry.value !== null &&
                       hasIssue &&
                       qualityType === 'incorrect' && (
@@ -1183,18 +933,16 @@ const CustomTooltip = ({
   return null;
 };
 
-// Main ChartView Component
 const ChartView = ({
   initialVesselId = null,
   className = '',
-  qualityVisible = true, // NEW: Quality toggle prop
-  onQualityToggle = () => {}, // NEW: Quality toggle handler
+  qualityVisible = true,
 }) => {
   const getInitialFilters = (vesselId) => {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
-     
+      
     const selectedVessels = vesselId
       ? [vesselId]
       : defaultSelectedVessels.map((v) => v.id);
@@ -1204,7 +952,6 @@ const ChartView = ({
       selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
       selectedVessels: selectedVessels,
       dateRange: { startDate, endDate },
-      hfInterval: HF_INTERVALS.DAILY,
     };
   };
 
@@ -1223,18 +970,12 @@ const ChartView = ({
   }, []);
 
   useEffect(() => {
-    // This effect ensures that if the initialVesselId prop changes,
-    // we update the internal state to reflect the change.
     if (initialVesselId && chartFilters.selectedVessels[0] !== initialVesselId) {
       setChartFilters(prev => ({
         ...prev,
         selectedVessels: [initialVesselId]
       }));
     } else if (!initialVesselId && chartFilters.selectedVessels.length === 1) {
-      // If we navigate back to the chart view without a specific vessel,
-      // reset to the default 5. This handles the case where a user
-      // navigated from the table view, but then clicks "Charts" from the
-      // main nav bar.
       setChartFilters(prev => ({
         ...prev,
         selectedVessels: defaultSelectedVessels.map(v => v.id)
@@ -1250,17 +991,11 @@ const ChartView = ({
     }, 500);
   };
 
-  const handleResetFilters = () => {
-    const resetFilters = getInitialFilters(initialVesselId);
-    setChartFilters(resetFilters);
-  };
-
   const handleExport = (format) => {
     setIsExporting(true);
     setTimeout(() => setIsExporting(false), 2000);
   };
 
-  // Generate chart data based on current filters
   const chartData = useMemo(() => {
     if (
       !chartFilters.dateRange.startDate ||
@@ -1276,13 +1011,11 @@ const ChartView = ({
       chartFilters.dataType,
       chartFilters.dateRange.startDate,
       chartFilters.dateRange.endDate,
-      chartFilters.hfInterval
     );
   }, [chartFilters]);
 
   return (
     <div className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
-      {/* Notifications */}
       {notifications.map((notification) => (
         <NotificationPopup
           key={notification.id}
@@ -1297,17 +1030,14 @@ const ChartView = ({
         onFilterChange={setChartFilters}
         vessels={sampleVessels}
         onApplyFilters={handleApplyFilters}
-        onResetFilters={handleResetFilters}
         isApplyingFilters={isApplyingFilters}
         onExport={handleExport}
         isExporting={isExporting}
-        currentView="charts"
         onShowNotification={showNotification}
       />
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-1">
-          {/* NEW: Conditional rendering based on quality toggle */}
           {qualityVisible && (
             <DataQualityCards
               data={chartData}
@@ -1368,7 +1098,6 @@ const ChartView = ({
                     }}
                   >
                     <div className="relative p-3">
-                      {/* Enhanced Header */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -1407,28 +1136,12 @@ const ChartView = ({
                               </h3>
 
                               <div className="flex items-center gap-1.5 mt-0.5">
-                                {chartFilters.dataType !== DATA_TYPES.COMBINED && (
-                                  <span
-                                    className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 ${
-                                      kpiMeta.source === 'LF'
-                                        ? 'bg-blue-600/10 text-blue-700 border-blue-600/30'
-                                        : 'bg-orange-600/10 text-orange-700 border-orange-600/30'
-                                    }`}
-                                  >
-                                    {kpiMeta.source === 'LF' && (
-                                      <Radio className="w-2 h-2" />
-                                    )}
-                                    {kpiMeta.source === 'HF' && (
-                                      <Zap className="w-2 h-2" />
-                                    )}
-                                    {kpiMeta.source}
-                                  </span>
-                                )}
-                                {chartFilters.dataType === DATA_TYPES.HF && (
-                                  <span className="text-xs text-gray-600 bg-gray-200/50 px-1 py-0.5 rounded-full">
-                                    {HF_INTERVAL_CONFIGS[chartFilters.hfInterval].label}
-                                  </span>
-                                )}
+                                <span
+                                  className={`text-xs px-1 py-0.5 rounded-full border flex items-center gap-0.5 bg-blue-600/10 text-blue-700 border-blue-600/30`}
+                                >
+                                  <Radio className="w-2 h-2" />
+                                  LF
+                                </span>
                                 <span className="text-xs text-gray-600 capitalize bg-gray-200/50 px-1 py-0.5 rounded-full">
                                   {kpiMeta.category}
                                 </span>
@@ -1438,7 +1151,6 @@ const ChartView = ({
                         </div>
                       </div>
 
-                      {/* Enhanced Chart Container */}
                       <div className="relative">
                         <ResponsiveContainer width="100%" height={220}>
                           <LineChart
@@ -1460,13 +1172,6 @@ const ChartView = ({
                               dataKey="date"
                               tickFormatter={(tick) => {
                                 const date = new Date(tick);
-                                if (chartFilters.hfInterval === HF_INTERVALS.RAW ||
-                                    chartFilters.hfInterval === HF_INTERVALS.HOURLY) {
-                                  return date.toLocaleTimeString('en-US', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  });
-                                }
                                 return date.toLocaleDateString('en-US', {
                                   month: 'short',
                                   day: 'numeric',
@@ -1519,75 +1224,38 @@ const ChartView = ({
                               }}
                             />
 
-                            {/* Enhanced Lines with Quality Indicators */}
-                            {chartFilters.dataType === DATA_TYPES.COMBINED ? (
-                              // Combined mode: Show LF and HF lines for single vessel
-                              ['LF', 'HF'].map((sourceType) => {
-                                const vesselId = chartFilters.selectedVessels[0];
-                                const dataKey = `${vesselId}_${kpiId}_${sourceType}`;
-                                const color = LF_HF_COLORS[sourceType];
-                                 
-                                return (
-                                  <Line
-                                    key={dataKey}
-                                    type="monotone"
-                                    dataKey={dataKey}
-                                    stroke={color}
-                                    strokeWidth={3}
-                                    dot={(props) => (
-                                      <QualityDot
-                                        {...props}
-                                        dataKey={dataKey}
-                                        stroke={color}
-                                        qualityVisible={qualityVisible}
-                                      />
-                                    )}
-                                    activeDot={{
-                                      r: 8,
-                                      strokeWidth: 3,
-                                      fill: color,
-                                      stroke: '#fff',
-                                    }}
-                                    connectNulls={!qualityVisible}
-                                  />
-                                );
-                              })
-                            ) : (
-                              // LF or HF mode: Show multiple vessels
-                              chartFilters.selectedVessels.map((vesselId, index) => {
-                                const dataKey = `${vesselId}_${kpiId}`;
-                                const color = getVesselColor(vesselId);
-                                 
-                                return (
-                                  <Line
-                                    key={dataKey}
-                                    type="monotone"
-                                    dataKey={dataKey}
-                                    stroke={color}
-                                    strokeWidth={3}
-                                    dot={(props) => (
-                                      <QualityDot
-                                        {...props}
-                                        dataKey={dataKey}
-                                        stroke={color}
-                                        qualityVisible={qualityVisible}
-                                      />
-                                    )}
-                                    activeDot={{
-                                      r: 8,
-                                      strokeWidth: 3,
-                                      fill: color,
-                                      stroke: '#fff',
-                                    }}
-                                    connectNulls={!qualityVisible}
-                                  />
-                                );
-                              })
-                            )}
+                            {chartFilters.selectedVessels.map((vesselId) => {
+                              const dataKey = `${vesselId}_${kpiId}`;
+                              const color = getVesselColor(vesselId);
+                               
+                              return (
+                                <Line
+                                  key={dataKey}
+                                  type="monotone"
+                                  dataKey={dataKey}
+                                  stroke={color}
+                                  strokeWidth={3}
+                                  dot={(props) => (
+                                    <QualityDot
+                                      {...props}
+                                      dataKey={dataKey}
+                                      stroke={color}
+                                      qualityVisible={qualityVisible}
+                                    />
+                                  )}
+                                  activeDot={{
+                                    r: 8,
+                                    strokeWidth: 3,
+                                    fill: color,
+                                    stroke: '#fff',
+                                  }}
+                                  connectNulls={!qualityVisible}
+                                />
+                              );
+                            })}
                           </LineChart>
                         </ResponsiveContainer>
 
-                        {/* Conditional Quality Legend */}
                         {qualityVisible && (
                           <div className="absolute top-0 left-0 right-0 flex items-center justify-end gap-3 text-[10px] p-1.5">
                             <div className="flex items-center gap-0.5">
@@ -1614,52 +1282,27 @@ const ChartView = ({
                           </div>
                         )}
 
-                        {/* Legend */}
                         <div className="mt-2 p-1.5">
                           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] justify-center">
-                            {chartFilters.dataType === DATA_TYPES.COMBINED ? (
-                              // Combined mode legend: Show LF/HF for single vessel
-                              ['LF', 'HF'].map((sourceType) => {
-                                const vessel = sampleVessels.find(v => v.id === chartFilters.selectedVessels[0]);
-                                const color = LF_HF_COLORS[sourceType];
-                                 
-                                return (
-                                  <div key={sourceType} className="flex items-center gap-1">
-                                    <div
-                                      className="w-2 h-2 rounded-full border border-gray-400/30"
-                                      style={{
-                                        backgroundColor: color,
-                                        boxShadow: `0 0 4px ${color}40`,
-                                      }}
-                                    />
-                                    <span className="text-gray-700">
-                                      {vessel?.name} ({sourceType})
-                                    </span>
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              // LF/HF mode legend: Show multiple vessels
-                              chartFilters.selectedVessels.map((vesselId) => {
-                                const vessel = sampleVessels.find(v => v.id === vesselId);
-                                const color = getVesselColor(vesselId);
-                                 
-                                return (
-                                  <div key={vesselId} className="flex items-center gap-1">
-                                    <div
-                                      className="w-2 h-2 rounded-full border border-gray-400/30"
-                                      style={{
-                                        backgroundColor: color,
-                                        boxShadow: `0 0 4px ${color}40`,
-                                      }}
-                                    />
-                                    <span className="text-gray-700">
-                                      {vessel?.name || vesselId}
-                                    </span>
-                                  </div>
-                                );
-                              })
-                            )}
+                            {chartFilters.selectedVessels.map((vesselId) => {
+                              const vessel = sampleVessels.find(v => v.id === vesselId);
+                              const color = getVesselColor(vesselId);
+                               
+                              return (
+                                <div key={vesselId} className="flex items-center gap-1">
+                                  <div
+                                    className="w-2 h-2 rounded-full border border-gray-400/30"
+                                    style={{
+                                      backgroundColor: color,
+                                      boxShadow: `0 0 4px ${color}40`,
+                                    }}
+                                  />
+                                  <span className="text-gray-700">
+                                    {vessel?.name || vesselId}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>

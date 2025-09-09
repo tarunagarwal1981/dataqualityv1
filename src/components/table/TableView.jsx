@@ -62,126 +62,66 @@ import DataQualityCards, { staticQualityData } from './DataQualityCards';
 
 // Data types and KPIs for table view
 const DATA_TYPES = {
-  COMBINED: 'combined',
-  LF: 'lf',
-  HF: 'hf',
+  REPORTED: 'reported', // Renamed from LF
 };
 
 const ALL_KPIS = {
-  LF: [
+  REPORTED: [ // Renamed from LF
     {
       id: 'obs_speed',
       name: 'Obs Speed',
       unit: 'knts',
       category: 'performance',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'me_consumption',
       name: 'ME Consumption',
       unit: 'Mt',
       category: 'fuel',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'total_consumption',
       name: 'Total Consumption',
       unit: 'Mt',
       category: 'fuel',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'wind_force',
       name: 'Wind Force',
       unit: 'Beaufort',
       category: 'weather',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'laden_condition',
       name: 'Loading Condition',
       unit: '',
       category: 'operation',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'me_power',
       name: 'ME Power',
       unit: 'kW',
       category: 'performance',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'me_sfoc',
       name: 'ME SFOC',
       unit: 'gm/kWhr',
       category: 'performance',
-      source: 'LF',
+      source: 'Reported',
     },
     {
       id: 'rpm',
       name: 'RPM',
       unit: 'rpm',
       category: 'performance',
-      source: 'LF',
-    },
-  ],
-  HF: [
-    {
-      id: 'obs_speed',
-      name: 'Obs Speed',
-      unit: 'knts',
-      category: 'performance',
-      source: 'HF',
-    },
-    {
-      id: 'me_consumption',
-      name: 'ME Consumption',
-      unit: 'Mt',
-      category: 'fuel',
-      source: 'HF',
-    },
-    {
-      id: 'total_consumption',
-      name: 'Total Consumption',
-      unit: 'Mt',
-      category: 'fuel',
-      source: 'HF',
-    },
-    {
-      id: 'wind_force',
-      name: 'Wind Force',
-      unit: 'Beaufort',
-      category: 'weather',
-      source: 'HF',
-    },
-    {
-      id: 'laden_condition',
-      name: 'Loading Condition',
-      unit: '',
-      category: 'operation',
-      source: 'HF',
-    },
-    {
-      id: 'me_power',
-      name: 'ME Power',
-      unit: 'kW',
-      category: 'performance',
-      source: 'HF',
-    },
-    {
-      id: 'me_sfoc',
-      name: 'ME SFOC',
-      unit: 'gm/kWhr',
-      category: 'performance',
-      source: 'HF',
-    },
-    {
-      id: 'rpm',
-      name: 'RPM',
-      unit: 'rpm',
-      category: 'performance',
-      source: 'HF',
+      source: 'Reported',
     },
   ],
 };
@@ -324,7 +264,6 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
   );
 };
 
-
 // NEW: Vessel-wise Performance Charts Component
 const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
   // Calculate vessel performance metrics
@@ -387,7 +326,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
               <span className="text-[9px] text-gray-500">Parallel comparison</span>
             </div>
           </div>
-          
+
           <div className="relative h-32 bg-gray-100 rounded-lg p-2">
             {/* Y-axis labels */}
             <div className="absolute left-0 top-0 bottom-0 w-6 flex flex-col justify-between text-[8px] text-cyan-600 py-2">
@@ -400,7 +339,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
               <span>{(maxConsumption / 2).toFixed(0)}</span>
               <span>0</span>
             </div>
-            
+
             <div className="absolute inset-0 mx-6 border-l border-b border-gray-300/50">
               {/* Grid lines */}
               <div className="absolute inset-0">
@@ -411,12 +350,12 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                   />
                 ))}
               </div>
-              
+
               <div className="flex items-end justify-between h-full gap-1 px-2">
                 {vesselMetrics.slice(0, 6).map((vessel) => {
                   const speedHeight = (vessel.speed / maxSpeed) * 85;
                   const consumptionHeight = (vessel.consumption / maxConsumption) * 85;
-                
+
                   return (
                     <div key={vessel.vesselId} className="flex items-end gap-1 group cursor-pointer" title={`${vessel.vesselName}: ${vessel.speed.toFixed(1)} kn, ${vessel.consumption.toFixed(1)} Mt`}>
                       {/* Speed bar (left) */}
@@ -434,7 +373,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                 })}
               </div>
             </div>
-            
+
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-6 right-6 flex justify-between">
               {vesselMetrics.slice(0, 6).map((vessel) => (
@@ -481,7 +420,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
               <span>{(maxEfficiency * 0.33).toFixed(0)}</span>
               <span>0</span>
             </div>
-            
+
             <div className="absolute inset-0 ml-8 border-l border-b border-gray-300/50">
               {/* Grid lines */}
               <div className="absolute inset-0">
@@ -492,12 +431,12 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                   />
                 ))}
               </div>
-              
+
               <div className="flex items-end justify-between h-full gap-1 px-2">
                 {vesselMetrics.slice(0, 7).map((vessel) => {
                   const barHeight = (vessel.efficiency / maxEfficiency) * 85;
                   const isLaden = vessel.ladenCondition === 'Laden';
-                
+
                   return (
                     <div key={vessel.vesselId} className="flex flex-col items-center group cursor-pointer" title={`${vessel.vesselName}: ${vessel.efficiency.toFixed(1)} kg/nm (${vessel.ladenCondition})`}>
                       <div
@@ -517,7 +456,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
                 })}
               </div>
             </div>
-            
+
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-8 right-0 flex justify-between pr-2">
               {vesselMetrics.slice(0, 7).map((vessel) => (
@@ -672,14 +611,7 @@ const ControlsBar = ({
 
   const handleDataTypeChange = (type) => {
     setSelectedDataType(type);
-    if (type === DATA_TYPES.COMBINED) {
-      const combinedKPIs = [
-        ...new Set([...ALL_KPIS.LF, ...ALL_KPIS.HF].map((kpi) => kpi.id)),
-      ];
-      setSelectedKPIs(combinedKPIs);
-    } else {
-      setSelectedKPIs(ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id));
-    }
+    setSelectedKPIs(ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id));
   };
 
   const handleKPISelection = (kpiId) => {
@@ -700,8 +632,7 @@ const ControlsBar = ({
 
   const getDataSourceIndicator = (source) => {
     const colors = {
-      LF: 'bg-blue-100 text-blue-700 border-blue-200',
-      HF: 'bg-orange-100 text-orange-700 border-orange-200',
+      REPORTED: 'bg-blue-100 text-blue-700 border-blue-200',
     };
     return (
       <sup
@@ -713,15 +644,6 @@ const ControlsBar = ({
   };
 
   const availableKPIs = useMemo(() => {
-    if (selectedDataType === DATA_TYPES.COMBINED) {
-      const combined = {};
-      [...ALL_KPIS.LF, ...ALL_KPIS.HF].forEach((kpi) => {
-        if (!combined[kpi.id]) {
-          combined[kpi.id] = { ...kpi, source: 'COMBINED' };
-        }
-      });
-      return Object.values(combined);
-    }
     return ALL_KPIS[selectedDataType.toUpperCase()] || [];
   }, [selectedDataType]);
 
@@ -762,7 +684,7 @@ const ControlsBar = ({
                     Data Source
                   </label>
                   <div className="flex gap-2">
-                    {['LF', 'HF', 'COMBINED'].map((type) => (
+                    {['REPORTED'].map((type) => (
                       <button
                         key={type}
                         onClick={() => handleDataTypeChange(type.toLowerCase())}
@@ -773,11 +695,7 @@ const ControlsBar = ({
                         }`}
                       >
                         <div className="flex items-center justify-center gap-1">
-                          {type === 'LF' && <Radio className="w-3 h-3" />}
-                          {type === 'HF' && <Zap className="w-3 h-3" />}
-                          {type === 'COMBINED' && (
-                            <Layers className="w-3 h-3" />
-                          )}
+                          {type === 'REPORTED' && <Radio className="w-3 h-3" />}
                           {type}
                         </div>
                       </button>
@@ -806,8 +724,6 @@ const ControlsBar = ({
                             <span className="text-sm font-medium text-gray-900 truncate">
                               {kpi.name}
                             </span>
-                            {kpi.source !== 'COMBINED' &&
-                              getDataSourceIndicator(kpi.source)}
                           </div>
                           {kpi.unit && (
                             <span className="text-xs text-gray-500">
@@ -980,38 +896,22 @@ const TableView = ({
   const [isExporting, setIsExporting] = useState(false);
 
   // State for data type and KPI selection
-  const [selectedDataType, setSelectedDataType] = useState(DATA_TYPES.LF);
+  const [selectedDataType, setSelectedDataType] = useState(DATA_TYPES.REPORTED); // Initial state is now 'reported'
   const [selectedKPIs, setSelectedKPIs] = useState(
-    ALL_KPIS.LF.map((kpi) => kpi.id)
+    ALL_KPIS.REPORTED.map((kpi) => kpi.id) // Initial KPIs are for 'reported'
   );
 
-  // Helper to get KPI details by ID, considering both LF and HF
+  // Helper to get KPI details by ID
   const getKpiDetails = (kpiId, source) => {
-    if (source) {
-      return ALL_KPIS[source.toUpperCase()]?.find((kpi) => kpi.id === kpiId);
-    }
-    // If source not specified, try to find in LF first, then HF
-    return (
-      ALL_KPIS.LF.find((kpi) => kpi.id === kpiId) ||
-      ALL_KPIS.HF.find((kpi) => kpi.id === kpiId)
-    );
+    return ALL_KPIS[source.toUpperCase()]?.find((kpi) => kpi.id === kpiId);
   };
 
   const currentKPIsToDisplay = useMemo(() => {
-    if (selectedDataType === DATA_TYPES.COMBINED) {
-      // For combined, show each selected KPI (no duplication in display)
-      return selectedKPIs.map((kpiId) => {
-        const lfKpi = getKpiDetails(kpiId, 'LF');
-        return { ...lfKpi, id: kpiId, displaySource: 'COMBINED' };
-      }).filter(Boolean);
-    } else {
-      // For LF or HF, show only selected KPIs from that source
-      return (
-        ALL_KPIS[selectedDataType.toUpperCase()]?.filter((kpi) =>
-          selectedKPIs.includes(kpi.id)
-        ) || []
-      );
-    }
+    return (
+      ALL_KPIS[selectedDataType.toUpperCase()]?.filter((kpi) =>
+        selectedKPIs.includes(kpi.id)
+      ) || []
+    );
   }, [selectedDataType, selectedKPIs]);
   
   // MODIFIED: Generate sample data for only the first 5 vessels
@@ -1027,89 +927,87 @@ const TableView = ({
         ).toISOString(),
         vesselStatus: vessel.status,
         quality: vessel,
-        lf: {},
-        hf: {},
+        reported: {}, // Renamed from 'lf'
+        // 'hf' and 'combined' are removed
       };
 
-      // Generate data for each KPI for both LF and HF
-      ['LF', 'HF'].forEach((sourceType) => {
-        ALL_KPIS[sourceType].forEach((kpi) => {
-          const kpiId = kpi.id;
-          const kpiKey = sourceType.toLowerCase();
+      // Generate data for each KPI for the single data source
+      ALL_KPIS.REPORTED.forEach((kpi) => {
+        const kpiId = kpi.id;
+        const kpiKey = 'reported';
 
-          // Check if this KPI has any issues for this vessel
-          const hasIssue = Object.values(vessel.kpiIssues).some(
-            (issue) => issue.kpi === kpiId
-          );
-          const kpiIssueEntries = Object.values(vessel.kpiIssues).filter(
-            (issue) => issue.kpi === kpiId
-          );
+        // Check if this KPI has any issues for this vessel
+        const hasIssue = Object.values(vessel.kpiIssues).some(
+          (issue) => issue.kpi === kpiId
+        );
+        const kpiIssueEntries = Object.values(vessel.kpiIssues).filter(
+          (issue) => issue.kpi === kpiId
+        );
 
-          // Determine if missing or incorrect
-          const hasMissingIssue = kpiIssueEntries.some(
-            (issue) => issue.type === 'missing'
-          );
-          const hasIncorrectIssue = kpiIssueEntries.some(
+        // Determine if missing or incorrect
+        const hasMissingIssue = kpiIssueEntries.some(
+          (issue) => issue.type === 'missing'
+        );
+        const hasIncorrectIssue = kpiIssueEntries.some(
+          (issue) => issue.type === 'incorrect'
+        );
+
+        if (hasMissingIssue) {
+          data[kpiKey][kpiId] = null;
+        } else if (hasIncorrectIssue) {
+          // Use specific incorrect values based on the issue
+          const incorrectIssue = kpiIssueEntries.find(
             (issue) => issue.type === 'incorrect'
           );
-
-          if (hasMissingIssue) {
-            data[kpiKey][kpiId] = null;
-          } else if (hasIncorrectIssue) {
-            // Use specific incorrect values based on the issue
-            const incorrectIssue = kpiIssueEntries.find(
-              (issue) => issue.type === 'incorrect'
-            );
-            if (incorrectIssue && incorrectIssue.originalValue !== undefined) {
-              data[kpiKey][kpiId] = incorrectIssue.originalValue;
-            } else {
-              // Generate problematic values
-              switch (kpiId) {
-                case 'obs_speed':
-                  data[kpiKey][kpiId] = -2.5;
-                  break;
-                case 'me_consumption':
-                  data[kpiKey][kpiId] = 45.8;
-                  break;
-                case 'rpm':
-                  data[kpiKey][kpiId] = 250;
-                  break;
-                default:
-                  data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
-              }
-            }
+          if (incorrectIssue && incorrectIssue.originalValue !== undefined) {
+            data[kpiKey][kpiId] = incorrectIssue.originalValue;
           } else {
-            // Generate normal values
+            // Generate problematic values
             switch (kpiId) {
               case 'obs_speed':
-                data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
+                data[kpiKey][kpiId] = -2.5;
                 break;
               case 'me_consumption':
-                data[kpiKey][kpiId] = 8.2 + Math.random() * 4;
-                break;
-              case 'total_consumption':
-                data[kpiKey][kpiId] = 10.5 + Math.random() * 5;
-                break;
-              case 'wind_force':
-                data[kpiKey][kpiId] = Math.floor(Math.random() * 8) + 1;
-                break;
-              case 'laden_condition':
-                data[kpiKey][kpiId] = Math.random() > 0.5 ? 1 : 0;
-                break;
-              case 'me_power':
-                data[kpiKey][kpiId] = 4200 + Math.random() * 2000;
-                break;
-              case 'me_sfoc':
-                data[kpiKey][kpiId] = 185 + Math.random() * 15;
+                data[kpiKey][kpiId] = 45.8;
                 break;
               case 'rpm':
-                data[kpiKey][kpiId] = 85 + Math.random() * 25;
+                data[kpiKey][kpiId] = 250;
                 break;
               default:
-                data[kpiKey][kpiId] = Math.random() * 100;
+                data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
             }
           }
-        });
+        } else {
+          // Generate normal values
+          switch (kpiId) {
+            case 'obs_speed':
+              data[kpiKey][kpiId] = 12.5 + Math.random() * 8;
+              break;
+            case 'me_consumption':
+              data[kpiKey][kpiId] = 8.2 + Math.random() * 4;
+              break;
+            case 'total_consumption':
+              data[kpiKey][kpiId] = 10.5 + Math.random() * 5;
+              break;
+            case 'wind_force':
+              data[kpiKey][kpiId] = Math.floor(Math.random() * 8) + 1;
+              break;
+            case 'laden_condition':
+              data[kpiKey][kpiId] = Math.random() > 0.5 ? 1 : 0;
+              break;
+            case 'me_power':
+              data[kpiKey][kpiId] = 4200 + Math.random() * 2000;
+              break;
+            case 'me_sfoc':
+              data[kpiKey][kpiId] = 185 + Math.random() * 15;
+              break;
+            case 'rpm':
+              data[kpiKey][kpiId] = 85 + Math.random() * 25;
+              break;
+            default:
+              data[kpiKey][kpiId] = Math.random() * 100;
+          }
+        }
       });
 
       return data;
@@ -1118,7 +1016,7 @@ const TableView = ({
 
   // Enhanced value display with quality indicators that match the issues in quality cards
   const getValueDisplay = (item, kpiId, source) => {
-    const dataKey = source.toLowerCase();
+    const dataKey = 'reported'; // Always use 'reported' now
     const value = item[dataKey][kpiId];
 
     // NEW: If quality is not visible, show clean values without indicators
@@ -1261,12 +1159,12 @@ const TableView = ({
     setIsExporting(true);
     setTimeout(() => setIsExporting(false), 2000);
   };
-  
+
   // MODIFIED: Update the handleVesselClick function to pass the full vessel object
   const handleVesselClick = (vessel) => {
     onVesselClick(vessel);
   };
-  
+
   // MODIFIED: Use limited sampleData for pagination
   const paginatedData = sampleData.slice(
     (currentPage - 1) * pageSize,
@@ -1276,15 +1174,13 @@ const TableView = ({
 
   const getDataSourceBadge = (source) => {
     const colors = {
-      LF: 'bg-blue-100 text-blue-700 border-blue-200',
-      HF: 'bg-orange-100 text-orange-700 border-orange-200',
+      REPORTED: 'bg-blue-100 text-blue-700 border-blue-200',
     };
     return (
       <span
         className={`text-[8px] font-medium px-1 py-0.5 rounded-full border ${colors[source]} flex items-center gap-0.5`}
       >
-        {source === 'LF' && <Radio className="w-2 h-2" />}
-        {source === 'HF' && <Zap className="w-2 h-2" />}
+        {source === 'REPORTED' && <Radio className="w-2 h-2" />}
         {source}
       </span>
     );
@@ -1373,7 +1269,7 @@ const TableView = ({
                     )}
                     {currentKPIsToDisplay.map((kpi) => (
                       <th
-                        key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                        key={`${kpi.id}-${kpi.source}`}
                         className="w-24 px-2 py-1 text-center"
                       >
                         <button
@@ -1466,21 +1362,10 @@ const TableView = ({
                       )}
                       {currentKPIsToDisplay.map((kpi) => (
                         <td
-                          key={`${kpi.id}-${kpi.displaySource || kpi.source}`}
+                          key={`${kpi.id}-${kpi.source}`}
                           className="px-2 py-1 text-center"
                         >
-                          {selectedDataType === DATA_TYPES.COMBINED ? (
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center justify-center gap-1">
-                                {getValueDisplay(item, kpi.id, 'LF')}
-                              </div>
-                              <div className="flex items-center justify-center gap-1">
-                                {getValueDisplay(item, kpi.id, 'HF')}
-                              </div>
-                            </div>
-                          ) : (
-                            getValueDisplay(item, kpi.id, selectedDataType)
-                          )}
+                          {getValueDisplay(item, kpi.id, selectedDataType)}
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center">
