@@ -31,7 +31,7 @@ export default function FleetHeader() {
     <div className="w-full font-inter">
       {/* Main Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-6 h-16 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between px-6 h-16 mx-auto">
           {/* Left section - Brand */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ export default function FleetHeader() {
           </div>
 
           {/* Center Navigation - Hidden on mobile */}
-          <nav className="hidden lg:flex items-center gap-1">
+          {/* <nav className="hidden lg:flex items-center gap-1">
             {navItems.map((item, index) => (
               <button
                 key={index}
@@ -70,12 +70,12 @@ export default function FleetHeader() {
                 {item.name}
               </button>
             ))}
-          </nav>
+          </nav> */}
 
           {/* Right section - Actions */}
           <div className="flex items-center gap-3">
             {/* Notifications */}
-            <div className="relative">
+            {/* <div className="relative">
               <button
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
                 onClick={() => setShowAlerts(!showAlerts)}
@@ -86,7 +86,7 @@ export default function FleetHeader() {
                 </span>
               </button>
               {showAlerts && <AlertsPanel onClose={() => setShowAlerts(false)} />}
-            </div>
+            </div> */}
 
             {/* Menu Button (Mobile) */}
             <button 

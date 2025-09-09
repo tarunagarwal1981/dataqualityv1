@@ -828,7 +828,7 @@ const DataQualityCards = ({
       )}
 
       {/* Quality Controls Bar */}
-      {viewMode === 'table' && (
+      {/* {viewMode === 'table' && (
         <div className="flex items-center justify-between bg-white/95 border border-gray-200 rounded-lg p-3 shadow-sm">
           <div className="flex items-center gap-4">
             <button
@@ -864,7 +864,7 @@ const DataQualityCards = ({
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
