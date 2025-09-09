@@ -915,10 +915,12 @@ const TableView = ({
       );
     }
   }, [selectedDataType, selectedKPIs]);
-
-  // Generate sample data with quality issues that match the quality cards
+  
+  // MODIFIED: Generate sample data for only the first 5 vessels
   const sampleData = useMemo(() => {
-    return staticQualityData.map((vessel, index) => {
+    const limitedQualityData = staticQualityData.slice(0, 5);
+
+    return limitedQualityData.map((vessel, index) => {
       const data = {
         id: vessel.id,
         vesselName: vessel.name,
@@ -1064,7 +1066,7 @@ const TableView = ({
       (issue) => issue.type === 'incorrect'
     );
 
-    if (value === null || value === undefined) {
+    if (value === null || value === undefined || hasMissingIssue) {
       return (
         <div className="relative group">
           <span className="text-xs text-gray-500 font-medium bg-red-100 border border-red-200 rounded px-1.5 py-0.5">
@@ -1168,7 +1170,8 @@ const TableView = ({
     const vesselId = `vessel_${vessel.id}`;
     onVesselClick(vesselId);
   };
-
+  
+  // MODIFIED: Use limited sampleData for pagination
   const paginatedData = sampleData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -1293,9 +1296,6 @@ const TableView = ({
                                 ({kpi.unit})
                               </span>
                             )}
-                            {/* {selectedDataType !== DATA_TYPES.COMBINED &&
-                             kpi.source &&
-                             getDataSourceBadge(kpi.source)} */}
                           </div>
                         </button>
                       </th>
@@ -1363,7 +1363,7 @@ const TableView = ({
                           <EnhancedQualityIndicator
                             completeness={item.quality.completeness}
                             correctness={item.quality.correctness}
-                            issues={item.quality.issues}
+                            issues={Object.values(item.quality.kpiIssues)}
                             size="sm"
                           />
                         </td>
@@ -1377,11 +1377,9 @@ const TableView = ({
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center justify-center gap-1">
                                 {getValueDisplay(item, kpi.id, 'LF')}
-                                {getDataSourceBadge('LF')}
                               </div>
                               <div className="flex items-center justify-center gap-1">
                                 {getValueDisplay(item, kpi.id, 'HF')}
-                                {getDataSourceBadge('HF')}
                               </div>
                             </div>
                           ) : (
@@ -1390,7 +1388,13 @@ const TableView = ({
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center">
-                        <MoreHorizontal className="w-3 h-3 text-gray-500 mx-auto cursor-pointer hover:text-gray-900 transition-colors" />
+                        <button
+                          className="w-full flex items-center justify-center"
+                          onClick={() => handleVesselClick(item)}
+                          title="View vessel charts"
+                        >
+                          <MoreHorizontal className="w-3 h-3 text-gray-500 hover:text-gray-900 transition-colors" />
+                        </button>
                       </td>
                     </tr>
                   ))}

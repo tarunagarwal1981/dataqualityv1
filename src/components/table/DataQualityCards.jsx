@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-// Enhanced static quality data with realistic issues
+// UPDATED: Enhanced static quality data with only 5 vessels and fewer, focused issues
 const staticQualityData = (() => {
   const vessels = [
     'Atlantic Pioneer',
@@ -27,28 +27,19 @@ const staticQualityData = (() => {
     'Nordic Voyager',
     'Baltic Star',
     'Mediterranean Crown',
-    'Arctic Wind',
-    'Indian Ocean',
-    'Caribbean Spirit',
-    'Red Sea Navigator',
-    'Bering Strait',
   ];
 
   return vessels.map((name, index) => {
     const issues = [];
     const kpiIssues = {};
 
+    // Reduced issue patterns - fewer issues per vessel
     const issuePatterns = [
-      { missing: 2, incorrect: 3 },
-      { missing: 1, incorrect: 1 },
-      { missing: 3, incorrect: 2 },
-      { missing: 0, incorrect: 4 },
-      { missing: 1, incorrect: 2 },
-      { missing: 2, incorrect: 1 },
-      { missing: 1, incorrect: 3 },
-      { missing: 0, incorrect: 2 },
-      { missing: 2, incorrect: 2 },
-      { missing: 1, incorrect: 1 },
+      { missing: 1, incorrect: 2 }, // Atlantic Pioneer: 1 missing, 2 incorrect
+      { missing: 0, incorrect: 1 }, // Pacific Explorer: 0 missing, 1 incorrect
+      { missing: 2, incorrect: 1 }, // Nordic Voyager: 2 missing, 1 incorrect  
+      { missing: 1, incorrect: 1 }, // Baltic Star: 1 missing, 1 incorrect
+      { missing: 0, incorrect: 2 }, // Mediterranean Crown: 0 missing, 2 incorrect
     ];
 
     const pattern = issuePatterns[index];
@@ -60,6 +51,8 @@ const staticQualityData = (() => {
       'me_consumption',
       'obs_speed',
     ];
+
+    // Add missing issues
     for (let i = 0; i < pattern.missing; i++) {
       const kpi = kpiList[i % kpiList.length];
       kpiIssues[`${kpi}_missing_${i}`] = {
@@ -75,44 +68,53 @@ const staticQualityData = (() => {
       });
     }
 
+    // Add incorrect issues
     for (let i = 0; i < pattern.incorrect; i++) {
-      const kpi = kpiList[i % kpiList.length];
-      const severity = i === 0 ? 'high' : i === 1 ? 'medium' : 'low';
+      const kpi = kpiList[(i + pattern.missing) % kpiList.length];
+      const severity = i === 0 ? 'high' : 'medium';
+      
+      let originalValue;
+      let message;
+      
+      // Specific incorrect values based on KPI and vessel
+      if (kpi === 'obs_speed') {
+        originalValue = -2.5;
+        message = 'Negative speed detected';
+      } else if (kpi === 'me_consumption') {
+        originalValue = 45.8;
+        message = 'Consumption spike detected';
+      } else if (kpi === 'rpm') {
+        originalValue = 250;
+        message = 'RPM reading out of range';
+      } else if (kpi === 'me_power') {
+        originalValue = 12000;
+        message = 'Power reading exceeds limits';
+      } else {
+        originalValue = 15.5;
+        message = 'Sensor reading anomaly';
+      }
+      
       kpiIssues[`${kpi}_incorrect_${i}`] = {
         type: 'incorrect',
         severity,
         kpi,
-        originalValue: i === 0 ? -2.5 : i === 1 ? 45.8 : 250,
+        originalValue,
+        message,
       };
       issues.push({
         type: 'correctness',
         kpi,
-        message:
-          i === 0
-            ? 'Negative speed detected'
-            : i === 1
-            ? 'Consumption spike detected'
-            : 'RPM-speed correlation warning',
+        message,
         severity,
       });
     }
 
     const totalKPIs = 8;
-    const highSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'high'
-    ).length;
-    const mediumSeverityIssues = issues.filter(
-      (issue) => issue.severity === 'medium'
-    ).length;
+    const highSeverityIssues = issues.filter(issue => issue.severity === 'high').length;
+    const mediumSeverityIssues = issues.filter(issue => issue.severity === 'medium').length;
 
-    const completeness = Math.max(
-      40,
-      100 - (pattern.missing / totalKPIs) * 100 - Math.random() * 5
-    );
-    const severityPenalty =
-      highSeverityIssues * 30 +
-      mediumSeverityIssues * 15 +
-      pattern.incorrect * 5;
+    const completeness = Math.max(40, 100 - (pattern.missing / totalKPIs) * 100 - Math.random() * 5);
+    const severityPenalty = highSeverityIssues * 30 + mediumSeverityIssues * 15 + pattern.incorrect * 5;
     const correctness = Math.max(30, 100 - severityPenalty - Math.random() * 5);
 
     return {
@@ -126,8 +128,7 @@ const staticQualityData = (() => {
       issueCount: issues.length,
       criticalIssues: highSeverityIssues,
       lastUpdate: `${Math.floor(Math.random() * 30) + 1} mins ago`,
-      status:
-        index % 3 === 0 ? 'At Sea' : index % 3 === 1 ? 'At Port' : 'Anchored',
+      status: index % 3 === 0 ? 'At Sea' : index % 3 === 1 ? 'At Port' : 'Anchored',
       confidence: Math.round((completeness + correctness + 85) / 3),
       missingCount: pattern.missing,
       incorrectCount: pattern.incorrect,
@@ -163,43 +164,22 @@ const DataQualityCards = ({
   const fleetMetrics = useMemo(() => {
     const totalVessels = staticQualityData.length;
     const avgCompleteness =
-      staticQualityData.reduce((sum, v) => sum + v.completeness, 0) /
-      totalVessels;
+      staticQualityData.reduce((sum, v) => sum + v.completeness, 0) / totalVessels;
     const avgCorrectness =
-      staticQualityData.reduce((sum, v) => sum + v.correctness, 0) /
-      totalVessels;
-    const totalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.issueCount,
-      0
-    );
-    const criticalIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.criticalIssues,
-      0
-    );
-    const totalMissingIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.missingCount,
-      0
-    );
-    const totalIncorrectIssues = staticQualityData.reduce(
-      (sum, v) => sum + v.incorrectCount,
-      0
-    );
-    const healthyVessels = staticQualityData.filter(
-      (v) => v.overallScore >= 85
-    ).length;
+      staticQualityData.reduce((sum, v) => sum + v.correctness, 0) / totalVessels;
+    const totalIssues = staticQualityData.reduce((sum, v) => sum + v.issueCount, 0);
+    const criticalIssues = staticQualityData.reduce((sum, v) => sum + v.criticalIssues, 0);
+    const totalMissingIssues = staticQualityData.reduce((sum, v) => sum + v.missingCount, 0);
+    const totalIncorrectIssues = staticQualityData.reduce((sum, v) => sum + v.incorrectCount, 0);
+    const healthyVessels = staticQualityData.filter((v) => v.overallScore >= 85).length;
     const averageVessels = staticQualityData.filter(
       (v) => v.overallScore >= 70 && v.overallScore < 85
     ).length;
-    const poorVessels = staticQualityData.filter(
-      (v) => v.overallScore < 70
-    ).length;
+    const poorVessels = staticQualityData.filter((v) => v.overallScore < 70).length;
 
     const overallHealth = Math.round((avgCompleteness + avgCorrectness) / 2);
-    const dataPoints =
-      chartData.length * selectedVessels.length * selectedKPIs.length;
-    const estimatedMissingPoints = Math.round(
-      dataPoints * (1 - avgCompleteness / 100)
-    );
+    const dataPoints = chartData.length * selectedVessels.length * selectedKPIs.length;
+    const estimatedMissingPoints = Math.round(dataPoints * (1 - avgCompleteness / 100));
 
     return {
       totalVessels,
@@ -285,56 +265,12 @@ const DataQualityCards = ({
         <div className="absolute inset-0 flex items-center justify-center">
           <span
             className={`font-bold ${
-              size === 'sm'
-                ? 'text-xs'
-                : size === 'md'
-                ? 'text-sm'
-                : 'text-base'
+              size === 'sm' ? 'text-xs' : size === 'md' ? 'text-sm' : 'text-base'
             } text-gray-900 drop-shadow-sm`}
           >
             {score}
           </span>
         </div>
-      </div>
-    );
-  };
-
-  const QualityDistributionChart = ({ data, type }) => {
-    const COLORS = {
-      excellent: '#10b981',
-      good: '#f59e0b',
-      poor: '#ef4444',
-    };
-
-    const chartData = [
-      {
-        name: 'Excellent',
-        value: data.healthyVessels,
-        color: COLORS.excellent,
-      },
-      { name: 'Good', value: data.averageVessels, color: COLORS.good },
-      { name: 'Needs Attention', value: data.poorVessels, color: COLORS.poor },
-    ];
-
-    return (
-      <div className="w-16 h-16">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={20}
-              outerRadius={30}
-              paddingAngle={2}
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
       </div>
     );
   };
@@ -427,7 +363,7 @@ const DataQualityCards = ({
     <div className={`${spacingClass} ${compactMode ? 'mb-2' : 'mb-4'}`}>
       {/* Main Quality Cards Grid */}
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${gapClass}`}>
-        {/* Data Quality Index Card */}
+        {/* UPDATED: Data Quality Index Card - Now follows the same structure as Data Integrity */}
         <Card
           gradient="health"
           className="hover:transform hover:translate-y-[-4px] hover:scale-[1.01] hover:shadow-xl"
@@ -451,23 +387,16 @@ const DataQualityCards = ({
                   </span>
                 </div>
               </div>
-              <QualityMeter
-                score={fleetMetrics.overallHealth}
-                size="sm"
-                type="overall"
-              />
+              <QualityMeter score={fleetMetrics.overallHealth} size="sm" type="overall" />
             </div>
-            {/* The structural change starts here */}
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.overallHealth}%
               </div>
               <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
-                {/* Replicating the 'total missing' item structure */}
+                <Gauge className="w-3 h-3 text-cyan-500" />
                 <span className="text-gray-600">
-                  {fleetMetrics.healthyVessels} excellent •{' '}
-                  {fleetMetrics.averageVessels} good •{' '}
-                  {fleetMetrics.poorVessels} attention needed
+                  {fleetMetrics.healthyVessels} vessels with excellent quality
                 </span>
               </div>
               <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
@@ -475,30 +404,19 @@ const DataQualityCards = ({
                   <div
                     className="bg-emerald-500 transition-all duration-1000 ease-out"
                     style={{
-                      width: `${
-                        (fleetMetrics.healthyVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
+                      width: `${(fleetMetrics.healthyVessels / fleetMetrics.totalVessels) * 100}%`,
                     }}
                   />
                   <div
                     className="bg-yellow-500 transition-all duration-1000 ease-out"
                     style={{
-                      width: `${
-                        (fleetMetrics.averageVessels /
-                          fleetMetrics.totalVessels) *
-                        100
-                      }%`,
+                      width: `${(fleetMetrics.averageVessels / fleetMetrics.totalVessels) * 100}%`,
                     }}
                   />
                   <div
                     className="bg-red-500 transition-all duration-1000 ease-out"
                     style={{
-                      width: `${
-                        (fleetMetrics.poorVessels / fleetMetrics.totalVessels) *
-                        100
-                      }%`,
+                      width: `${(fleetMetrics.poorVessels / fleetMetrics.totalVessels) * 100}%`,
                     }}
                   />
                 </div>
@@ -531,11 +449,7 @@ const DataQualityCards = ({
                   </span>
                 </div>
               </div>
-              <QualityMeter
-                score={fleetMetrics.avgCompleteness}
-                size="sm"
-                type="completeness"
-              />
+              <QualityMeter score={fleetMetrics.avgCompleteness} size="sm" type="completeness" />
             </div>
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
@@ -580,18 +494,14 @@ const DataQualityCards = ({
                 </div>
                 <div>
                   <span className={`${textSizes.header} font-medium text-gray-800 block`}>
-                    DataAccuracy
+                    Data Accuracy
                   </span>
                   <span className={`${textSizes.subheader} text-gray-600`}>
                     Data Accuracy
                   </span>
                 </div>
               </div>
-              <QualityMeter
-                score={fleetMetrics.avgCorrectness}
-                size="sm"
-                type="correctness"
-              />
+              <QualityMeter score={fleetMetrics.avgCorrectness} size="sm" type="correctness" />
             </div>
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
@@ -665,22 +575,27 @@ const DataQualityCards = ({
                   </div>
                 )}
               </div>
-              <div className={`grid grid-cols-2 gap-1.5 ${textSizes.small}`}>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    {fleetMetrics.totalMissingIssues} missing
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    {fleetMetrics.totalIncorrectIssues} incorrect
-                  </span>
-                </div>
+              <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
+                <AlertTriangle className="w-3 h-3 text-orange-500" />
+                <span className="text-gray-600">
+                  Across {fleetMetrics.totalVessels} vessels
+                </span>
               </div>
-              <div className={`${textSizes.small} text-gray-600`}>
-                Across {fleetMetrics.totalVessels} vessels
+              <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
+                <div className="h-full flex">
+                  <div
+                    className="bg-orange-500 transition-all duration-1000 ease-out"
+                    style={{
+                      width: `${(fleetMetrics.totalMissingIssues / fleetMetrics.totalIssues) * 100}%`,
+                    }}
+                  />
+                  <div
+                    className="bg-red-500 transition-all duration-1000 ease-out"
+                    style={{
+                      width: `${(fleetMetrics.totalIncorrectIssues / fleetMetrics.totalIssues) * 100}%`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -689,10 +604,7 @@ const DataQualityCards = ({
 
       {/* Enhanced KPI Details Panel */}
       {showDetails && (
-        <Card
-          gradient="default"
-          className="transition-all duration-500 ease-out"
-        >
+        <Card gradient="default" className="transition-all duration-500 ease-out">
           <div className={paddingClass}>
             <div className={`flex items-center justify-between ${compactMode ? 'mb-3' : 'mb-4'}`}>
               <h3 className={`${compactMode ? 'text-base' : 'text-lg'} font-semibold text-gray-900 flex items-center gap-2`}>
@@ -744,128 +656,75 @@ const DataQualityCards = ({
                   issues: 2,
                   status: 'good',
                 },
-              ].map(
-                ({
-                  key,
-                  label,
-                  icon: Icon,
-                  color,
-                  reliability,
-                  issues,
-                  status,
-                }) => (
-                  <div
-                    key={key}
-                    className={`relative overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-white/50 to-gray-50/50 ${compactMode ? 'p-2' : 'p-3'} transition-all duration-300 hover:border-gray-300 hover:scale-[1.02]`}
-                    style={{
-                      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.05)',
-                    }}
-                  >
-                    <div className={`flex items-center gap-2 ${compactMode ? 'mb-1.5' : 'mb-2'}`}>
-                      <div
-                        className="p-1.5 rounded-md"
-                        style={{
-                          backgroundColor: `${color}20`,
-                          border: `1px solid ${color}40`,
-                        }}
-                      >
-                        <Icon className="w-4 h-4" style={{ color }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900">
-                          {label}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          {reliability}% reliable
-                        </div>
-                      </div>
-                      <QualityMeter score={reliability} size="sm" type={key} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
-                        <div
-                          className={`h-full transition-all duration-1000 ease-out ${
-                            reliability >= 85
-                              ? 'bg-emerald-500'
-                              : reliability >= 70
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                          }`}
-                          style={{ width: `${reliability}%` }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-gray-600">
-                          {issues} issues found
-                        </span>
-                        <span
-                          className={`px-1.5 py-0.5 rounded-full font-medium ${
-                            status === 'excellent'
-                              ? 'bg-emerald-100 text-emerald-600'
-                              : status === 'good'
-                              ? 'bg-cyan-100 text-cyan-600'
-                              : status === 'average'
-                              ? 'bg-yellow-100 text-yellow-600'
-                              : 'bg-red-100 text-red-600'
-                          }`}
-                        >
-                          {status}
-                        </span>
-                      </div>
-                    </div>
-                    {/* Subtle gradient overlay */}
+              ].map(({ key, label, icon: Icon, color, reliability, issues, status }) => (
+                <div
+                  key={key}
+                  className={`relative overflow-hidden rounded-lg border border-gray-200 bg-gradient-to-br from-white/50 to-gray-50/50 ${
+                    compactMode ? 'p-2' : 'p-3'
+                  } transition-all duration-300 hover:border-gray-300 hover:scale-[1.02]`}
+                  style={{
+                    boxShadow: '0 3px 12px rgba(0, 0, 0, 0.05)',
+                  }}
+                >
+                  <div className={`flex items-center gap-2 ${compactMode ? 'mb-1.5' : 'mb-2'}`}>
                     <div
-                      className="absolute inset-0 opacity-20 pointer-events-none"
+                      className="p-1.5 rounded-md"
                       style={{
-                        background: `radial-gradient(circle at top right, ${color}30, transparent 50%)`,
+                        backgroundColor: `${color}20`,
+                        border: `1px solid ${color}40`,
                       }}
-                    />
+                    >
+                      <Icon className="w-4 h-4" style={{ color }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900">{label}</div>
+                      <div className="text-xs text-gray-600">{reliability}% reliable</div>
+                    </div>
+                    <QualityMeter score={reliability} size="sm" type={key} />
                   </div>
-                )
-              )}
+                  <div className="space-y-2">
+                    <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
+                      <div
+                        className={`h-full transition-all duration-1000 ease-out ${
+                          reliability >= 85
+                            ? 'bg-emerald-500'
+                            : reliability >= 70
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
+                        }`}
+                        style={{ width: `${reliability}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600">{issues} issues found</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full font-medium ${
+                          status === 'excellent'
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : status === 'good'
+                            ? 'bg-cyan-100 text-cyan-600'
+                            : status === 'average'
+                            ? 'bg-yellow-100 text-yellow-600'
+                            : 'bg-red-100 text-red-600'
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Subtle gradient overlay */}
+                  <div
+                    className="absolute inset-0 opacity-20 pointer-events-none"
+                    style={{
+                      background: `radial-gradient(circle at top right, ${color}30, transparent 50%)`,
+                    }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </Card>
       )}
-
-      {/* Quality Controls Bar */}
-      {/* {viewMode === 'table' && (
-        <div className="flex items-center justify-between bg-white/95 border border-gray-200 rounded-lg p-3 shadow-sm">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onToggleQuality}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                qualityVisible
-                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                  : 'bg-gray-100/50 text-gray-600 border border-gray-200 hover:bg-gray-100'
-              }`}
-            >
-              {qualityVisible ? (
-                <Eye className="w-3 h-3" />
-              ) : (
-                <EyeOff className="w-3 h-3" />
-              )}
-              Quality Column
-            </button>
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium transition-colors bg-gray-100/50 text-gray-600 border border-gray-200 hover:bg-gray-100"
-            >
-              <BarChart2 className="w-3 h-3" />
-              {showDetails ? 'Hide' : 'Show'} KPI Details
-            </button>
-            <div className="text-xs text-gray-600">Last updated: 2 mins ago</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onQualityFilter && onQualityFilter('excellent')}
-              className="px-2 py-1 text-xs bg-gray-100/50 text-gray-700 rounded hover:bg-gray-100 transition-colors"
-            >
-              Filter High Quality
-            </button>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };
