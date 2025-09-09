@@ -457,17 +457,18 @@ const DataQualityCards = ({
                 type="overall"
               />
             </div>
+            {/* The structural change starts here */}
             <div className="space-y-2">
               <div className={`${textSizes.value} font-bold text-gray-900`}>
                 {fleetMetrics.overallHealth}%
               </div>
-              <div className="flex items-center justify-between">
-                <div className={textSizes.small + ' text-gray-600'}>
+              <div className={`flex items-center gap-1.5 ${textSizes.small}`}>
+                {/* Replicating the 'total missing' item structure */}
+                <span className="text-gray-600">
                   {fleetMetrics.healthyVessels} excellent •{' '}
                   {fleetMetrics.averageVessels} good •{' '}
                   {fleetMetrics.poorVessels} attention needed
-                </div>
-                <QualityDistributionChart data={fleetMetrics} type="health" />
+                </span>
               </div>
               <div className={`w-full ${compactMode ? 'h-1' : 'h-1.5'} bg-gray-100/50 rounded-full overflow-hidden`}>
                 <div className="h-full flex">

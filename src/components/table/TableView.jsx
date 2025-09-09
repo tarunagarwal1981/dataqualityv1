@@ -1293,9 +1293,9 @@ const TableView = ({
                                 ({kpi.unit})
                               </span>
                             )}
-                            {selectedDataType !== DATA_TYPES.COMBINED &&
+                            {/* {selectedDataType !== DATA_TYPES.COMBINED &&
                              kpi.source &&
-                             getDataSourceBadge(kpi.source)}
+                             getDataSourceBadge(kpi.source)} */}
                           </div>
                         </button>
                       </th>
