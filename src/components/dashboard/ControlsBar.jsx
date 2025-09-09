@@ -450,7 +450,7 @@ const ControlsBar = ({
       <div className="controls-right">
         {/* View Toggle with Home and Fuel Anomaly */}
         <div className="view-toggle-group">
-          <button
+          {/* <button
             onClick={() => handleViewChange(VIEW_MODES.LANDING)}
             className={`view-toggle-btn ${
               currentView === VIEW_MODES.LANDING ? 'active' : ''
@@ -458,7 +458,7 @@ const ControlsBar = ({
             title="Home"
           >
             <Home className="view-toggle-icon" />
-          </button>
+          </button> */}
           <button
             onClick={() => handleViewChange(VIEW_MODES.TABLE)}
             className={`view-toggle-btn ${
@@ -489,7 +489,7 @@ const ControlsBar = ({
         </div>
 
         {/* Data Quality Toggle - Only show for Table and Chart views */}
-        {currentView !== VIEW_MODES.FUEL_ANOMALY && currentView !== VIEW_MODES.LANDING && (
+        {/* {currentView !== VIEW_MODES.FUEL_ANOMALY && currentView !== VIEW_MODES.LANDING && (
           <div className="quality-toggle-container">
             <button
               onClick={handleQualityToggle}
@@ -505,7 +505,7 @@ const ControlsBar = ({
               )}
             </button>
           </div>
-        )}
+        )} */}
 
         {/* Date Range Picker (hidden for Fuel Anomaly view as it has its own config) */}
         {currentView !== VIEW_MODES.FUEL_ANOMALY && (

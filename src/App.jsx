@@ -9,7 +9,6 @@ import { useDataQuality } from './hooks/useDataQuality.js';
 // Import components
 import FleetHeader from './components/common/FleetHeader.jsx';
 import ControlsBar, { VIEW_MODES } from './components/dashboard/ControlsBar.jsx';
-import LandingPage from './components/dashboard/LandingPage.jsx';
 import TableView from './components/table/TableView.jsx';
 import ChartView from './components/charts/ChartView.jsx';
 import FuelAnomalyView from './components/fuel-anomaly/FuelAnomalyView.jsx';
@@ -209,11 +208,6 @@ const App = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleNavigateToLanding = () => {
-    updateFilter('viewMode', VIEW_MODES.LANDING);
-    setSelectedVesselForCharts(null);
-  };
-
   const handleNavigateToCharts = () => {
     updateFilter('viewMode', VIEW_MODES.CHART);
     setSelectedVesselForCharts(null);
@@ -232,7 +226,6 @@ const App = () => {
   const handleVesselClick = (vessel) => {
     console.log('Vessel clicked:', vessel);
     
-    // Handle different vessel object formats
     let vesselId;
     if (typeof vessel === 'string') {
       vesselId = vessel;
@@ -336,7 +329,6 @@ const App = () => {
         warnings={warnings}
         isValidForCharts={isValidForCharts}
         hasPerformanceWarning={hasPerformanceWarning}
-        onNavigateToLanding={handleNavigateToLanding}
         onNavigateToCharts={handleNavigateToCharts}
         onNavigateToTable={handleNavigateToTable}
         onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly}
@@ -350,23 +342,7 @@ const App = () => {
       />
       
       <div className="flex-1 p-2 space-y-6">
-        {filters.viewMode === VIEW_MODES.LANDING ? (
-           <LandingPage 
-             onVesselClick={handleVesselClick}
-             vessels={vessels || []}
-             filters={filters}
-             onFilterChange={handleFilterChange}
-             qualityVisible={filters.qualityVisible}
-             onQualityToggle={handleQualityToggle}
-             onExport={handleExport}
-             onNavigateToLanding={handleNavigateToLanding}
-             onNavigateToCharts={handleNavigateToCharts}
-             onNavigateToTable={handleNavigateToTable}
-             onNavigateToFuelAnomaly={handleNavigateToFuelAnomaly}
-             isApplyingFilters={isLoading}
-             isExporting={false}
-           />
-        ) : filters.viewMode === VIEW_MODES.TABLE ? (
+        {filters.viewMode === VIEW_MODES.TABLE ? (
           <TableView
             data={filteredData}
             vessels={vessels || []}
@@ -426,7 +402,7 @@ const App = () => {
           />
         )}
 
-        {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && filters.viewMode !== VIEW_MODES.LANDING && (
+        {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
           <div className="bg-white border border-gray-200 rounded-lg p-16 text-center">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-10 h-10 text-gray-600" />
@@ -478,7 +454,7 @@ const App = () => {
       )}
 
       {!filters.qualityVisible && 
-       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && filters.viewMode !== VIEW_MODES.LANDING && (
+       filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
         <div className="fixed bottom-4 left-4 z-50">
           <div className="bg-blue-600 border border-blue-500 rounded-xl p-4 shadow-xl max-w-sm">
             <div className="flex items-center gap-3">
