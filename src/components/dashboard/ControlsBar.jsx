@@ -19,7 +19,8 @@ import {
   Shield,
   Eye,
   EyeOff,
-  Home // NEW: Import Home icon
+  Home,
+  GitCompare, // NEW: Import GitCompare icon
 } from 'lucide-react';
 
 // Mock data and constants
@@ -220,6 +221,7 @@ const ControlsBar = ({
   };
 
   const renderFuelAnomalyConfig = () => {
+    // Only render if the view is Fuel Anomaly
     if (currentView !== VIEW_MODES.FUEL_ANOMALY) return null;
 
     return (
@@ -248,107 +250,6 @@ const ControlsBar = ({
               <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
             ))}
           </select>
-        </div>
-
-        <div className="relative" ref={fuelConfigRef}>
-          <button
-            onClick={() => setShowFuelAnomalyConfig(!showFuelAnomalyConfig)}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200/50 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-            title="Fuel Analysis Settings"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-
-          {showFuelAnomalyConfig && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                  <Fuel className="w-4 h-4 text-orange-600" />
-                  Analysis Configuration
-                </h4>
-                <button onClick={() => setShowFuelAnomalyConfig(false)}>
-                  <X className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                </button>
-              </div>
-
-              <div className="p-4 space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-2 block">Analysis Period</label>
-                  <select
-                    value={fuelAnomalyConfig.analysisConfig.period}
-                    onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
-                      ...fuelAnomalyConfig.analysisConfig,
-                      period: e.target.value
-                    })}
-                    className="w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900"
-                  >
-                    <option value="last_6_months">Last 6 Months</option>
-                    <option value="last_3_months">Last 3 Months</option>
-                    <option value="last_1_month">Last 1 Month</option>
-                    <option value="custom">Custom Range</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-2 block">Detection Sensitivity</label>
-                  <select
-                    value={fuelAnomalyConfig.analysisConfig.sensitivity}
-                    onChange={(e) => onFuelAnomalyConfigChange('analysisConfig', {
-                      ...fuelAnomalyConfig.analysisConfig,
-                      sensitivity: e.target.value
-                    })}
-                    className="w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-900"
-                  >
-                    <option value="low">Low - Major anomalies only</option>
-                    <option value="medium">Medium - Balanced detection</option>
-                    <option value="high">High - Sensitive detection</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-700 mb-2 block">Analysis Levels</label>
-                  <div className="space-y-2">
-                    {[
-                      { key: 'lf_vs_hf', label: 'LF vs HF Sync', icon: Radio },
-                      { key: 'physics', label: 'Physics Check', icon: Zap },
-                      { key: 'benchmark', label: 'Fleet Benchmark', icon: Ship }
-                    ].map(level => {
-                      const IconComponent = level.icon;
-                      return (
-                        <label key={level.key} className="flex items-center gap-2 text-xs">
-                          <input
-                            type="checkbox"
-                            checked={fuelAnomalyConfig.analysisConfig.enabledLevels.includes(level.key)}
-                            onChange={(e) => {
-                              const newLevels = e.target.checked
-                                ? [...fuelAnomalyConfig.analysisConfig.enabledLevels, level.key]
-                                : fuelAnomalyConfig.analysisConfig.enabledLevels.filter(l => l !== level.key);
-                              onFuelAnomalyConfigChange('analysisConfig', {
-                                ...fuelAnomalyConfig.analysisConfig,
-                                enabledLevels: newLevels
-                              });
-                            }}
-                            className="rounded text-orange-600 bg-gray-100 border-gray-300"
-                          />
-                          <IconComponent className="w-3 h-3 text-gray-600" />
-                          <span className="text-gray-700">{level.label}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-                <button
-                  onClick={() => setShowFuelAnomalyConfig(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -484,7 +385,9 @@ const ControlsBar = ({
             }`}
             title="Fuel Anomaly Analysis"
           >
-            <Fuel className="view-toggle-icon" />
+            {/* START OF CHANGE: Replace the Fuel icon with GitCompare */}
+            <GitCompare className="view-toggle-icon" />
+            {/* END OF CHANGE */}
           </button>
         </div>
 
@@ -507,8 +410,8 @@ const ControlsBar = ({
           </div>
         )} */}
 
-        {/* Date Range Picker (hidden for Fuel Anomaly view as it has its own config) */}
-        {currentView !== VIEW_MODES.FUEL_ANOMALY && (
+        {/* Date Range Picker (Now visible for Fuel Anomaly view too) */}
+        {currentView !== VIEW_MODES.LANDING && (
           <div className="date-section">
             <Calendar className="date-icon" />
             <div className="date-inputs">

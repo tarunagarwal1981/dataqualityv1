@@ -1,3 +1,5 @@
+// Complete FuelAnomalyView component with working polynomial best-fit curves
+
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   LineChart,
@@ -56,7 +58,7 @@ import {
   Pause
 } from 'lucide-react';
 
-// --- MOCK DATA AND FUNCTIONS TO REPLACE FAILED IMPORT ---
+// --- MOCK DATA AND FUNCTIONS ---
 
 // Sample vessels for selection
 const sampleVessels = [
@@ -123,8 +125,6 @@ const generateFuelAnomalyData = (primaryVesselId, sisterVesselId, months) => {
   }
   return data;
 };
-
-// --- END OF MOCK DATA AND FUNCTIONS ---
 
 // Enhanced confidence calculation with new methodology
 const calculateEnhancedConfidence = (anomalyData) => {
@@ -221,20 +221,7 @@ const calculateEnhancedConfidence = (anomalyData) => {
 };
 
 // Sleek Header Component
-const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange, onSisterVesselChange, onExport }) => {
-  // Calculate default date range (6 months)
-  const getDefaultDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setMonth(endDate.getMonth() - 6);
-    return {
-      startDate: startDate.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0]
-    };
-  };
-
-  const [dateRange, setDateRange] = useState(getDefaultDateRange());
-
+const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onExport }) => {
   const getStatusColor = (score) => {
     if (score >= 80) return '#ef4444';
     if (score >= 60) return '#f59e0b';
@@ -249,13 +236,6 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
     return 'NORMAL';
   };
 
-  const handleDateChange = (field, value) => {
-    setDateRange(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
   return (
     <div className="bg-white/95 backdrop-blur-xl border-b border-gray-200 px-6 py-3">
       <div className="flex items-center justify-between">
@@ -267,7 +247,6 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">Fuel Anomaly Detection</h1>
-              <p className="text-xs text-gray-600">Advanced fraud detection system</p>
             </div>
           </div>
           
@@ -286,60 +265,8 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
           </div>
         </div>
 
-        {/* Right: Vessel Selection, Date Picker & Controls */}
+        {/* Right: Export Button */}
         <div className="flex items-center gap-3">
-          {/* Vessel Selection */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-600">Primary:</span>
-            <select 
-              value={selectedVessel}
-              onChange={(e) => onVesselChange(e.target.value)}
-              className="bg-gray-100/60 border border-gray-300 rounded-md px-2 py-1 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
-            >
-              {sampleVessels.map(vessel => (
-                <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-600">vs</span>
-            <select 
-              value={sisterVessel}
-              onChange={(e) => onSisterVesselChange(e.target.value)}
-              className="bg-gray-100/60 border border-gray-300 rounded-md px-2 py-1 text-gray-900 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50"
-            >
-              {sampleVessels.filter(v => v.id !== selectedVessel).map(vessel => (
-                <option key={vessel.id} value={vessel.id}>{vessel.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="w-px h-6 bg-gray-400/50" />
-
-          {/* Date Picker */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100/60 rounded-lg border border-gray-200">
-            <Calendar className="w-3 h-3 text-gray-600" />
-            <div className="flex items-center gap-1 text-xs">
-              <input
-                type="date"
-                value={dateRange.startDate}
-                onChange={(e) => handleDateChange('startDate', e.target.value)}
-                className="bg-transparent border-none text-gray-900 text-xs focus:outline-none w-24"
-              />
-              <span className="text-gray-500">–</span>
-              <input
-                type="date"
-                value={dateRange.endDate}
-                onChange={(e) => handleDateChange('endDate', e.target.value)}
-                className="bg-transparent border-none text-gray-900 text-xs focus:outline-none w-24"
-              />
-            </div>
-          </div>
-
-          <div className="w-px h-6 bg-gray-400/50" />
-          
-          {/* Export Button */}
           <button
             onClick={onExport}
             className="px-3 py-1.5 bg-gray-200/60 hover:bg-gray-300/60 text-gray-900 rounded-md transition-all duration-200 flex items-center gap-1.5 text-xs font-medium"
@@ -348,57 +275,6 @@ const SleekHeader = ({ selectedVessel, sisterVessel, confidence, onVesselChange,
             Export
           </button>
         </div>
-      </div>
-    </div>
-  );
-};
-
-// Compact Confidence Breakdown
-const ConfidenceBreakdown = ({ confidence }) => {
-  const components = [
-    { name: 'HF vs LF', score: confidence.hfLfScore, weight: 50, color: '#4CC9F0', icon: Radio },
-    { name: 'Predictive', score: confidence.predictiveScore, weight: 35, color: '#FFC300', icon: Brain },
-    { name: 'Sister Vessel', score: confidence.sisterScore, weight: 15, color: '#F07167', icon: Ship }
-  ];
-
-  return (
-    <div className="bg-white/95 rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-        <Target className="w-4 h-4 text-cyan-400" />
-        Confidence Breakdown
-      </h3>
-      
-      <div className="space-y-3">
-        {components.map((comp, idx) => {
-          const IconComponent = comp.icon;
-          return (
-            <div key={idx} className="flex items-center gap-3">
-              <div className="flex items-center gap-2 flex-1">
-                <div 
-                  className="w-6 h-6 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${comp.color}20`, border: `1px solid ${comp.color}40` }}
-                >
-                  <IconComponent className="w-3 h-3" style={{ color: comp.color }} />
-                </div>
-                <span className="text-sm text-gray-700">{comp.name}</span>
-                <span className="text-xs text-gray-500">({comp.weight}%)</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ 
-                      width: `${comp.score}%`,
-                      backgroundColor: comp.color
-                    }}
-                  />
-                </div>
-                <span className="text-sm font-medium text-gray-900 w-10 text-right">{comp.score}%</span>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
@@ -424,194 +300,25 @@ const SleekCard = ({ title, children, icon: Icon, accent = '#3b82f6', compact = 
   );
 };
 
-// Compact HF vs LF Analysis
-const HFLFAnalysis = ({ anomalyData, confidence }) => {
-  const parameters = [
-    { key: 'rpm', name: 'RPM', unit: 'rpm', icon: Gauge },
-    { key: 'power', name: 'Power', unit: 'kW', icon: Zap },
-    { key: 'consumption', name: 'Consumption', unit: 'MT', icon: Fuel },
-    { key: 'wind', name: 'Wind', unit: 'BF', icon: Activity },
-    { key: 'speed', name: 'Speed', unit: 'kts', icon: TrendingUp }
-  ];
-
-  // Calculate static accuracy for each parameter (not changing continuously)
-  const parameterAccuracies = {
-    rpm: 87.5,
-    power: 92.3, 
-    consumption: 89.1,
-    wind: 91.7,
-    speed: 94.2
-  };
-
-  return (
-    <SleekCard title="HF vs LF Data Sync" icon={Radio} accent="#4CC9F0" compact>
-      {/* Explanation */}
-      <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
-        <p className="text-xs text-gray-700">
-          <strong className="text-cyan-400">Accuracy %:</strong> How closely crew-reported data (LF) matches sensor data (HF)
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-5 gap-3">
-        {parameters.map(param => {
-          const IconComponent = param.icon;
-          const accuracy = parameterAccuracies[param.key];
-          const isGood = accuracy >= 90;
-          
-          return (
-            <div key={param.key} className="text-center">
-              <div className={`w-10 h-10 mx-auto rounded-lg flex items-center justify-center mb-2 ${
-                isGood ? 'bg-green-500/20 border-green-500/30' : 'bg-yellow-500/20 border-yellow-500/30'
-              } border`}>
-                <IconComponent className={`w-4 h-4 ${isGood ? 'text-green-400' : 'text-yellow-400'}`} />
-              </div>
-              <div className={`text-xs font-semibold ${isGood ? 'text-green-400' : 'text-yellow-400'}`}>
-                {accuracy.toFixed(1)}%
-              </div>
-              <div className="text-xs text-gray-500">{param.name}</div>
-            </div>
-          );
-        })}
-      </div>
-      
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Overall Sync Rate</span>
-          <span className="text-gray-900 font-semibold">{confidence.hfLfScore}%</span>
-        </div>
-        <div className="text-xs text-gray-500 mt-1">
-          Higher % = More accurate reporting
-        </div>
-      </div>
-    </SleekCard>
-  );
-};
-
-// Compact Predictive Analysis
-const PredictiveAnalysis = ({ anomalyData, confidence }) => {
-  const predictionData = anomalyData.slice(-30).map(day => ({
-    date: day.date,
-    reported: day.lf.fuel_consumption,
-    predicted: day.calculated.theoretical_fuel,
-    variance: ((day.lf.fuel_consumption - day.calculated.theoretical_fuel) / day.calculated.theoretical_fuel * 100)
-  }));
-
-  const avgVariance = predictionData.reduce((sum, day) => sum + Math.abs(day.variance), 0) / predictionData.length;
-  const accuracy = Math.max(0, 100 - avgVariance);
-
-  return (
-    <SleekCard title="Predictive vs Reported" icon={Brain} accent="#FFC300" compact>
-      <div className="space-y-3">
-        {/* Mini Chart */}
-        <div className="h-20">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={predictionData.slice(-15)}>
-              <Line 
-                type="monotone" 
-                dataKey="predicted" 
-                stroke="#10b981" 
-                strokeWidth={2} 
-                dot={false}
-                strokeDasharray="3 3"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="reported" 
-                stroke="#f59e0b" 
-                strokeWidth={2} 
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div>
-            <div className="text-lg font-bold text-gray-900">{accuracy.toFixed(0)}%</div>
-            <div className="text-xs text-gray-600">Accuracy</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-orange-400">{avgVariance.toFixed(1)}%</div>
-            <div className="text-xs text-gray-600">Avg Variance</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-red-400">
-              {predictionData.filter(d => d.variance > 20).length}
-            </div>
-            <div className="text-xs text-gray-600">High Variance Days</div>
-          </div>
-        </div>
-      </div>
-    </SleekCard>
-  );
-};
-
-// Compact Sister Vessel Analysis
-const SisterVesselAnalysis = ({ anomalyData, sisterVesselName }) => {
-  // Mock data for laden/ballast comparison
-  const ladenExcess = 12.5;
-  const ballastExcess = 8.3;
-  const totalExcess = 127;
-
-  return (
-    <SleekCard title={`vs ${sisterVesselName}`} icon={Ship} accent="#F07167" compact>
-      <div className="space-y-3">
-        {/* Performance Comparison */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gray-100/60 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-red-400">+{ladenExcess}%</div>
-            <div className="text-xs text-gray-600">Laden Excess</div>
-          </div>
-          <div className="bg-gray-100/60 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-orange-400">+{ballastExcess}%</div>
-            <div className="text-xs text-gray-600">Ballast Excess</div>
-          </div>
-        </div>
-        
-        {/* Financial Impact */}
-        <div className="pt-3 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Est. Excess Cost</span>
-            <span className="text-sm font-semibold text-red-400">${(totalExcess * 600).toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between mt-1">
-            <span className="text-sm text-gray-600">Total Excess Fuel</span>
-            <span className="text-sm font-semibold text-gray-900">{totalExcess} MT</span>
-          </div>
-        </div>
-      </div>
-    </SleekCard>
-  );
-};
-
 // Main Timeline Chart - HF, LF, Predicted Comparison
 const MainTimelineChart = ({ anomalyData }) => {
   const chartData = anomalyData.map(day => ({
     date: day.date,
-    lfConsumption: day.lf.fuel_consumption,
-    hfConsumption: day.hf.fuel_flow_rate * 24, // Convert hourly to daily
+    lfConsumption: day.lf.total_consumption,
     predictedConsumption: day.calculated.theoretical_fuel,
-    confidence: 100 - day.anomalies.risk_score * 10
   }));
 
   return (
-    <SleekCard title="HF vs LF vs Predictive Analysis - Fuel Consumption Timeline" icon={TrendingUp} accent="#6366f1">
+    <SleekCard title="Reported vs Predictive Analysis - Total Consumption Timeline" icon={TrendingUp} accent="#6366f1">
       <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
         <p className="text-xs text-gray-700">
-          <strong className="text-indigo-400">Analysis Type:</strong> Comparing sensor data (HF), reported data (LF), and AI predictions over time
+          <strong className="text-indigo-400">Analysis Type:</strong> Comparing crew-reported data (LF) and AI predictions over time
         </p>
       </div>
       
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData}>
-            <defs>
-              <linearGradient id="confidenceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
+          <LineChart data={chartData}>
             
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
             
@@ -624,14 +331,7 @@ const MainTimelineChart = ({ anomalyData }) => {
             <YAxis 
               yAxisId="fuel"
               tick={{ fill: '#4a5568', fontSize: 11 }}
-              label={{ value: 'Fuel (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#4a5568' } }}
-            />
-            
-            <YAxis 
-              yAxisId="confidence"
-              orientation="right"
-              tick={{ fill: '#4a5568', fontSize: 11 }}
-              label={{ value: 'Confidence %', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#4a5568' } }}
+              label={{ value: 'Total Consumption (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#4a5568' } }}
             />
             
             <Tooltip 
@@ -641,16 +341,6 @@ const MainTimelineChart = ({ anomalyData }) => {
                 borderRadius: '8px',
                 fontSize: '12px'
               }}
-            />
-            
-            <Area
-              yAxisId="confidence"
-              type="monotone"
-              dataKey="confidence"
-              stroke="#6366f1"
-              fill="url(#confidenceGradient)"
-              strokeWidth={1}
-              name="Data Confidence"
             />
             
             <Line
@@ -666,16 +356,6 @@ const MainTimelineChart = ({ anomalyData }) => {
             <Line
               yAxisId="fuel"
               type="monotone"
-              dataKey="hfConsumption"
-              stroke="#06b6d4"
-              strokeWidth={3}
-              dot={{ r: 2, fill: '#06b6d4' }}
-              name="HF Sensor"
-            />
-            
-            <Line
-              yAxisId="fuel"
-              type="monotone"
               dataKey="predictedConsumption"
               stroke="#10b981"
               strokeWidth={2}
@@ -683,7 +363,7 @@ const MainTimelineChart = ({ anomalyData }) => {
               dot={{ r: 2, fill: '#10b981' }}
               name="AI Predicted"
             />
-          </ComposedChart>
+          </LineChart>
         </ResponsiveContainer>
       </div>
       
@@ -694,39 +374,155 @@ const MainTimelineChart = ({ anomalyData }) => {
           <span className="text-gray-700">LF Reported (Crew Data)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-0.5 bg-cyan-500"></div>
-          <span className="text-gray-700">HF Sensor (Actual)</span>
-        </div>
-        <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 bg-green-500 border-dashed border-b-2 border-green-500"></div>
           <span className="text-gray-700">AI Predicted</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-2 bg-indigo-500 opacity-30"></div>
-          <span className="text-gray-700">Data Confidence</span>
         </div>
       </div>
     </SleekCard>
   );
 };
 
+// FIXED: Helper function to calculate polynomial best-fit curve
+const calculatePolynomialFit = (data, numPoints = 50) => {
+  if (!data || data.length < 3) return null;
+  
+  const n = data.length;
+  let sumX = 0, sumY = 0, sumX2 = 0, sumX3 = 0, sumX4 = 0, sumXY = 0, sumX2Y = 0;
+  
+  // Convert speed/consumption to numerical values for calculation
+  const points = data.map(p => ({
+    x: p.speed,
+    y: p.consumption
+  }));
+
+  for (let i = 0; i < n; i++) {
+    const x = points[i].x;
+    const y = points[i].y;
+    sumX += x;
+    sumY += y;
+    sumX2 += x * x;
+    sumX3 += x * x * x;
+    sumX4 += x * x * x * x;
+    sumXY += x * y;
+    sumX2Y += x * x * y;
+  }
+
+  const m = [
+    [n, sumX, sumX2],
+    [sumX, sumX2, sumX3],
+    [sumX2, sumX3, sumX4]
+  ];
+  const v = [sumY, sumXY, sumX2Y];
+
+  // Solve for coefficients a, b, c using Cramer's rule for a 3x3 matrix
+  const det = m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+              m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+              m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+
+  if (Math.abs(det) < 1e-10) return null; // Cannot solve (singular matrix)
+
+  const detA = v[0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+               m[0][1] * (v[1] * m[2][2] - m[1][2] * v[2]) +
+               m[0][2] * (v[1] * m[2][1] - m[1][1] * v[2]);
+
+  const detB = m[0][0] * (v[1] * m[2][2] - m[1][2] * v[2]) -
+               v[0] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+               m[0][2] * (m[1][0] * v[2] - v[1] * m[2][0]);
+
+  const detC = m[0][0] * (m[1][1] * v[2] - v[1] * m[2][1]) -
+               m[0][1] * (m[1][0] * v[2] - v[1] * m[2][0]) +
+               v[0] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+
+  const c = detA / det; // constant term (a0)
+  const b = detB / det; // linear term (a1)
+  const a = detC / det; // quadratic term (a2)
+
+  // Generate points for the curve
+  const curvePoints = [];
+  const minSpeed = Math.min(...points.map(p => p.x));
+  const maxSpeed = Math.max(...points.map(p => p.x));
+  const step = (maxSpeed - minSpeed) / numPoints;
+
+  for (let i = 0; i <= numPoints; i++) {
+    const speed = minSpeed + (i * step);
+    const consumption = a * speed * speed + b * speed + c;
+    curvePoints.push({ 
+      speed: parseFloat(speed.toFixed(2)), 
+      consumption: parseFloat(consumption.toFixed(2)),
+      name: `Polynomial Fit` // Required for Recharts Line component
+    });
+  }
+
+  return curvePoints;
+};
+
 // Main Fuel Anomaly View Component
 const FuelAnomalyView = ({ className = '' }) => {
   const [selectedVessel, setSelectedVessel] = useState('vessel_1');
   const [sisterVessel, setSisterVessel] = useState('vessel_2');
-  
-  // Generate anomaly data
+
   const anomalyData = useMemo(() => {
     return generateFuelAnomalyData(selectedVessel, sisterVessel, 6);
   }, [selectedVessel, sisterVessel]);
-  
+
   const confidence = useMemo(() => {
     return calculateEnhancedConfidence(anomalyData);
   }, [anomalyData]);
-  
+
   const handleExport = () => {
     console.log('Exporting fuel anomaly report...');
   };
+
+  // FIXED: Better sample data with more variation for better curve fitting
+  const primaryVesselLadenData = [
+    { speed: 11.2, consumption: 33.5, condition: 'Laden' },
+    { speed: 11.8, consumption: 35.2, condition: 'Laden' },
+    { speed: 10.9, consumption: 32.8, condition: 'Laden' },
+    { speed: 11.5, consumption: 34.1, condition: 'Laden' },
+    { speed: 11.0, consumption: 33.2, condition: 'Laden' },
+    { speed: 12.1, consumption: 35.8, condition: 'Laden' },
+    { speed: 10.7, consumption: 32.1, condition: 'Laden' },
+    { speed: 12.3, consumption: 36.4, condition: 'Laden' }
+  ];
+  
+  const primaryVesselBallastData = [
+    { speed: 12.8, consumption: 31.2, condition: 'Ballast' },
+    { speed: 13.1, consumption: 32.1, condition: 'Ballast' },
+    { speed: 12.5, consumption: 30.8, condition: 'Ballast' },
+    { speed: 12.9, consumption: 31.5, condition: 'Ballast' },
+    { speed: 13.0, consumption: 31.8, condition: 'Ballast' },
+    { speed: 13.4, consumption: 32.8, condition: 'Ballast' },
+    { speed: 12.3, consumption: 30.2, condition: 'Ballast' },
+    { speed: 13.6, consumption: 33.1, condition: 'Ballast' }
+  ];
+  
+  const sisterVesselLadenData = [
+    { speed: 11.7, consumption: 30.8, condition: 'Laden' },
+    { speed: 12.1, consumption: 31.9, condition: 'Laden' },
+    { speed: 11.4, consumption: 30.2, condition: 'Laden' },
+    { speed: 11.9, consumption: 31.2, condition: 'Laden' },
+    { speed: 11.6, consumption: 30.9, condition: 'Laden' },
+    { speed: 12.3, consumption: 32.4, condition: 'Laden' },
+    { speed: 11.2, consumption: 29.8, condition: 'Laden' },
+    { speed: 12.5, consumption: 32.8, condition: 'Laden' }
+  ];
+  
+  const sisterVesselBallastData = [
+    { speed: 13.4, consumption: 28.5, condition: 'Ballast' },
+    { speed: 13.6, consumption: 29.1, condition: 'Ballast' },
+    { speed: 13.2, consumption: 28.2, condition: 'Ballast' },
+    { speed: 13.5, consumption: 28.8, condition: 'Ballast' },
+    { speed: 13.3, consumption: 28.6, condition: 'Ballast' },
+    { speed: 13.8, consumption: 29.4, condition: 'Ballast' },
+    { speed: 13.0, consumption: 27.9, condition: 'Ballast' },
+    { speed: 14.0, consumption: 29.8, condition: 'Ballast' }
+  ];
+
+  // Calculate polynomial fits
+  const primaryLadenFit = useMemo(() => calculatePolynomialFit(primaryVesselLadenData), []);
+  const primaryBallastFit = useMemo(() => calculatePolynomialFit(primaryVesselBallastData), []);
+  const sisterLadenFit = useMemo(() => calculatePolynomialFit(sisterVesselLadenData), []);
+  const sisterBallastFit = useMemo(() => calculatePolynomialFit(sisterVesselBallastData), []);
 
   return (
     <div className={`bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 text-gray-900 min-h-screen ${className}`}>
@@ -742,47 +538,46 @@ const FuelAnomalyView = ({ className = '' }) => {
       
       {/* Main Content */}
       <div className="p-4 space-y-4">
-        {/* Top Row: Confidence + Analysis Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <ConfidenceBreakdown confidence={confidence} />
-          <HFLFAnalysis anomalyData={anomalyData} confidence={confidence} />
-          <PredictiveAnalysis anomalyData={anomalyData} confidence={confidence} />
-          <SisterVesselAnalysis 
-            anomalyData={anomalyData} 
-            sisterVesselName={sampleVessels.find(v => v.id === sisterVessel)?.name}
-          />
-        </div>
-        
         {/* Main Timeline Chart */}
         <MainTimelineChart anomalyData={anomalyData} />
         
         {/* Bottom Row: Sister Vessel Speed vs Consumption Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Speed vs Consumption Scatter Plot */}
+          {/* FIXED: Speed vs Consumption Scatter Plot with Polynomial Curves */}
           <SleekCard title="Sister Vessel Analysis - Speed vs Consumption Comparison" icon={Ship} accent="#8b5cf6">
-            <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
+            {/* <div className="mb-3 p-2 bg-gray-100/60 rounded-lg">
               <p className="text-xs text-gray-700">
-                <strong className="text-purple-400">Analysis Type:</strong> Comparing vessel performance against similar sister vessel in laden and ballast conditions
+                <strong className="text-purple-400">Analysis Type:</strong> Comparing vessel performance against similar sister vessel in laden and ballast conditions with polynomial trend analysis
               </p>
-            </div>
+            </div> */}
             
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart>
+                <ComposedChart margin={{ top: 20, right: 20, bottom: 40, left: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                   <XAxis 
                     type="number"
                     dataKey="speed"
-                    domain={[10, 16]}
+                    domain={[10, 15]}
                     tick={{ fill: '#4a5568', fontSize: 11 }}
-                    label={{ value: 'Speed (knots)', position: 'insideBottom', offset: -5, style: { textAnchor: 'middle', fill: '#4a5568' } }}
+                    label={{ 
+                      value: 'Speed (knots)', 
+                      position: 'insideBottom', 
+                      offset: -10, 
+                      style: { textAnchor: 'middle', fill: '#4a5568', fontSize: '12px' } 
+                    }}
                   />
                   <YAxis 
                     type="number"
                     dataKey="consumption"
-                    domain={[25, 40]}
+                    domain={[27, 38]}
                     tick={{ fill: '#4a5568', fontSize: 11 }}
-                    label={{ value: 'Consumption (MT/day)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#4a5568' } }}
+                    label={{ 
+                      value: 'Consumption (MT/day)', 
+                      angle: -90, 
+                      position: 'insideLeft', 
+                      style: { textAnchor: 'middle', fill: '#4a5568', fontSize: '12px' } 
+                    }}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -791,80 +586,151 @@ const FuelAnomalyView = ({ className = '' }) => {
                       borderRadius: '8px',
                       fontSize: '12px'
                     }}
+                    formatter={(value, name) => [
+                      typeof value === 'number' ? value.toFixed(2) : value,
+                      name
+                    ]}
+                    labelFormatter={(label) => `Speed: ${label} knots`}
                   />
                   
-                  {/* Primary Vessel - Laden */}
+                  {/* Polynomial Fit Curves */}
+                  {primaryLadenFit && (
+                    <Line 
+                      type="monotone"
+                      dataKey="consumption" 
+                      data={primaryLadenFit}
+                      stroke="#f59e0b" 
+                      strokeWidth={2} 
+                      dot={false}
+                      connectNulls={true}
+                      name="Primary Laden Trend"
+                    />
+                  )}
+                  
+                  {primaryBallastFit && (
+                    <Line 
+                      type="monotone"
+                      dataKey="consumption" 
+                      data={primaryBallastFit}
+                      stroke="#06b6d4" 
+                      strokeWidth={2} 
+                      dot={false}
+                      connectNulls={true}
+                      name="Primary Ballast Trend"
+                    />
+                  )}
+                  
+                  {sisterLadenFit && (
+                    <Line 
+                      type="monotone"
+                      dataKey="consumption" 
+                      data={sisterLadenFit}
+                      stroke="#10b981" 
+                      strokeWidth={2} 
+                      dot={false}
+                      connectNulls={true}
+                      name="Sister Laden Trend"
+                    />
+                  )}
+                  
+                  {sisterBallastFit && (
+                    <Line 
+                      type="monotone"
+                      dataKey="consumption" 
+                      data={sisterBallastFit}
+                      stroke="#8b5cf6" 
+                      strokeWidth={2} 
+                      dot={false}
+                      connectNulls={true}
+                      name="Sister Ballast Trend"
+                    />
+                  )}
+                  
+                  {/* Scatter Points */}
                   <Scatter 
-                    data={[
-                      {speed: 11.2, consumption: 33.5, condition: 'Laden'},
-                      {speed: 11.8, consumption: 35.2, condition: 'Laden'},
-                      {speed: 10.9, consumption: 32.8, condition: 'Laden'},
-                      {speed: 11.5, consumption: 34.1, condition: 'Laden'},
-                      {speed: 11.0, consumption: 33.2, condition: 'Laden'}
-                    ]}
+                    data={primaryVesselLadenData}
                     fill="#f59e0b" 
+                    shape="circle"
                     name="Primary Vessel (Laden)"
                   />
                   
-                  {/* Primary Vessel - Ballast */}
                   <Scatter 
-                    data={[
-                      {speed: 12.8, consumption: 31.2, condition: 'Ballast'},
-                      {speed: 13.1, consumption: 32.1, condition: 'Ballast'},
-                      {speed: 12.5, consumption: 30.8, condition: 'Ballast'},
-                      {speed: 12.9, consumption: 31.5, condition: 'Ballast'},
-                      {speed: 13.0, consumption: 31.8, condition: 'Ballast'}
-                    ]}
+                    data={primaryVesselBallastData}
                     fill="#06b6d4" 
+                    shape="circle"
                     name="Primary Vessel (Ballast)"
                   />
                   
-                  {/* Sister Vessel - Laden */}
                   <Scatter 
-                    data={[
-                      {speed: 11.7, consumption: 30.8, condition: 'Laden'},
-                      {speed: 12.1, consumption: 31.9, condition: 'Laden'},
-                      {speed: 11.4, consumption: 30.2, condition: 'Laden'},
-                      {speed: 11.9, consumption: 31.2, condition: 'Laden'},
-                      {speed: 11.6, consumption: 30.9, condition: 'Laden'}
-                    ]}
+                    data={sisterVesselLadenData}
                     fill="#10b981" 
+                    shape="diamond"
                     name="Sister Vessel (Laden)"
                   />
                   
-                  {/* Sister Vessel - Ballast */}
                   <Scatter 
-                    data={[
-                      {speed: 13.4, consumption: 28.5, condition: 'Ballast'},
-                      {speed: 13.6, consumption: 29.1, condition: 'Ballast'},
-                      {speed: 13.2, consumption: 28.2, condition: 'Ballast'},
-                      {speed: 13.5, consumption: 28.8, condition: 'Ballast'},
-                      {speed: 13.3, consumption: 28.6, condition: 'Ballast'}
-                    ]}
+                    data={sisterVesselBallastData}
                     fill="#8b5cf6" 
+                    shape="diamond"
                     name="Sister Vessel (Ballast)"
                   />
-                </ScatterChart>
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
             
-            {/* Chart Legend */}
-            <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                <span className="text-gray-700">Primary (Laden)</span>
+            {/* Enhanced Chart Legend */}
+            <div className="mt-4 space-y-2">
+              {/* Data Points Legend */}
+              <div className="text-xs text-gray-600 mb-2">
+                <span className="font-medium">Data Points:</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
-                <span className="text-gray-700">Primary (Ballast)</span>
+              <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <span className="text-gray-700">Primary (Laden)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-cyan-500"></div>
+                  <span className="text-gray-700">Primary (Ballast)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 transform rotate-45"></div>
+                  <span className="text-gray-700">Sister (Laden)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-purple-500 transform rotate-45"></div>
+                  <span className="text-gray-700">Sister (Ballast)</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-gray-700">Sister (Laden)</span>
+              
+              {/* Trend Lines Legend */}
+              {/* <div className="text-xs text-gray-600 mb-2">
+                <span className="font-medium">Polynomial Trend Lines:</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                <span className="text-gray-700">Sister (Ballast)</span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-orange-500"></div>
+                  <span className="text-gray-700">Primary Laden</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-cyan-500"></div>
+                  <span className="text-gray-700">Primary Ballast</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-green-500"></div>
+                  <span className="text-gray-700">Sister Laden</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-0.5 bg-purple-500"></div>
+                  <span className="text-gray-700">Sister Ballast</span>
+                </div>
+              </div> */}
+              
+              {/* Analysis Note */}
+              <div className="mt-3 p-2 bg-purple-50 rounded-md border border-purple-200">
+                <p className="text-xs text-purple-700">
+                  <strong>Trend Analysis:</strong> Polynomial curves show fuel efficiency patterns. Sister vessel demonstrates consistently lower consumption across both laden and ballast conditions.
+                </p>
               </div>
             </div>
           </SleekCard>

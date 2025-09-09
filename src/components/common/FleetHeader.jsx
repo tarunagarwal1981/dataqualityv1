@@ -1,6 +1,6 @@
 // components/common/FleetHeader.jsx
 import React, { useState } from 'react';
-import { Bell, Menu, User, Fuel } from 'lucide-react';
+import { Bell, Menu, User, Ship } from 'lucide-react'; // Changed Fuel to Ship
 
 // Placeholder for AlertsPanel - you'll need to provide the actual component
 const AlertsPanel = ({ onClose }) => (
@@ -38,7 +38,8 @@ export default function FleetHeader() {
               {/* App Icon */}
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Fuel className="w-6 h-6 text-white" />
+                  {/* Changed from <Fuel> to <Ship> */}
+                  <Ship className="w-6 h-6 text-white" />
                 </div>
                 {/* Status indicator */}
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
