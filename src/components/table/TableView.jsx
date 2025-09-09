@@ -868,6 +868,104 @@ const ControlsBar = ({
   );
 };
 
+// NEW: ThreeDotsMenu component for the actions column
+const ThreeDotsMenu = ({ vessel, onVesselClick, onExport }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleViewCharts = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('View charts clicked for vessel:', vessel);
+    onVesselClick(vessel);
+    setIsOpen(false);
+  };
+
+  const handleExportClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Export clicked for vessel:', vessel);
+    onExport('csv');
+    setIsOpen(false);
+  };
+
+  const toggleMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={toggleMenu}
+        className="w-full flex items-center justify-center p-1 rounded hover:bg-gray-100 transition-colors"
+        title="More options"
+      >
+        <MoreHorizontal className="w-3 h-3 text-gray-500 hover:text-gray-900 transition-colors" />
+      </button>
+
+      {isOpen && (
+        <>
+          {/* Overlay to catch clicks outside */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+
+          {/* Menu positioned to be always visible */}
+          <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+            <div className="py-1">
+              <button
+                onClick={handleViewCharts}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+              >
+                <BarChart3 className="w-3 h-3 text-blue-600" />
+                <span>View Charts</span>
+              </button>
+
+              <button
+                onClick={handleExportClick}
+                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+              >
+                <Download className="w-3 h-3 text-emerald-600" />
+                <span>Export Data</span>
+              </button>
+
+              <div className="border-t border-gray-200 my-1"></div>
+
+              <div className="px-3 py-2">
+                <div className="text-xs text-gray-500 truncate">
+                  {vessel.vesselName}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  ID: {vessel.id}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 // Enhanced Table View Component for Light Theme
 const TableView = ({
   className = '',
@@ -922,7 +1020,7 @@ const TableView = ({
 
     return limitedQualityData.map((vessel, index) => {
       const data = {
-        id: vessel.id,
+        id: `vessel_${vessel.id}`, // FIX: Format as vessel_1, vessel_2, etc.
         vesselName: vessel.name,
         date: new Date(
           Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
@@ -1163,12 +1261,10 @@ const TableView = ({
     setIsExporting(true);
     setTimeout(() => setIsExporting(false), 2000);
   };
-
-  // Handle vessel click to navigate to chart view
+  
+  // MODIFIED: Update the handleVesselClick function to pass the full vessel object
   const handleVesselClick = (vessel) => {
-    // Create a vessel ID that matches the format expected by chart view
-    const vesselId = `vessel_${vessel.id}`;
-    onVesselClick(vesselId);
+    onVesselClick(vessel);
   };
   
   // MODIFIED: Use limited sampleData for pagination
@@ -1388,13 +1484,11 @@ const TableView = ({
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center">
-                        <button
-                          className="w-full flex items-center justify-center"
-                          onClick={() => handleVesselClick(item)}
-                          title="View vessel charts"
-                        >
-                          <MoreHorizontal className="w-3 h-3 text-gray-500 hover:text-gray-900 transition-colors" />
-                        </button>
+                        <ThreeDotsMenu
+                          vessel={item}
+                          onVesselClick={handleVesselClick}
+                          onExport={handleExport}
+                        />
                       </td>
                     </tr>
                   ))}

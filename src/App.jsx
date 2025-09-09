@@ -231,7 +231,21 @@ const App = () => {
 
   const handleVesselClick = (vessel) => {
     console.log('Vessel clicked:', vessel);
-    setSelectedVesselForCharts(vessel.id);
+    
+    // Handle different vessel object formats
+    let vesselId;
+    if (typeof vessel === 'string') {
+      vesselId = vessel;
+    } else if (vessel && vessel.id) {
+      vesselId = vessel.id.startsWith('vessel_') ? vessel.id : `vessel_${vessel.id}`;
+    } else {
+      console.error('Invalid vessel format:', vessel);
+      return;
+    }
+    
+    console.log('Setting selected vessel for charts:', vesselId);
+    
+    setSelectedVesselForCharts(vesselId);
     updateFilter('viewMode', VIEW_MODES.CHART);
   };
 

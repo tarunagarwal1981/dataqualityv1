@@ -1,3 +1,4 @@
+// ChartView.jsx
 import React, {
   useState,
   useEffect,
@@ -1189,13 +1190,13 @@ const ChartView = ({
   qualityVisible = true, // NEW: Quality toggle prop
   onQualityToggle = () => {}, // NEW: Quality toggle handler
 }) => {
-  const getInitialFilters = () => {
+  const getInitialFilters = (vesselId) => {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 7);
      
-    const selectedVessels = initialVesselId
-      ? [initialVesselId]
+    const selectedVessels = vesselId
+      ? [vesselId]
       : defaultSelectedVessels.map((v) => v.id);
 
     return {
@@ -1207,7 +1208,7 @@ const ChartView = ({
     };
   };
 
-  const [chartFilters, setChartFilters] = useState(getInitialFilters());
+  const [chartFilters, setChartFilters] = useState(() => getInitialFilters(initialVesselId));
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -1222,13 +1223,24 @@ const ChartView = ({
   }, []);
 
   useEffect(() => {
-    if (initialVesselId) {
+    // This effect ensures that if the initialVesselId prop changes,
+    // we update the internal state to reflect the change.
+    if (initialVesselId && chartFilters.selectedVessels[0] !== initialVesselId) {
       setChartFilters(prev => ({
         ...prev,
         selectedVessels: [initialVesselId]
       }));
+    } else if (!initialVesselId && chartFilters.selectedVessels.length === 1) {
+      // If we navigate back to the chart view without a specific vessel,
+      // reset to the default 5. This handles the case where a user
+      // navigated from the table view, but then clicks "Charts" from the
+      // main nav bar.
+      setChartFilters(prev => ({
+        ...prev,
+        selectedVessels: defaultSelectedVessels.map(v => v.id)
+      }));
     }
-  }, [initialVesselId]);
+  }, [initialVesselId, chartFilters.selectedVessels]);
 
   const handleApplyFilters = (newFilters) => {
     setIsApplyingFilters(true);
@@ -1239,7 +1251,7 @@ const ChartView = ({
   };
 
   const handleResetFilters = () => {
-    const resetFilters = getInitialFilters();
+    const resetFilters = getInitialFilters(initialVesselId);
     setChartFilters(resetFilters);
   };
 
