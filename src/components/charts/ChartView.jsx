@@ -480,130 +480,95 @@ const ControlsBar = ({
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
               title="Configure KPIs"
             >
               <Settings className="w-4 h-4" />
             </button>
 
             {showKPIDropdown && (
-              <>
-                <div
-                  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-                  onClick={() => setShowKPIDropdown(false)}
-                />
-                 
-                <div
-                  className="fixed right-4 top-16 w-80 max-h-[calc(100vh-80px)] rounded-lg shadow-2xl z-50 overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%)',
-                    border: '1px solid rgba(0, 0, 0, 0.15)',
-                    backdropFilter: 'blur(16px)',
-                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50/30">
-                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-blue-600" />
-                      Configure KPIs
-                    </h4>
-                    <button
-                      onClick={() => setShowKPIDropdown(false)}
-                      className="p-1.5 rounded-md hover:bg-gray-100/10 transition-colors"
-                    >
-                      <X className="w-4 h-4 text-gray-600 hover:text-gray-900" />
-                    </button>
-                  </div>
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Configure KPIs
+                  </h4>
+                  <button onClick={() => setShowKPIDropdown(false)}>
+                    <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
+                  </button>
+                </div>
 
-                  <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
-                    {/* Data Source Selection */}
-                    <div className="p-4 border-b border-gray-200">
-                      <label className="text-xs font-medium text-gray-700 mb-3 block flex items-center gap-2">
-                        <Radio className="w-3 h-3 text-blue-600" />
-                        Data Source
-                      </label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {[
-                          { key: 'LF', label: 'Reported Data', icon: Radio, color: 'blue' },
-                        ].map((type) => {
-                          const isSelected = localFilters.dataType === type.key.toLowerCase();
-                          return (
-                            <button
-                              key={type.key}
-                              onClick={() => handleDataTypeChange(type.key.toLowerCase())}
-                              className={`px-3 py-3 text-xs font-medium rounded-lg transition-all duration-200 border-2 ${
-                                isSelected
-                                  ? 'bg-blue-600/10 text-blue-700 border-blue-400/70 shadow-lg transform scale-105'
-                                  : 'bg-gray-100/40 text-gray-700 border-gray-300/50 hover:bg-gray-200/60 hover:border-gray-300/70 hover:scale-102'
-                              }`}
-                            >
-                              <div className="flex flex-col items-center gap-1.5">
-                                <type.icon className={`w-4 h-4 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
-                                <span className="text-[11px] font-semibold">{type.label}</span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                       
-                      <div className="mt-3 p-2 bg-gray-100/30 rounded-md">
-                        <p className="text-[10px] text-gray-600">
-                          📊 Reported Data - Multiple vessels supported
-                        </p>
-                      </div>
-                    </div>
-                    {/* KPI Selection */}
-                    <div className="p-4 max-h-64 overflow-y-auto">
-                      <label className="text-xs font-medium text-gray-600 mb-3 block">
-                        Select KPIs ({localFilters.selectedKPIs?.length || 0} selected)
-                      </label>
-                      <div className="space-y-2">
-                        {availableKPIs.map((kpi) => (
-                          <label
-                            key={`${kpi.id}-${kpi.source}`}
-                            className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={localFilters.selectedKPIs?.includes(kpi.id)}
-                              onChange={() => handleKPISelection(kpi.id)}
-                              className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-gray-900 truncate">
-                                  {kpi.name}
-                                </span>
-                              </div>
-                              {kpi.unit && (
-                                <span className="text-xs text-gray-500">
-                                  ({kpi.unit})
-                                </span>
-                              )}
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-                    <button
-                      onClick={handleApply}
-                      className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => setShowKPIDropdown(false)}
-                      className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                    >
-                      Done
-                    </button>
+                <div className="p-2 border-b border-gray-200">
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    Data Source
+                  </label>
+                  <div className="flex gap-2">
+                    {['REPORTED'].map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setLocalFilters(prev => ({ ...prev, dataType: type.toLowerCase() }))}
+                        className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
+                          localFilters.dataType === type.toLowerCase()
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          {type === 'REPORTED' && <Radio className="w-3 h-3" />}
+                          {type}
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </>
+
+                <div className="p-4 max-h-64 overflow-y-auto">
+                  <label className="text-xs font-medium text-gray-600 mb-3 block">
+                    Select KPIs ({localFilters.selectedKPIs?.length || 0} selected)
+                  </label>
+                  <div className="space-y-2">
+                    {availableKPIs.map((kpi) => (
+                      <label
+                        key={`${kpi.id}-${kpi.source}`}
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={localFilters.selectedKPIs?.includes(kpi.id)}
+                          onChange={() => handleKPISelection(kpi.id)}
+                          className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-900 truncate">
+                              {kpi.name}
+                            </span>
+                          </div>
+                          {kpi.unit && (
+                            <span className="text-xs text-gray-500">
+                              ({kpi.unit})
+                            </span>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                  <button
+                    onClick={handleApply}
+                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => setShowKPIDropdown(false)}
+                    className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
