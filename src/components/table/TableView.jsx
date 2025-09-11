@@ -648,17 +648,13 @@ const ControlsBar = ({
   }, [selectedDataType]);
 
   return (
-    <div className="card-elevated border-b-0">
-      <div className="flex items-center justify-between w-full p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/30 border border-blue-500/30 shadow-depth-1 hover:shadow-depth-2 transition-all duration-300 hover:scale-105">
-              <BarChart3 className="w-7 h-7 text-blue-500" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Fleet Analytics</h3>
-              <p className="text-sm text-gray-600 font-semibold">Data table view</p>
-            </div>
+    <div className="bg-white border-b border-gray-200 p-2">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-3">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Fleet Analytics
+            </h3>
           </div>
         </div>
 
@@ -666,10 +662,10 @@ const ControlsBar = ({
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="btn-secondary w-12 h-12 rounded-xl"
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
               title="Configure KPIs"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
             </button>
 
             {showKPIDropdown && (
@@ -760,26 +756,26 @@ const ControlsBar = ({
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="btn-secondary w-12 h-12 rounded-xl"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
-              <Minimize2 className="w-5 h-5" />
+              <Minimize2 className="w-4 h-4" />
             ) : (
-              <Maximize2 className="w-5 h-5" />
+              <Maximize2 className="w-4 h-4" />
             )}
           </button>
 
           <button
             onClick={() => onExport('csv')}
             disabled={isExporting}
-            className="btn-primary w-12 h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
             title="Export Data"
           >
             {isExporting ? (
-              <RefreshCw className="w-5 h-5 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
-              <Download className="w-5 h-5" />
+              <Download className="w-4 h-4" />
             )}
           </button>
         </div>

@@ -462,16 +462,15 @@ const ControlsBar = ({
   }, [localFilters.dataType]);
 
   return (
-    <div className="card-elevated border-b-0">
-      <div className="flex items-center justify-between w-full p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/30 border border-blue-500/30 shadow-depth-1 hover:shadow-depth-2 transition-all duration-300 hover:scale-105">
-              <BarChart3 className="w-7 h-7 text-blue-500" />
+    <div className="bg-white border-b border-gray-200 relative">
+      <div className="flex items-center justify-between w-full p-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-blue-500/20 border border-blue-500/30">
+              <BarChart3 className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Fleet Analytics</h3>
-              <p className="text-sm text-gray-600 font-semibold">Real-time performance insights</p>
+              <h3 className="text-lg font-bold text-gray-900">Fleet Analytics</h3>
             </div>
           </div>
         </div>
@@ -481,14 +480,14 @@ const ControlsBar = ({
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="btn-secondary w-12 h-12 rounded-xl"
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
               title="Configure KPIs"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
             </button>
 
             {showKPIDropdown && (
-              <div className="absolute right-0 top-full mt-3 w-80 bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-depth-3 z-50 animate-fade-in">
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
                   <h4 className="text-sm font-semibold text-gray-900">
                     Configure KPIs
@@ -573,30 +572,30 @@ const ControlsBar = ({
             )}
           </div>
 
-          {/* Enhanced Fullscreen Toggle */}
+          {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="btn-secondary w-12 h-12 rounded-xl"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
-              <Minimize2 className="w-5 h-5" />
+              <Minimize2 className="w-4 h-4" />
             ) : (
-              <Maximize2 className="w-5 h-5" />
+              <Maximize2 className="w-4 h-4" />
             )}
           </button>
 
-          {/* Enhanced Export Button */}
+          {/* Export Button */}
           <button
             onClick={() => onExport('csv')}
             disabled={isExporting}
-            className="btn-primary w-12 h-12 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
             title="Export Data"
           >
             {isExporting ? (
-              <RefreshCw className="w-5 h-5 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
-              <Download className="w-5 h-5" />
+              <Download className="w-4 h-4" />
             )}
           </button>
         </div>
@@ -984,15 +983,26 @@ const ChartView = ({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {chartFilters.selectedKPIs.map((kpiId) => {
                 const kpiMeta = getKPIById(kpiId, chartFilters.dataType);
                 if (!kpiMeta) return null;
 
                 return (
                   <div
-                    className="card-elevated hover-lift"
+                    className="relative group"
                     key={kpiId}
+                    style={{
+                      background:
+                        'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 250, 251, 0.98) 100%)',
+                      borderRadius: '10px',
+                      boxShadow: `
+                        0 12px 25px rgba(0, 0, 0, 0.1),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                        0 5px 10px rgba(0, 0, 0, 0.1)
+                      `,
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                    }}
                   >
                     <div className="relative p-3">
                       <div className="flex items-center justify-between mb-3">

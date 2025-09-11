@@ -51,35 +51,33 @@ const Header = ({
   };
 
   return (
-    <header className="card-elevated sticky top-0 z-50 border-b-0">
+    <header className="bg-white/95 backdrop-blur-md border-b border-gray-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
       <div className="flex items-center justify-between">
         {/* Left Section - Logo and Brand */}
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4">
-            {/* Enhanced Logo with 3D Effect */}
-            <div className="relative group">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-3xl flex items-center justify-center shadow-depth-3 hover:shadow-depth-4 transition-all duration-300 hover:scale-105 animate-float">
-                <span className="text-white font-bold text-2xl tracking-tight">OE</span>
+            {/* Logo */}
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <span className="text-white font-bold text-lg">OE</span>
               </div>
-              {/* Enhanced connection indicator */}
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full border-3 border-white shadow-depth-1 animate-pulse"></div>
-              {/* Glow effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"></div>
+              {/* Always connected indicator */}
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
             </div>
 
-            {/* Enhanced Brand Typography */}
+            {/* Brand and subtitle */}
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+              <h1 className="text-2xl font-bold text-gray-900">
                 {APP_CONFIG.name}
               </h1>
-              <p className="text-sm text-gray-600 font-semibold tracking-wide uppercase">
+              <p className="text-sm text-gray-600 font-medium">
                 {APP_CONFIG.subtitle}
               </p>
             </div>
           </div>
 
-          {/* Enhanced Statistics Overview */}
-          <div className="hidden lg:flex items-center gap-8 pl-8 border-l border-gray-200/50">
+          {/* Statistics Overview */}
+          <div className="hidden lg:flex items-center gap-6 pl-6 border-l border-gray-200">
             <StatCard
               icon={Ship}
               label="Vessels"
@@ -250,14 +248,14 @@ const Header = ({
   );
 };
 
-// Enhanced Stat Card Component with 3D Effects
+// Stat Card Component
 const StatCard = ({ icon: Icon, label, value, color }) => (
-  <div className="text-center group cursor-pointer hover-lift">
-    <div className="flex items-center justify-center mb-3 p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/50 shadow-depth-1 hover:shadow-depth-2 transition-all duration-300 hover:scale-105">
-      <Icon className={`w-6 h-6 ${color} mr-3 transition-transform duration-300 group-hover:scale-110`} />
-      <div className={`text-3xl font-bold ${color} tracking-tight`}>{value}</div>
+  <div className="text-center">
+    <div className="flex items-center justify-center mb-1">
+      <Icon className={`w-4 h-4 ${color} mr-1`} />
+      <div className={`text-xl font-bold ${color}`}>{value}</div>
     </div>
-    <div className="text-xs text-gray-600 font-semibold tracking-wide uppercase">{label}</div>
+    <div className="text-xs text-gray-600 font-medium">{label}</div>
   </div>
 );
 
