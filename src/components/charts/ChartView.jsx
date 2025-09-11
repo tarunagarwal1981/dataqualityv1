@@ -462,7 +462,7 @@ const ControlsBar = ({
   }, [localFilters.dataType]);
 
   return (
-    <div className="bg-white/95 border-b border-gray-200 backdrop-blur-md relative">
+    <div className="bg-white border-b border-gray-200 relative">
       <div className="flex items-center justify-between w-full p-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
