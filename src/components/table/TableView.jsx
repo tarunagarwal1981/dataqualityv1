@@ -889,7 +889,7 @@ const ChartIcon = ({ vessel, onVesselClick }) => {
   return (
       <button
       onClick={handleChartClick}
-      className="w-full flex items-center justify-start p-1 rounded hover:bg-blue-50 transition-colors group"
+              className="w-full flex items-center justify-center p-1 rounded hover:bg-blue-50 transition-colors group"
       title="View Charts"
     >
       <BarChart3 className="w-3 h-3 text-gray-500 group-hover:text-blue-600 transition-colors" />
@@ -1307,7 +1307,7 @@ const TableView = ({
                     {currentKPIsToDisplay.map((kpi) => (
                       <th
                         key={`${kpi.id}-${kpi.source}`}
-                        className="w-24 px-2 py-1 text-left"
+                        className="w-24 px-2 py-1 text-center"
                       >
                         <button
                           onClick={() => handleSort(kpi.id)}
@@ -1329,7 +1329,7 @@ const TableView = ({
                         </button>
                       </th>
                     ))}
-                    <th className="w-8 px-2 py-1 text-left">
+                    <th className="w-8 px-2 py-1 text-center">
                       <BarChart3 className="w-3 h-3 text-gray-500 " />
                     </th>
                   </tr>
@@ -1394,12 +1394,12 @@ const TableView = ({
                       {currentKPIsToDisplay.map((kpi) => (
                         <td
                           key={`${kpi.id}-${kpi.source}`}
-                          className="px-2 py-1 text-left"
+                          className="px-2 py-1 text-center"
                         >
                           {getValueDisplay(item, kpi.id, selectedDataType)}
                         </td>
                       ))}
-                      <td className="px-2 py-1 text-left">
+                      <td className="px-2 py-1 text-center">
                         <ChartIcon
                           vessel={item}
                           onVesselClick={handleVesselClick}
