@@ -189,14 +189,14 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
             className="transition-all duration-500"
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-start">
+        <div className="absolute inset-0 flex items-center justify-center">
           <span className={`font-bold ${size === 'sm' ? 'text-xs' : 'text-sm'} text-gray-900`}>
             {overallScore}
           </span>
         </div>
 
         {issues.length > 0 && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-start">
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
             <span className="text-xs text-white font-bold">{issues.length}</span>
           </div>
         )}
@@ -1074,9 +1074,11 @@ const TableView = ({
     if (!qualityVisible) {
       if (value === null || value === undefined) {
         return (
-          <span className="text-xs text-gray-500 font-medium">
-            --
-          </span>
+          <div className="flex justify-center">
+            <span className="text-xs text-gray-500 font-medium">
+              --
+            </span>
+          </div>
         );
       }
 
@@ -1093,9 +1095,11 @@ const TableView = ({
       };
 
       return (
-        <span className="text-xs font-semibold text-gray-900">
-          {formatValue(value)}
-        </span>
+        <div className="flex justify-center">
+          <span className="text-xs font-semibold text-gray-900">
+            {formatValue(value)}
+          </span>
+        </div>
       );
     }
 
@@ -1115,7 +1119,7 @@ const TableView = ({
 
     if (value === null || value === undefined || hasMissingIssue) {
       return (
-        <div className="relative group">
+        <div className="relative group flex justify-center">
           <span className="text-xs text-gray-500 font-medium bg-red-100 border border-red-200 rounded px-1.5 py-0.5">
             --
           </span>
@@ -1167,7 +1171,7 @@ const TableView = ({
     };
 
     return (
-      <div className="relative group">
+      <div className="relative group flex justify-center">
         <span
           className={`text-xs font-semibold rounded px-1 py-0.5 transition-all ${
             hasIncorrectIssue ? getQualityStyle() : ''
