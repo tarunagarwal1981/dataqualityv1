@@ -941,6 +941,9 @@ const TableView = ({
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
   const vesselDropdownRef = useRef(null);
 
+  // State for KPI dropdown
+  const [showKPIDropdown, setShowKPIDropdown] = useState(false);
+
   // Sample vessels data
   const sampleVessels = [
     { id: 'vessel_1', name: 'MV Atlantic Pioneer' },
@@ -969,6 +972,22 @@ const TableView = ({
     setShowVesselDropdown(false);
     // Apply vessel selection logic here
   };
+
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        vesselDropdownRef.current &&
+        !vesselDropdownRef.current.contains(event.target)
+      ) {
+        setShowVesselDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Helper to get KPI details by ID
   const getKpiDetails = (kpiId, source) => {
@@ -1259,6 +1278,230 @@ const TableView = ({
     <div
       className={`bg-gray-50 text-gray-900 min-h-screen flex flex-col ${className}`}
     >
+      {/* Header with Fleet Analytics and Controls */}
+      <div className="bg-white border-b border-gray-200 p-1">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Fleet Analytics
+              </h3>
+            </div>
+            
+            {/* Vessel Selection */}
+            <div className="relative" ref={vesselDropdownRef}>
+              <button
+                onClick={() => setShowVesselDropdown(!showVesselDropdown)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors text-sm"
+                title="Select Vessels"
+              >
+                <Ship className="w-4 h-4" />
+                <span>Vessels</span>
+                {selectedVessels?.length > 0 && (
+                  <span className="bg-emerald-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {selectedVessels.length}
+                  </span>
+                )}
+              </button>
+
+              {showVesselDropdown && (
+                <div className="absolute left-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                  <div className="flex items-center justify-between p-3 border-b border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Ship className="w-4 h-4" />
+                      Select Vessels
+                    </h4>
+                    <button onClick={() => setShowVesselDropdown(false)}>
+                      <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
+                    </button>
+                  </div>
+
+                  <div className="p-3 max-h-64 overflow-y-auto">
+                    <div className="space-y-2">
+                      {sampleVessels.map((vessel) => (
+                        <label
+                          key={vessel.id}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedVessels?.includes(vessel.id)}
+                            onChange={() => handleVesselSelection(vessel.id)}
+                            className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                          />
+                          <span className="text-sm font-medium text-gray-900">
+                            {vessel.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-3 border-t border-gray-200 flex justify-end gap-2">
+                    <button
+                      onClick={handleResetVessels}
+                      className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      onClick={handleApplyVessels}
+                      className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Date Range Picker */}
+            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md">
+              <Calendar className="w-3 h-3 text-gray-500" />
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                  placeholder="Start"
+                />
+                <span className="text-xs text-gray-500">–</span>
+                <input
+                  type="date"
+                  className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                  placeholder="End"
+                />
+              </div>
+            </div>
+
+            {/* Configuration Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowKPIDropdown(!showKPIDropdown)}
+                className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                title="Configure KPIs"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+
+              {showKPIDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-900">
+                      Configure KPIs
+                    </h4>
+                    <button onClick={() => setShowKPIDropdown(false)}>
+                      <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
+                    </button>
+                  </div>
+
+                  <div className="p-2 border-b border-gray-200">
+                    <label className="text-xs font-medium text-gray-600 mb-2 block">
+                      Data Source
+                    </label>
+                    <div className="flex gap-2">
+                      {['REPORTED'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setSelectedDataType(type.toLowerCase())}
+                          className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
+                            selectedDataType === type.toLowerCase()
+                              ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                              : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            {type === 'REPORTED' && <Radio className="w-3 h-3" />}
+                            {type}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 max-h-64 overflow-y-auto">
+                    <label className="text-xs font-medium text-gray-600 mb-2 block">
+                      Select KPIs
+                    </label>
+                    <div className="space-y-2">
+                      {ALL_KPIS.REPORTED.map((kpi) => (
+                        <label
+                          key={kpi.id}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedKPIs?.includes(kpi.id)}
+                            onChange={() => {
+                              setSelectedKPIs((prev) => {
+                                const currentSelected = prev || [];
+                                if (currentSelected.includes(kpi.id)) {
+                                  return currentSelected.filter((id) => id !== kpi.id);
+                                } else {
+                                  return [...currentSelected, kpi.id];
+                                }
+                              });
+                            }}
+                            className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                          />
+                          <div className="flex-1">
+                            <span className="text-xs font-medium text-gray-900">
+                              {kpi.name}
+                            </span>
+                            {kpi.description && (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {kpi.description}
+                              </p>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                    <button
+                      onClick={() => setShowKPIDropdown(false)}
+                      className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Apply
+                    </button>
+                    <button
+                      onClick={() => setShowKPIDropdown(false)}
+                      className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Fullscreen Toggle */}
+            <button
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+              title="Fullscreen"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+
+            {/* Export Button */}
+            <button
+              onClick={() => handleExport('csv')}
+              disabled={isExporting}
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
+              title="Export Data"
+            >
+              {isExporting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
