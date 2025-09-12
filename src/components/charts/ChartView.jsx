@@ -60,19 +60,19 @@ const DATA_TYPES = {
 };
 
 const ALL_KPIS = {
-  LF: [
+  lf: [
     { id: 'fuel_consumption', name: 'Fuel Consumption', description: 'Daily fuel consumption rate' },
     { id: 'speed', name: 'Speed', description: 'Vessel speed over ground' },
     { id: 'distance', name: 'Distance', description: 'Distance traveled' },
     { id: 'engine_rpm', name: 'Engine RPM', description: 'Engine revolutions per minute' },
   ],
-  HF: [
+  hf: [
     { id: 'fuel_flow', name: 'Fuel Flow', description: 'High-frequency fuel flow data' },
     { id: 'engine_load', name: 'Engine Load', description: 'Engine load percentage' },
     { id: 'exhaust_temp', name: 'Exhaust Temperature', description: 'Exhaust gas temperature' },
     { id: 'coolant_temp', name: 'Coolant Temperature', description: 'Engine coolant temperature' },
   ],
-  COMBINED: [
+  combined: [
     { id: 'fuel_efficiency', name: 'Fuel Efficiency', description: 'Combined fuel efficiency metric' },
     { id: 'performance_index', name: 'Performance Index', description: 'Overall performance score' },
     { id: 'emissions', name: 'Emissions', description: 'CO2 emissions rate' },
@@ -129,7 +129,7 @@ const generateChartData = (vessels, kpis, days = 7) => {
 
     data.push(dayData);
   }
-
+   
   return data;
 };
 
@@ -149,7 +149,7 @@ const ChartView = ({
 
     return {
       dataType: DATA_TYPES.LF,
-      selectedKPIs: ALL_KPIS.LF.map((kpi) => kpi.id),
+      selectedKPIs: ALL_KPIS.lf.map((kpi) => kpi.id),
       selectedVessels: selectedVessels,
       dateRange: { startDate, endDate },
     };
@@ -295,13 +295,13 @@ const ChartView = ({
   const getCurrentKPIs = () => {
     switch (chartFilters.dataType) {
       case DATA_TYPES.LF:
-        return ALL_KPIS.LF;
+        return ALL_KPIS.lf;
       case DATA_TYPES.HF:
-        return ALL_KPIS.HF;
+        return ALL_KPIS.hf;
       case DATA_TYPES.COMBINED:
-        return ALL_KPIS.COMBINED;
+        return ALL_KPIS.combined;
       default:
-        return ALL_KPIS.LF;
+        return ALL_KPIS.lf;
     }
   };
 
@@ -327,7 +327,7 @@ const ChartView = ({
             >
               <X className="w-4 h-4" />
             </button>
-          </div>
+            </div>
         </div>
       ))}
 
@@ -387,8 +387,8 @@ const ChartView = ({
                           </span>
                         </label>
                       ))}
-                    </div>
-                  </div>
+          </div>
+        </div>
 
                   <div className="p-3 border-t border-gray-200 flex justify-end gap-2">
                     <button
@@ -428,17 +428,17 @@ const ChartView = ({
               </div>
             </div>
 
-            {/* Configuration Dropdown */}
-            <div className="relative" ref={kpiDropdownRef}>
-              <button
-                onClick={() => setShowKPIDropdown(!showKPIDropdown)}
+          {/* Configuration Dropdown */}
+          <div className="relative" ref={kpiDropdownRef}>
+            <button
+              onClick={() => setShowKPIDropdown(!showKPIDropdown)}
                 className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-                title="Configure KPIs"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
+              title="Configure KPIs"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
 
-              {showKPIDropdown && (
+            {showKPIDropdown && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
                   <div className="flex items-center justify-between p-4 border-b border-gray-200">
                     <h4 className="text-sm font-semibold text-gray-900">
@@ -451,11 +451,11 @@ const ChartView = ({
 
                   <div className="p-2 border-b border-gray-200">
                     <label className="text-xs font-medium text-gray-600 mb-2 block">
-                      Data Source
-                    </label>
+                        Data Source
+                      </label>
                     <div className="flex gap-2">
                       {Object.values(DATA_TYPES).map((type) => (
-                        <button
+                            <button
                           key={type}
                           onClick={() =>
                             setChartFilters((prev) => ({
@@ -471,84 +471,84 @@ const ChartView = ({
                           }`}
                         >
                           {type.toUpperCase()}
-                        </button>
+                            </button>
                       ))}
-                    </div>
-                  </div>
+                      </div>
+                      </div>
 
                   <div className="p-2 border-b border-gray-200">
                     <label className="text-xs font-medium text-gray-600 mb-2 block">
-                      Select KPIs
-                    </label>
+                          Select KPIs
+                      </label>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {getCurrentKPIs().map((kpi) => (
-                        <label
+                            <label
                           key={kpi.id}
                           className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
                         >
-                          <input
-                            type="checkbox"
+                                <input
+                                  type="checkbox"
                             checked={chartFilters.selectedKPIs?.includes(kpi.id)}
-                            onChange={() => handleKPISelection(kpi.id)}
+                                  onChange={() => handleKPISelection(kpi.id)}
                             className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                           />
                           <div className="flex-1">
                             <span className="text-xs font-medium text-gray-900">
-                              {kpi.name}
-                            </span>
+                                    {kpi.name}
+                                  </span>
                             {kpi.description && (
                               <p className="text-xs text-gray-500 mt-0.5">
                                 {kpi.description}
                               </p>
                             )}
-                          </div>
-                        </label>
+                              </div>
+                            </label>
                       ))}
                     </div>
                   </div>
 
                   <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-                    <button
+                      <button
                       onClick={handleApply}
                       className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                    >
+                      >
                       Apply
-                    </button>
-                    <button
+                      </button>
+                      <button
                       onClick={() => setShowKPIDropdown(false)}
                       className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                    >
+                      >
                       Done
-                    </button>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* Fullscreen Toggle */}
-            <button
-              className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
-              title="Fullscreen"
-            >
-              <Maximize2 className="w-4 h-4" />
-            </button>
-
-            {/* Export Button */}
-            <button
-              onClick={() => handleExport('csv')}
-              disabled={isExporting}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
-              title="Export Data"
-            >
-              {isExporting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-            </button>
+            )}
           </div>
+
+          {/* Fullscreen Toggle */}
+          <button
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+              title="Fullscreen"
+          >
+              <Maximize2 className="w-4 h-4" />
+          </button>
+
+          {/* Export Button */}
+          <button
+              onClick={() => handleExport('csv')}
+            disabled={isExporting}
+            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
+            title="Export Data"
+          >
+            {isExporting ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+          </button>
         </div>
       </div>
+    </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-1">
@@ -600,11 +600,11 @@ const ChartView = ({
                     <div className="flex items-center gap-2 mb-3">
                       <div className="p-1.5 rounded-md bg-blue-100 border border-blue-200">
                         <Activity className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
+                            </div>
+                            <div>
                         <h3 className="text-sm font-semibold text-gray-900">
                           {kpi.name}
-                        </h3>
+                              </h3>
                         <p className="text-xs text-gray-600">
                           {chartFilters.selectedVessels
                             .map((vesselId) => 
@@ -613,15 +613,15 @@ const ChartView = ({
                             .filter(Boolean)
                             .join(', ')}
                         </p>
+                        </div>
                       </div>
-                    </div>
 
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                          <XAxis 
-                            dataKey="date" 
+                            <XAxis
+                              dataKey="date"
                             stroke="#666"
                             fontSize={12}
                             tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -637,8 +637,8 @@ const ChartView = ({
                                       <p className="text-xs font-semibold text-gray-100">
                                         {new Date(label).toLocaleDateString('en-US', {
                                           weekday: 'short',
-                                          month: 'short',
-                                          day: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
                                           year: 'numeric',
                                           hour: '2-digit',
                                           minute: '2-digit',
@@ -675,22 +675,22 @@ const ChartView = ({
                             
                             const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
                             const color = colors[index % colors.length];
-                            
-                            return (
-                              <Line
+                               
+                              return (
+                                <Line
                                 key={`${vesselId}_${kpiId}`}
-                                type="monotone"
+                                  type="monotone"
                                 dataKey={`${vesselId}_${kpiId}`}
-                                stroke={color}
+                                  stroke={color}
                                 strokeWidth={2}
                                 dot={{ r: 3 }}
                                 activeDot={{ r: 5 }}
                                 name={vessel.name}
-                              />
-                            );
-                          })}
-                        </LineChart>
-                      </ResponsiveContainer>
+                                />
+                              );
+                            })}
+                          </LineChart>
+                        </ResponsiveContainer>
                     </div>
                   </div>
                 );
