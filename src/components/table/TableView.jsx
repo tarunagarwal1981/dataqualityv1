@@ -784,101 +784,23 @@ const ControlsBar = ({
   );
 };
 
-// NEW: ThreeDotsMenu component for the actions column
-const ThreeDotsMenu = ({ vessel, onVesselClick, onExport }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleViewCharts = (e) => {
+// Chart Icon component for direct vessel chart navigation
+const ChartIcon = ({ vessel, onVesselClick }) => {
+  const handleChartClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('View charts clicked for vessel:', vessel);
+    console.log('Chart clicked for vessel:', vessel);
     onVesselClick(vessel);
-    setIsOpen(false);
-  };
-
-  const handleExportClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Export clicked for vessel:', vessel);
-    onExport('csv');
-    setIsOpen(false);
-  };
-
-  const toggleMenu = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsOpen(!isOpen);
   };
 
   return (
-    <div className="relative" ref={menuRef}>
       <button
-        onClick={toggleMenu}
-        className="w-full flex items-center justify-center p-1 rounded hover:bg-gray-100 transition-colors"
-        title="More options"
-      >
-        <MoreHorizontal className="w-3 h-3 text-gray-500 hover:text-gray-900 transition-colors" />
+      onClick={handleChartClick}
+      className="w-full flex items-center justify-center p-1 rounded hover:bg-blue-50 transition-colors group"
+      title="View Charts"
+    >
+      <BarChart3 className="w-3 h-3 text-gray-500 group-hover:text-blue-600 transition-colors" />
       </button>
-
-      {isOpen && (
-        <>
-          {/* Overlay to catch clicks outside */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-
-          {/* Menu positioned to be always visible */}
-          <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-            <div className="py-1">
-              <button
-                onClick={handleViewCharts}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-              >
-                <BarChart3 className="w-3 h-3 text-blue-600" />
-                <span>View Charts</span>
-              </button>
-
-              <button
-                onClick={handleExportClick}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-              >
-                <Download className="w-3 h-3 text-emerald-600" />
-                <span>Export Data</span>
-              </button>
-
-              <div className="border-t border-gray-200 my-1"></div>
-
-              <div className="px-3 py-2">
-                <div className="text-xs text-gray-500 truncate">
-                  {vessel.vesselName}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  ID: {vessel.id}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
   );
 };
 
@@ -1293,7 +1215,7 @@ const TableView = ({
                       </th>
                     ))}
                     <th className="w-8 px-2 py-1 text-center">
-                      <MoreHorizontal className="w-3 h-3 text-gray-500 mx-auto" />
+                      <BarChart3 className="w-3 h-3 text-gray-500 mx-auto" />
                     </th>
                   </tr>
                 </thead>
@@ -1369,10 +1291,9 @@ const TableView = ({
                         </td>
                       ))}
                       <td className="px-2 py-1 text-center">
-                        <ThreeDotsMenu
+                        <ChartIcon
                           vessel={item}
                           onVesselClick={handleVesselClick}
-                          onExport={handleExport}
                         />
                       </td>
                     </tr>
