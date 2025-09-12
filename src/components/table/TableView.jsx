@@ -751,6 +751,24 @@ const ControlsBar = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Date Range Picker */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md">
+            <Calendar className="w-3 h-3 text-gray-500" />
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                placeholder="Start"
+              />
+              <span className="text-xs text-gray-500">–</span>
+              <input
+                type="date"
+                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                placeholder="End"
+              />
+            </div>
+          </div>
+
           {/* Configuration Dropdown */}
           <div className="relative" ref={kpiDropdownRef}>
             <button
@@ -1274,12 +1292,6 @@ const TableView = ({
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    <th className="w-8 px-2 py-1 text-center">
-                      <input
-                        type="checkbox"
-                        className="rounded bg-white border-gray-300"
-                      />
-                    </th>
                     <th className="w-40 px-2 py-1 text-center">
                       <button
                         onClick={() => handleSort('vesselName')}
@@ -1346,12 +1358,6 @@ const TableView = ({
                       key={item.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-2 py-1 text-center">
-                        <input
-                          type="checkbox"
-                          className="rounded bg-white border-gray-300"
-                        />
-                      </td>
                       <td className="px-2 py-1 text-center">
                         <div className="flex-1 min-w-0">
                           <div
