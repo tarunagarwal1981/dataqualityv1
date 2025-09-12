@@ -209,13 +209,13 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
         }`}>
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-900">Data Quality</span>
+              <span className="text-sm font-semibold text-gray-900">Data Quality Index</span>
               <span className={`text-sm font-bold ${colors.text}`}>{overallScore}%</span>
             </div>
 
             <div className="space-y-2 mb-3">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-600">Data Integrity</span>
+                <span className="text-gray-600">Data Coverage</span>
                 <span className="text-gray-900 font-medium">{completeness}%</span>
               </div>
               <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -1274,25 +1274,25 @@ const TableView = ({
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    <th className="w-8 px-2 py-1 text-left">
+                    <th className="w-8 px-2 py-1 text-center">
                       <input
                         type="checkbox"
                         className="rounded bg-white border-gray-300"
                       />
                     </th>
-                    <th className="w-40 px-2 py-1 text-left">
+                    <th className="w-40 px-2 py-1 text-center">
                       <button
                         onClick={() => handleSort('vesselName')}
-                        className="flex items-center gap-2 text-left text-gray-600 hover:text-gray-900 transition-colors group"
+                        className="flex items-center gap-2 text-center text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
                       >
                         <span>Vessel</span>
                         {getSortIcon('vesselName')}
                       </button>
                     </th>
-                    <th className="w-28 px-2 py-1 text-left">
+                    <th className="w-28 px-2 py-1 text-center">
                       <button
                         onClick={() => handleSort('date')}
-                        className="flex items-center gap-2 text-left text-gray-600 hover:text-gray-900 transition-colors group"
+                        className="flex items-center gap-2 text-center text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
                       >
                         <span>Date & Time</span>
                         {getSortIcon('date')}
@@ -1305,7 +1305,7 @@ const TableView = ({
                           onClick={() => handleSort('quality')}
                           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
                         >
-                          <span>Quality Index</span>
+                          <span>Data Quality Index</span>
                           {getSortIcon('quality')}
                         </button>
                       </th>
@@ -1346,13 +1346,13 @@ const TableView = ({
                       key={item.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-2 py-1">
+                      <td className="px-2 py-1 text-center">
                         <input
                           type="checkbox"
                           className="rounded bg-white border-gray-300"
                         />
                       </td>
-                      <td className="px-2 py-1">
+                      <td className="px-2 py-1 text-center">
                         <div className="flex-1 min-w-0">
                           <div
                             className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:text-blue-600 transition-colors hover:underline"
@@ -1361,7 +1361,7 @@ const TableView = ({
                           >
                             {item.vesselName}
                           </div>
-                          <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                          <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-500">
                             <span
                               className={`w-2 h-2 rounded-full ${
                                 item.vesselStatus === 'At Sea'
@@ -1375,7 +1375,7 @@ const TableView = ({
                           </div>
                         </div>
                       </td>
-                      <td className="px-2 py-1">
+                      <td className="px-2 py-1 text-center">
                         <div className="text-center">
                           <div className="text-sm text-gray-900 font-medium">
                             {new Date(item.date).toLocaleDateString('en-US', {
