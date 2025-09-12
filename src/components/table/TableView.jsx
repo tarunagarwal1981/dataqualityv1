@@ -189,14 +189,14 @@ const EnhancedQualityIndicator = ({ completeness, correctness, issues = [], size
             className="transition-all duration-500"
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-start">
           <span className={`font-bold ${size === 'sm' ? 'text-xs' : 'text-sm'} text-gray-900`}>
             {overallScore}
           </span>
         </div>
 
         {issues.length > 0 && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-start">
             <span className="text-xs text-white font-bold">{issues.length}</span>
           </div>
         )}
@@ -402,7 +402,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-6 right-6 flex justify-between">
               {vesselMetrics.slice(0, 6).map((vessel) => (
-                <div key={vessel.vesselId} className="text-[7px] text-gray-500 text-center w-6 truncate">
+                <div key={vessel.vesselId} className="text-[7px] text-gray-500 text-left w-6 truncate">
                   {vessel.shortName}
                 </div>
               ))}
@@ -485,7 +485,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
             {/* X-axis vessel labels */}
             <div className="absolute bottom-0 left-8 right-0 flex justify-between pr-2">
               {vesselMetrics.slice(0, 7).map((vessel) => (
-                <div key={vessel.vesselId} className="text-[7px] text-gray-500 text-center w-4 truncate transform -rotate-45 origin-top">
+                <div key={vessel.vesselId} className="text-[7px] text-gray-500 text-left w-4 truncate transform -rotate-45 origin-top">
                   {vessel.shortName}
                 </div>
               ))}
@@ -524,7 +524,7 @@ const VesselPerformanceCharts = ({ data, selectedKPIs, selectedDataType }) => {
             {/* Chart Area */}
             <div className="absolute inset-0 p-2">
               {/* Quadrant Lines */}
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-start">
                 <div className="absolute w-full h-px bg-gray-300/50" style={{ top: '50%' }}></div> {/* Horizontal line (Completeness 50%) */}
                 <div className="absolute h-full w-px bg-gray-300/50" style={{ left: '50%' }}></div> {/* Vertical line (Correctness 50%) */}
               </div>
@@ -755,7 +755,7 @@ const ControlsBar = ({
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+              className="w-8 h-8 flex items-center justify-start bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
               title="Configure KPIs"
             >
               <Settings className="w-4 h-4" />
@@ -787,7 +787,7 @@ const ControlsBar = ({
                             : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
                         }`}
                       >
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-start gap-1">
                           {type === 'REPORTED' && <Radio className="w-3 h-3" />}
                           {type}
                         </div>
@@ -849,7 +849,7 @@ const ControlsBar = ({
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+            className="w-8 h-8 flex items-center justify-start bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -862,7 +862,7 @@ const ControlsBar = ({
           <button
             onClick={() => onExport('csv')}
             disabled={isExporting}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-start bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
             title="Export Data"
           >
             {isExporting ? (
@@ -889,7 +889,7 @@ const ChartIcon = ({ vessel, onVesselClick }) => {
   return (
       <button
       onClick={handleChartClick}
-      className="w-full flex items-center justify-center p-1 rounded hover:bg-blue-50 transition-colors group"
+      className="w-full flex items-center justify-start p-1 rounded hover:bg-blue-50 transition-colors group"
       title="View Charts"
     >
       <BarChart3 className="w-3 h-3 text-gray-500 group-hover:text-blue-600 transition-colors" />
@@ -1274,25 +1274,25 @@ const TableView = ({
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    <th className="w-8 px-2 py-1 text-center">
+                    <th className="w-8 px-2 py-1 text-left">
                       <input
                         type="checkbox"
                         className="rounded bg-white border-gray-300"
                       />
                     </th>
-                    <th className="w-40 px-2 py-1 text-center">
+                    <th className="w-40 px-2 py-1 text-left">
                       <button
                         onClick={() => handleSort('vesselName')}
-                        className="flex items-center gap-2 text-center text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
+                        className="flex items-center gap-2 text-left text-gray-600 hover:text-gray-900 transition-colors group "
                       >
                         <span>Vessel</span>
                         {getSortIcon('vesselName')}
                       </button>
                     </th>
-                    <th className="w-28 px-2 py-1 text-center">
+                    <th className="w-28 px-2 py-1 text-left">
                       <button
                         onClick={() => handleSort('date')}
-                        className="flex items-center gap-2 text-center text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
+                        className="flex items-center gap-2 text-left text-gray-600 hover:text-gray-900 transition-colors group "
                       >
                         <span>Date & Time</span>
                         {getSortIcon('date')}
@@ -1300,10 +1300,10 @@ const TableView = ({
                     </th>
                     {/* NEW: Conditionally show quality column */}
                     {qualityVisible && (
-                      <th className="w-20 px-2 py-1 text-center">
+                      <th className="w-20 px-2 py-1 text-left">
                         <button
                           onClick={() => handleSort('quality')}
-                          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group mx-auto"
+                          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group "
                         >
                           <span>Data Quality Index</span>
                           {getSortIcon('quality')}
@@ -1313,7 +1313,7 @@ const TableView = ({
                     {currentKPIsToDisplay.map((kpi) => (
                       <th
                         key={`${kpi.id}-${kpi.source}`}
-                        className="w-24 px-2 py-1 text-center"
+                        className="w-24 px-2 py-1 text-left"
                       >
                         <button
                           onClick={() => handleSort(kpi.id)}
@@ -1335,8 +1335,8 @@ const TableView = ({
                         </button>
                       </th>
                     ))}
-                    <th className="w-8 px-2 py-1 text-center">
-                      <BarChart3 className="w-3 h-3 text-gray-500 mx-auto" />
+                    <th className="w-8 px-2 py-1 text-left">
+                      <BarChart3 className="w-3 h-3 text-gray-500 " />
                     </th>
                   </tr>
                 </thead>
@@ -1346,13 +1346,13 @@ const TableView = ({
                       key={item.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      <td className="px-2 py-1 text-center">
+                      <td className="px-2 py-1 text-left">
                         <input
                           type="checkbox"
                           className="rounded bg-white border-gray-300"
                         />
                       </td>
-                      <td className="px-2 py-1 text-center">
+                      <td className="px-2 py-1 text-left">
                         <div className="flex-1 min-w-0">
                           <div
                             className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:text-blue-600 transition-colors hover:underline"
@@ -1361,7 +1361,7 @@ const TableView = ({
                           >
                             {item.vesselName}
                           </div>
-                          <div className="mt-1 flex items-center justify-center gap-1 text-xs text-gray-500">
+                          <div className="mt-1 flex items-center justify-start gap-1 text-xs text-gray-500">
                             <span
                               className={`w-2 h-2 rounded-full ${
                                 item.vesselStatus === 'At Sea'
@@ -1375,8 +1375,8 @@ const TableView = ({
                           </div>
                         </div>
                       </td>
-                      <td className="px-2 py-1 text-center">
-                        <div className="text-center">
+                      <td className="px-2 py-1 text-left">
+                        <div className="text-left">
                           <div className="text-sm text-gray-900 font-medium">
                             {new Date(item.date).toLocaleDateString('en-US', {
                               month: 'short',
@@ -1394,7 +1394,7 @@ const TableView = ({
                       </td>
                       {/* NEW: Conditionally show quality column */}
                       {qualityVisible && (
-                        <td className="px-2 py-1 text-center">
+                        <td className="px-2 py-1 text-left">
                           <EnhancedQualityIndicator
                             completeness={item.quality.completeness}
                             correctness={item.quality.correctness}
@@ -1406,12 +1406,12 @@ const TableView = ({
                       {currentKPIsToDisplay.map((kpi) => (
                         <td
                           key={`${kpi.id}-${kpi.source}`}
-                          className="px-2 py-1 text-center"
+                          className="px-2 py-1 text-left"
                         >
                           {getValueDisplay(item, kpi.id, selectedDataType)}
                         </td>
                       ))}
-                      <td className="px-2 py-1 text-center">
+                      <td className="px-2 py-1 text-left">
                         <ChartIcon
                           vessel={item}
                           onVesselClick={handleVesselClick}
