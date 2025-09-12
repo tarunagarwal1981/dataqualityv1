@@ -30,27 +30,6 @@ const DATA_TYPES = {
   HF: 'hf',
 };
 
-const ALL_KPIS = {
-  LF: [
-    { id: 'fuel_consumption', name: 'Fuel Consumption', description: 'Daily fuel consumption rate' },
-    { id: 'speed', name: 'Speed', description: 'Vessel speed over ground' },
-    { id: 'distance', name: 'Distance', description: 'Distance traveled' },
-    { id: 'engine_rpm', name: 'Engine RPM', description: 'Engine revolutions per minute' },
-  ],
-  HF: [
-    { id: 'fuel_flow', name: 'Fuel Flow', description: 'High-frequency fuel flow data' },
-    { id: 'engine_load', name: 'Engine Load', description: 'Engine load percentage' },
-    { id: 'exhaust_temp', name: 'Exhaust Temperature', description: 'Exhaust gas temperature' },
-    { id: 'coolant_temp', name: 'Coolant Temperature', description: 'Engine coolant temperature' },
-  ],
-  COMBINED: [
-    { id: 'fuel_efficiency', name: 'Fuel Efficiency', description: 'Combined fuel efficiency metric' },
-    { id: 'performance_index', name: 'Performance Index', description: 'Overall performance score' },
-    { id: 'emissions', name: 'Emissions', description: 'CO2 emissions rate' },
-    { id: 'operational_cost', name: 'Operational Cost', description: 'Cost per nautical mile' },
-  ],
-};
-
 // View modes including our fuel anomaly view
 const VIEW_MODES = {
   LANDING: 'landing', // NEW: Add landing page view mode
@@ -132,10 +111,8 @@ const ControlsBar = ({
 
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
   const [showFuelAnomalyConfig, setShowFuelAnomalyConfig] = useState(false);
-  const [showKPIDropdown, setShowKPIDropdown] = useState(false);
   const vesselDropdownRef = useRef(null);
   const fuelConfigRef = useRef(null);
-  const kpiDropdownRef = useRef(null);
 
   useEffect(() => {
     setLocalFilters((prev) => ({
@@ -166,12 +143,6 @@ const ControlsBar = ({
         !fuelConfigRef.current.contains(event.target)
       ) {
         setShowFuelAnomalyConfig(false);
-      }
-      if (
-        kpiDropdownRef.current &&
-        !kpiDropdownRef.current.contains(event.target)
-      ) {
-        setShowKPIDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -228,33 +199,6 @@ const ControlsBar = ({
       qualityVisible: newQualityState,
     }));
     onQualityToggle(newQualityState);
-  };
-
-  const handleKPISelection = (kpiId) => {
-    setLocalFilters((prev) => {
-      const currentSelected = prev.selectedKPIs || [];
-      if (currentSelected.includes(kpiId)) {
-        return {
-          ...prev,
-          selectedKPIs: currentSelected.filter((id) => id !== kpiId),
-        };
-      } else {
-        return { ...prev, selectedKPIs: [...currentSelected, kpiId] };
-      }
-    });
-  };
-
-  const getCurrentKPIs = () => {
-    switch (localFilters.dataType) {
-      case DATA_TYPES.LF:
-        return ALL_KPIS.LF;
-      case DATA_TYPES.HF:
-        return ALL_KPIS.HF;
-      case DATA_TYPES.COMBINED:
-        return ALL_KPIS.COMBINED;
-      default:
-        return ALL_KPIS.LF;
-    }
   };
 
   const handleViewChange = (viewMode) => {
@@ -511,103 +455,6 @@ const ControlsBar = ({
             </div>
           </div>
         )}
-
-        {/* Configure KPIs Button */}
-        <div className="relative" ref={kpiDropdownRef}>
-          <button
-            onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-            title="Configure KPIs"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-
-          {showKPIDropdown && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-900">
-                  Configure KPIs
-                </h4>
-                <button onClick={() => setShowKPIDropdown(false)}>
-                  <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
-                </button>
-              </div>
-
-              <div className="p-2 border-b border-gray-200">
-                <label className="text-xs font-medium text-gray-600 mb-2 block">
-                  Data Source
-                </label>
-                <div className="flex gap-2">
-                  {Object.values(DATA_TYPES).map((type) => (
-                    <button
-                      key={type}
-                      onClick={() =>
-                        setLocalFilters((prev) => ({
-                          ...prev,
-                          dataType: type,
-                          selectedKPIs: ALL_KPIS[type.toUpperCase()].map((kpi) => kpi.id),
-                        }))
-                      }
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                        localFilters.dataType === type
-                          ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                          : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                      }`}
-                    >
-                      {type.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-2 border-b border-gray-200">
-                <label className="text-xs font-medium text-gray-600 mb-2 block">
-                  Select KPIs
-                </label>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {getCurrentKPIs().map((kpi) => (
-                    <label
-                      key={kpi.id}
-                      className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={localFilters.selectedKPIs?.includes(kpi.id)}
-                        onChange={() => handleKPISelection(kpi.id)}
-                        className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                      <div className="flex-1">
-                        <span className="text-xs font-medium text-gray-900">
-                          {kpi.name}
-                        </span>
-                        {kpi.description && (
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {kpi.description}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-                <button
-                  onClick={handleApply}
-                  className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                >
-                  Apply
-                </button>
-                <button
-                  onClick={() => setShowKPIDropdown(false)}
-                  className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Export Button */}
         <button
