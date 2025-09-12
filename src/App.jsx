@@ -314,7 +314,7 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <FleetHeader />
       
       <ControlsBar
@@ -341,89 +341,97 @@ const App = () => {
         isExporting={false}
       />
       
-      <div className="flex-1 p-2 space-y-6">
+      <div className="flex-1 p-3 space-y-4">
         {filters.viewMode === VIEW_MODES.TABLE ? (
-          <TableView
-            data={filteredData}
-            vessels={vessels || []}
-            kpis={kpis}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible}
-            onQualityToggle={handleQualityToggle}
-            onExport={handleExport}
-            onVesselClick={handleVesselClick}
-            performanceSummary={getKPIPerformanceSummary(
-              filters,
-              filters.selectedKPIs
-            )}
-          />
+          <div className="animate-fade-in">
+            <TableView
+              data={filteredData}
+              vessels={vessels || []}
+              kpis={kpis}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              qualityVisible={filters.qualityVisible}
+              onQualityToggle={handleQualityToggle}
+              onExport={handleExport}
+              onVesselClick={handleVesselClick}
+              performanceSummary={getKPIPerformanceSummary(
+                filters,
+                filters.selectedKPIs
+              )}
+            />
+          </div>
         ) : filters.viewMode === VIEW_MODES.CHART ? (
-          <ChartView
-            data={getChartData(filters, filters.selectedKPIs)}
-            vessels={vessels || []}
-            kpis={kpis}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            isValidForCharts={isValidForCharts}
-            initialVesselId={selectedVesselForCharts}
-            qualityVisible={filters.qualityVisible}
-            onQualityToggle={handleQualityToggle}
-            performanceSummary={getKPIPerformanceSummary(
-              filters,
-              filters.selectedKPIs
-            )}
-          />
+          <div className="animate-fade-in">
+            <ChartView
+              data={getChartData(filters, filters.selectedKPIs)}
+              vessels={vessels || []}
+              kpis={kpis}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              isValidForCharts={isValidForCharts}
+              initialVesselId={selectedVesselForCharts}
+              qualityVisible={filters.qualityVisible}
+              onQualityToggle={handleQualityToggle}
+              performanceSummary={getKPIPerformanceSummary(
+                filters,
+                filters.selectedKPIs
+              )}
+            />
+          </div>
         ) : filters.viewMode === VIEW_MODES.FUEL_ANOMALY ? (
-          <FuelAnomalyView
-            selectedVessel={fuelAnomalyConfig.selectedVessel}
-            sisterVessel={fuelAnomalyConfig.sisterVessel}
-            analysisConfig={fuelAnomalyConfig.analysisConfig}
-            onVesselClick={handleFuelAnomalyVesselClick}
-            onConfigChange={handleFuelAnomalyConfigChange}
-            onExport={handleExport}
-            vessels={vessels || []}
-          />
+          <div className="animate-fade-in">
+            <FuelAnomalyView
+              selectedVessel={fuelAnomalyConfig.selectedVessel}
+              sisterVessel={fuelAnomalyConfig.sisterVessel}
+              analysisConfig={fuelAnomalyConfig.analysisConfig}
+              onVesselClick={handleFuelAnomalyVesselClick}
+              onConfigChange={handleFuelAnomalyConfigChange}
+              onExport={handleExport}
+              vessels={vessels || []}
+            />
+          </div>
         ) : (
-          <TableView
-            data={filteredData}
-            vessels={vessels || []}
-            kpis={kpis}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            qualityVisible={filters.qualityVisible}
-            onQualityToggle={handleQualityToggle}
-            onExport={handleExport}
-            onVesselClick={handleVesselClick}
-            performanceSummary={getKPIPerformanceSummary(
-              filters,
-              filters.selectedKPIs
-            )}
-          />
+          <div className="animate-fade-in">
+            <TableView
+              data={filteredData}
+              vessels={vessels || []}
+              kpis={kpis}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              qualityVisible={filters.qualityVisible}
+              onQualityToggle={handleQualityToggle}
+              onExport={handleExport}
+              onVesselClick={handleVesselClick}
+              performanceSummary={getKPIPerformanceSummary(
+                filters,
+                filters.selectedKPIs
+              )}
+            />
+          </div>
         )}
 
         {filteredData.length === 0 && hasData && filters.viewMode !== VIEW_MODES.FUEL_ANOMALY && (
-          <div className="bg-white border border-gray-200 rounded-lg p-16 text-center">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="card-elevated p-16 text-center animate-bounce-in">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <AlertTriangle className="w-10 h-10 text-gray-600" />
             </div>
-            <h3 className="text-xl font-medium text-gray-700 mb-2">
+            <h3 className="text-2xl font-bold text-gray-800 mb-3">
               No Data Found
             </h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            <p className="text-gray-600 mb-8 max-w-md mx-auto leading-relaxed">
               No data matches your current filter criteria. Try adjusting your
               vessel selection, date range, or search terms.
             </p>
             <div className="flex items-center justify-center gap-4">
               <button 
                 onClick={resetFilters} 
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                className="btn-secondary hover-lift"
               >
                 Reset Filters
               </button>
               <button 
                 onClick={refreshData} 
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="btn-primary hover-lift"
               >
                 Refresh Data
               </button>

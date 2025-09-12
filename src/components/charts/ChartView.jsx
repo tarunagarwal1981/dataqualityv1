@@ -462,33 +462,35 @@ const ControlsBar = ({
   }, [localFilters.dataType]);
 
   return (
-    <div className="bg-white border-b border-gray-200 relative">
-      <div className="flex items-center justify-between w-full p-2">
+    <div className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 relative">
+      <div className="flex items-center justify-between w-full p-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-blue-500/20 border border-blue-500/30">
-              <BarChart3 className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/30 border border-blue-500/30 shadow-lg shadow-blue-500/10">
+              <BarChart3 className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Fleet Analytics</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                Fleet Analytics
+              </h3>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {/* Configuration Dropdown */}
           <div className="relative" ref={kpiDropdownRef}>
             <button
               onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+              className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
               title="Configure KPIs"
             >
               <Settings className="w-4 h-4" />
             </button>
 
             {showKPIDropdown && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl shadow-xl z-50 animate-fade-in">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
                   <h4 className="text-sm font-semibold text-gray-900">
                     Configure KPIs
                   </h4>
@@ -497,7 +499,7 @@ const ControlsBar = ({
                   </button>
                 </div>
 
-                <div className="p-2 border-b border-gray-200">
+                <div className="p-2 border-b border-gray-200/50">
                   <label className="text-xs font-medium text-gray-600 mb-2 block">
                     Data Source
                   </label>
@@ -506,10 +508,10 @@ const ControlsBar = ({
                       <button
                         key={type}
                         onClick={() => setLocalFilters(prev => ({ ...prev, dataType: type.toLowerCase() }))}
-                        className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-colors ${
+                        className={`flex-1 px-2 py-2 text-xs font-medium rounded-lg transition-all duration-200 ${
                           localFilters.dataType === type.toLowerCase()
-                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                            : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                            ? 'bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-700 border border-emerald-300 shadow-sm'
+                            : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200 hover:shadow-sm'
                         }`}
                       >
                         <div className="flex items-center justify-center gap-1">
@@ -521,7 +523,7 @@ const ControlsBar = ({
                   </div>
                 </div>
 
-                <div className="p-4 max-h-64 overflow-y-auto">
+                <div className="p-4 max-h-64 overflow-y-auto custom-scrollbar">
                   <label className="text-xs font-medium text-gray-600 mb-3 block">
                     Select KPIs ({localFilters.selectedKPIs?.length || 0} selected)
                   </label>
@@ -529,7 +531,7 @@ const ControlsBar = ({
                     {availableKPIs.map((kpi) => (
                       <label
                         key={`${kpi.id}-${kpi.source}`}
-                        className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
                       >
                         <input
                           type="checkbox"
@@ -554,16 +556,16 @@ const ControlsBar = ({
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                <div className="p-4 border-t border-gray-200/50 flex justify-end gap-2">
                   <button
                     onClick={handleApply}
-                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
                   >
                     Apply
                   </button>
                   <button
                     onClick={() => setShowKPIDropdown(false)}
-                    className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                    className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
                   >
                     Done
                   </button>
@@ -575,7 +577,7 @@ const ControlsBar = ({
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+            className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
             title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -589,7 +591,7 @@ const ControlsBar = ({
           <button
             onClick={() => onExport('csv')}
             disabled={isExporting}
-            className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50"
             title="Export Data"
           >
             {isExporting ? (

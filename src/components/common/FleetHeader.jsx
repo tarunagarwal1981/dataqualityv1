@@ -30,19 +30,18 @@ export default function FleetHeader() {
   return (
     <div className="w-full font-inter">
       {/* Main Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
         <div className="flex items-center justify-between px-6 h-16 mx-auto">
           {/* Left section - Brand */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               {/* App Icon */}
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  {/* Changed from <Fuel> to <Ship> */}
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
                   <Ship className="w-6 h-6 text-white" />
                 </div>
                 {/* Status indicator */}
-                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
               </div>
               
               {/* App Name and Tagline */}
@@ -57,38 +56,8 @@ export default function FleetHeader() {
             </div>
           </div>
 
-          {/* Center Navigation - Hidden on mobile */}
-          {/* <nav className="hidden lg:flex items-center gap-1">
-            {navItems.map((item, index) => (
-              <button
-                key={index}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  item.active 
-                    ? 'bg-blue-100 text-blue-700 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                {item.name}
-              </button>
-            ))}
-          </nav> */}
-
           {/* Right section - Actions */}
           <div className="flex items-center gap-3">
-            {/* Notifications */}
-            {/* <div className="relative">
-              <button
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
-                onClick={() => setShowAlerts(!showAlerts)}
-              >
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
-                  4
-                </span>
-              </button>
-              {showAlerts && <AlertsPanel onClose={() => setShowAlerts(false)} />}
-            </div> */}
-
             {/* Menu Button (Mobile) */}
             <button 
               className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -103,7 +72,7 @@ export default function FleetHeader() {
                 <div className="text-sm font-medium text-gray-900">Admin User</div>
                 <div className="text-xs text-gray-500">Fleet Manager</div>
               </div>
-              <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center shadow-sm">
                 <User className="w-4 h-4 text-white" />
               </div>
             </div>
@@ -112,7 +81,7 @@ export default function FleetHeader() {
 
         {/* Mobile Navigation Menu */}
         {showMenu && (
-          <div className="lg:hidden border-t border-gray-200 bg-gray-50">
+          <div className="lg:hidden border-t border-gray-200 bg-gray-50/50 backdrop-blur-sm">
             <nav className="px-6 py-4 space-y-2">
               {navItems.map((item, index) => (
                 <button
@@ -130,26 +99,6 @@ export default function FleetHeader() {
           </div>
         )}
       </div>
-
-      {/* Secondary Navigation Tabs */}
-      {/* <div className="bg-gray-50 border-b border-gray-200">
-        <div className="flex items-center px-6 h-12 max-w-7xl mx-auto overflow-x-auto">
-          <div className="flex space-x-6 min-w-max">
-            <button className="text-xs text-gray-600 hover:text-gray-900 transition-colors py-3 px-2 border-b-2 border-transparent hover:border-gray-300">
-              Operational Performance
-            </button>
-            <button className="text-xs text-gray-600 hover:text-gray-900 transition-colors py-3 px-2 border-b-2 border-transparent hover:border-gray-300">
-              Engine Performance
-            </button>
-            <button className="text-xs text-gray-600 hover:text-gray-900 transition-colors py-3 px-2 border-b-2 border-transparent hover:border-gray-300">
-              Auxiliary Systems
-            </button>
-            <button className="text-xs text-blue-600 font-medium py-3 px-2 border-b-2 border-blue-600">
-              Data Quality Dashboard
-            </button>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 }
