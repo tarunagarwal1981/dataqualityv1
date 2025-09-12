@@ -96,6 +96,214 @@ const sampleVessels = [
 
 const defaultSelectedVessels = sampleVessels.slice(0, 5);
 
+// Controls Bar Component for ChartView
+const ControlsBar = ({
+  onExport = () => {},
+  isExporting = false,
+  onKPIChange = () => {},
+  selectedDataType,
+  setSelectedDataType,
+  selectedKPIs,
+  setSelectedKPIs,
+}) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showKPIDropdown, setShowKPIDropdown] = useState(false);
+  const kpiDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        kpiDropdownRef.current &&
+        !kpiDropdownRef.current.contains(event.target)
+      ) {
+        setShowKPIDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleDataTypeChange = (type) => {
+    setSelectedDataType(type);
+    setSelectedKPIs(ALL_KPIS[type].map((kpi) => kpi.id));
+  };
+
+  const handleKPISelection = (kpiId) => {
+    setSelectedKPIs((prev) => {
+      const currentSelected = prev || [];
+      if (currentSelected.includes(kpiId)) {
+        return currentSelected.filter((id) => id !== kpiId);
+      } else {
+        return [...currentSelected, kpiId];
+      }
+    });
+  };
+
+  const handleApply = () => {
+    onKPIChange({ dataType: selectedDataType, selectedKPIs });
+    setShowKPIDropdown(false);
+  };
+
+  const getCurrentKPIs = () => {
+    switch (selectedDataType) {
+      case DATA_TYPES.LF:
+        return ALL_KPIS.lf;
+      case DATA_TYPES.HF:
+        return ALL_KPIS.hf;
+      case DATA_TYPES.COMBINED:
+        return ALL_KPIS.combined;
+      default:
+        return ALL_KPIS.lf;
+    }
+  };
+
+  return (
+    <div className="bg-white border-b border-gray-200 p-1">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          {/* Date Range Picker */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md">
+            <Calendar className="w-3 h-3 text-gray-500" />
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                placeholder="Start"
+              />
+              <span className="text-xs text-gray-500">–</span>
+              <input
+                type="date"
+                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
+                placeholder="End"
+              />
+            </div>
+          </div>
+
+          {/* Configuration Dropdown */}
+          <div className="relative" ref={kpiDropdownRef}>
+            <button
+              onClick={() => setShowKPIDropdown(!showKPIDropdown)}
+              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+              title="Configure KPIs"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {showKPIDropdown && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Configure KPIs
+                  </h4>
+                  <button onClick={() => setShowKPIDropdown(false)}>
+                    <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
+                  </button>
+                </div>
+
+                <div className="p-2 border-b border-gray-200">
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    Data Source
+                  </label>
+                  <div className="flex gap-2">
+                    {Object.values(DATA_TYPES).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => handleDataTypeChange(type)}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                          selectedDataType === type
+                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                            : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                        }`}
+                      >
+                        {type.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-2 border-b border-gray-200">
+                  <label className="text-xs font-medium text-gray-600 mb-2 block">
+                    Select KPIs
+                  </label>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {getCurrentKPIs().map((kpi) => (
+                      <label
+                        key={kpi.id}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedKPIs?.includes(kpi.id)}
+                          onChange={() => handleKPISelection(kpi.id)}
+                          className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <div className="flex-1">
+                          <span className="text-xs font-medium text-gray-900">
+                            {kpi.name}
+                          </span>
+                          {kpi.description && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {kpi.description}
+                            </p>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
+                  <button
+                    onClick={handleApply}
+                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => setShowKPIDropdown(false)}
+                    className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Export Button */}
+          <button
+            onClick={() => onExport('csv')}
+            disabled={isExporting}
+            className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
+            title="Export Data"
+          >
+            {isExporting ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Mock chart data generator
 const generateChartData = (vessels, kpis, days = 7) => {
   const data = [];
@@ -166,10 +374,6 @@ const ChartView = ({
   ]);
   const [showVesselDropdown, setShowVesselDropdown] = useState(false);
   const vesselDropdownRef = useRef(null);
-
-  // State for KPI selection
-  const [showKPIDropdown, setShowKPIDropdown] = useState(false);
-  const kpiDropdownRef = useRef(null);
 
   const showNotification = useCallback((message, type = 'info') => {
     const id = Date.now();
@@ -252,32 +456,8 @@ const ChartView = ({
     setShowVesselDropdown(false);
   };
 
-  const handleKPISelection = (kpiId) => {
-    setChartFilters(prev => {
-      const currentSelected = prev.selectedKPIs || [];
-      if (currentSelected.includes(kpiId)) {
-        return {
-          ...prev,
-          selectedKPIs: currentSelected.filter((id) => id !== kpiId),
-        };
-      } else {
-        return { ...prev, selectedKPIs: [...currentSelected, kpiId] };
-      }
-    });
-  };
-
-  const handleApply = () => {
-    setShowKPIDropdown(false);
-  };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        kpiDropdownRef.current &&
-        !kpiDropdownRef.current.contains(event.target)
-      ) {
-        setShowKPIDropdown(false);
-      }
       if (
         vesselDropdownRef.current &&
         !vesselDropdownRef.current.contains(event.target)
@@ -428,104 +608,7 @@ const ChartView = ({
               </div>
             </div>
 
-          {/* Configuration Dropdown */}
-          <div className="relative" ref={kpiDropdownRef}>
-            <button
-              onClick={() => setShowKPIDropdown(!showKPIDropdown)}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-              title="Configure KPIs"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-
-            {showKPIDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-900">
-                      Configure KPIs
-                    </h4>
-                    <button onClick={() => setShowKPIDropdown(false)}>
-                      <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
-                    </button>
-                  </div>
-
-                  <div className="p-2 border-b border-gray-200">
-                    <label className="text-xs font-medium text-gray-600 mb-2 block">
-                        Data Source
-                      </label>
-                    <div className="flex gap-2">
-                      {Object.values(DATA_TYPES).map((type) => (
-                            <button
-                          key={type}
-                          onClick={() =>
-                            setChartFilters((prev) => ({
-                              ...prev,
-                              dataType: type,
-                              selectedKPIs: ALL_KPIS[type].map((kpi) => kpi.id),
-                            }))
-                          }
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                            chartFilters.dataType === type
-                              ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                              : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
-                          }`}
-                        >
-                          {type.toUpperCase()}
-                            </button>
-                      ))}
-                      </div>
-                      </div>
-
-                  <div className="p-2 border-b border-gray-200">
-                    <label className="text-xs font-medium text-gray-600 mb-2 block">
-                          Select KPIs
-                      </label>
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
-                      {getCurrentKPIs().map((kpi) => (
-                            <label
-                          key={kpi.id}
-                          className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
-                        >
-                                <input
-                                  type="checkbox"
-                            checked={chartFilters.selectedKPIs?.includes(kpi.id)}
-                                  onChange={() => handleKPISelection(kpi.id)}
-                            className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                          <div className="flex-1">
-                            <span className="text-xs font-medium text-gray-900">
-                                    {kpi.name}
-                                  </span>
-                            {kpi.description && (
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                {kpi.description}
-                              </p>
-                            )}
-                              </div>
-                            </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-4 border-t border-gray-200 flex justify-end gap-2">
-                      <button
-                      onClick={handleApply}
-                      className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                      >
-                      Apply
-                      </button>
-                      <button
-                      onClick={() => setShowKPIDropdown(false)}
-                      className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                      >
-                      Done
-                      </button>
-                    </div>
-                  </div>
-            )}
-          </div>
-
-          {/* Fullscreen Toggle */}
+            {/* Fullscreen Toggle */}
           <button
             className="w-8 h-8 flex items-center justify-center bg-gray-100/50 border border-gray-200 rounded-md text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
               title="Fullscreen"
@@ -548,7 +631,24 @@ const ChartView = ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+
+      {/* Controls Bar */}
+      <ControlsBar
+        onExport={handleExport}
+        isExporting={isExporting}
+        onKPIChange={({ dataType, selectedKPIs }) => {
+          setChartFilters(prev => ({
+            ...prev,
+            dataType,
+            selectedKPIs
+          }));
+        }}
+        selectedDataType={chartFilters.dataType}
+        setSelectedDataType={(type) => setChartFilters(prev => ({ ...prev, dataType: type }))}
+        selectedKPIs={chartFilters.selectedKPIs}
+        setSelectedKPIs={(kpis) => setChartFilters(prev => ({ ...prev, selectedKPIs: kpis }))}
+      />
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-1">
