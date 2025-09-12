@@ -1274,12 +1274,6 @@ const TableView = ({
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    <th className="w-8 px-2 py-1 text-left">
-                      <input
-                        type="checkbox"
-                        className="rounded bg-white border-gray-300"
-                      />
-                    </th>
                     <th className="w-40 px-2 py-1 text-left">
                       <button
                         onClick={() => handleSort('vesselName')}
@@ -1300,7 +1294,7 @@ const TableView = ({
                     </th>
                     {/* NEW: Conditionally show quality column */}
                     {qualityVisible && (
-                      <th className="w-20 px-2 py-1 text-left">
+                      <th className="w-20 px-2 py-1 text-center">
                         <button
                           onClick={() => handleSort('quality')}
                           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group "
@@ -1347,12 +1341,6 @@ const TableView = ({
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-2 py-1 text-left">
-                        <input
-                          type="checkbox"
-                          className="rounded bg-white border-gray-300"
-                        />
-                      </td>
-                      <td className="px-2 py-1 text-left">
                         <div className="flex-1 min-w-0">
                           <div
                             className="font-semibold text-gray-900 text-sm truncate cursor-pointer hover:text-blue-600 transition-colors hover:underline"
@@ -1394,7 +1382,7 @@ const TableView = ({
                       </td>
                       {/* NEW: Conditionally show quality column */}
                       {qualityVisible && (
-                        <td className="px-2 py-1 text-left">
+                        <td className="px-2 py-1 text-center">
                           <EnhancedQualityIndicator
                             completeness={item.quality.completeness}
                             correctness={item.quality.correctness}
