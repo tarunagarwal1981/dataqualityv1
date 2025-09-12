@@ -415,6 +415,42 @@ const ControlsBar = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const kpiDropdownRef = useRef(null);
 
+  // State for vessel selection
+  const [selectedVessels, setSelectedVessels] = useState([
+    'vessel_1', 'vessel_2', 'vessel_3', 'vessel_4', 'vessel_5'
+  ]);
+  const [showVesselDropdown, setShowVesselDropdown] = useState(false);
+  const vesselDropdownRef = useRef(null);
+
+  // Sample vessels data
+  const sampleVessels = [
+    { id: 'vessel_1', name: 'MV Atlantic Pioneer' },
+    { id: 'vessel_2', name: 'MV Pacific Navigator' },
+    { id: 'vessel_3', name: 'MV Ocean Explorer' },
+    { id: 'vessel_4', name: 'MV Global Trader' },
+    { id: 'vessel_5', name: 'MV Northern Star' },
+  ];
+
+  // Vessel selection handlers
+  const handleVesselSelection = (vesselId) => {
+    setSelectedVessels(prev => {
+      if (prev.includes(vesselId)) {
+        return prev.filter(id => id !== vesselId);
+      } else {
+        return [...prev, vesselId];
+      }
+    });
+  };
+
+  const handleResetVessels = () => {
+    setSelectedVessels(sampleVessels.map(v => v.id));
+  };
+
+  const handleApplyVessels = () => {
+    setShowVesselDropdown(false);
+    // Apply vessel selection logic here
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -462,13 +498,80 @@ const ControlsBar = ({
   }, [localFilters.dataType]);
 
   return (
-    <div className="bg-white border-b border-gray-200 p-2">
+    <div className="bg-white border-b border-gray-200 p-1">
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
               Fleet Analytics
             </h3>
+          </div>
+          
+          {/* Vessel Selection */}
+          <div className="relative" ref={vesselDropdownRef}>
+            <button
+              onClick={() => setShowVesselDropdown(!showVesselDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors text-sm"
+              title="Select Vessels"
+            >
+              <Ship className="w-4 h-4" />
+              <span>Vessels</span>
+              {selectedVessels?.length > 0 && (
+                <span className="bg-emerald-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {selectedVessels.length}
+                </span>
+              )}
+            </button>
+
+            {showVesselDropdown && (
+              <div className="absolute left-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
+                <div className="flex items-center justify-between p-3 border-b border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                    <Ship className="w-4 h-4" />
+                    Select Vessels
+                  </h4>
+                  <button onClick={() => setShowVesselDropdown(false)}>
+                    <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
+                  </button>
+                </div>
+
+                <div className="p-3 max-h-64 overflow-y-auto">
+                  <div className="space-y-2">
+                    {sampleVessels.map((vessel) => (
+                      <label
+                        key={vessel.id}
+                        className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedVessels?.includes(vessel.id)}
+                          onChange={() => handleVesselSelection(vessel.id)}
+                          className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                        />
+                        <span className="text-sm font-medium text-gray-900">
+                          {vessel.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-3 border-t border-gray-200 flex justify-end gap-2">
+                  <button
+                    onClick={handleResetVessels}
+                    className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={handleApplyVessels}
+                    className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
