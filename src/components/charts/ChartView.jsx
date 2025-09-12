@@ -478,7 +478,6 @@ const ControlsBar = ({
 
   const handleApply = () => {
     onApplyFilters(localFilters);
-    setShowKPIDropdown(false);
   };
 
   const availableKPIs = useMemo(() => {
