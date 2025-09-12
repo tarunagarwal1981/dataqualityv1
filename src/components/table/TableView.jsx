@@ -751,24 +751,6 @@ const ControlsBar = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Date Range Picker */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md">
-            <Calendar className="w-3 h-3 text-gray-500" />
-            <div className="flex items-center gap-1">
-              <input
-                type="date"
-                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
-                placeholder="Start"
-              />
-              <span className="text-xs text-gray-500">–</span>
-              <input
-                type="date"
-                className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
-                placeholder="End"
-              />
-            </div>
-          </div>
-
           {/* Configuration Dropdown */}
           <div className="relative" ref={kpiDropdownRef}>
             <button
@@ -969,22 +951,6 @@ const TableView = ({
     setShowVesselDropdown(false);
     // Apply vessel selection logic here
   };
-
-  // Click outside handler for dropdowns
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        vesselDropdownRef.current &&
-        !vesselDropdownRef.current.contains(event.target)
-      ) {
-        setShowVesselDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   // Helper to get KPI details by ID
   const getKpiDetails = (kpiId, source) => {
@@ -1275,141 +1241,6 @@ const TableView = ({
     <div
       className={`bg-gray-50 text-gray-900 min-h-screen flex flex-col ${className}`}
     >
-      {/* Header with Fleet Analytics and Controls */}
-      <div className="bg-white border-b border-gray-200 p-1">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Fleet Analytics
-              </h3>
-            </div>
-            
-            {/* Vessel Selection */}
-            <div className="relative" ref={vesselDropdownRef}>
-              <button
-                onClick={() => setShowVesselDropdown(!showVesselDropdown)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors text-sm"
-                title="Select Vessels"
-              >
-                <Ship className="w-4 h-4" />
-                <span>Vessels</span>
-                {selectedVessels?.length > 0 && (
-                  <span className="bg-emerald-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    {selectedVessels.length}
-                  </span>
-                )}
-              </button>
-
-              {showVesselDropdown && (
-                <div className="absolute left-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
-                  <div className="flex items-center justify-between p-3 border-b border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                      <Ship className="w-4 h-4" />
-                      Select Vessels
-                    </h4>
-                    <button onClick={() => setShowVesselDropdown(false)}>
-                      <X className="w-4 h-4 text-gray-500 hover:text-gray-900" />
-                    </button>
-                  </div>
-
-                  <div className="p-3 max-h-64 overflow-y-auto">
-                    <div className="space-y-2">
-                      {sampleVessels.map((vessel) => (
-                        <label
-                          key={vessel.id}
-                          className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedVessels?.includes(vessel.id)}
-                            onChange={() => handleVesselSelection(vessel.id)}
-                            className="w-4 h-4 text-emerald-600 bg-white border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                          />
-                          <span className="text-sm font-medium text-gray-900">
-                            {vessel.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 border-t border-gray-200 flex justify-end gap-2">
-                    <button
-                      onClick={handleResetVessels}
-                      className="px-2 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-                    >
-                      Reset
-                    </button>
-                    <button
-                      onClick={handleApplyVessels}
-                      className="px-2 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Date Range Picker */}
-            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md">
-              <Calendar className="w-3 h-3 text-gray-500" />
-              <div className="flex items-center gap-1">
-                <input
-                  type="date"
-                  className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
-                  placeholder="Start"
-                />
-                <span className="text-xs text-gray-500">–</span>
-                <input
-                  type="date"
-                  className="w-20 text-xs bg-transparent border-none text-gray-700 focus:outline-none"
-                  placeholder="End"
-                />
-              </div>
-            </div>
-
-            {/* Fullscreen Toggle */}
-            <button
-              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-              title="Fullscreen"
-            >
-              <Maximize2 className="w-4 h-4" />
-            </button>
-
-            {/* Export Button */}
-            <button
-              onClick={() => handleExport('csv')}
-              disabled={isExporting}
-              className="w-8 h-8 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-900 transition-colors disabled:opacity-50"
-              title="Export Data"
-            >
-              {isExporting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls Bar */}
-      <ControlsBar
-        onExport={handleExport}
-        isExporting={isExporting}
-        onKPIChange={({ dataType, selectedKPIs }) => {
-          setSelectedDataType(dataType);
-          setSelectedKPIs(selectedKPIs);
-        }}
-        selectedDataType={selectedDataType}
-        setSelectedDataType={setSelectedDataType}
-        selectedKPIs={selectedKPIs}
-        setSelectedKPIs={setSelectedKPIs}
-      />
 
       <div className="flex-1 overflow-y-auto">
         <div className="p-2">
@@ -1443,6 +1274,12 @@ const TableView = ({
               <table className="w-full">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
+                    <th className="w-8 px-2 py-1 text-center">
+                      <input
+                        type="checkbox"
+                        className="rounded bg-white border-gray-300"
+                      />
+                    </th>
                     <th className="w-40 px-2 py-1 text-center">
                       <button
                         onClick={() => handleSort('vesselName')}
@@ -1509,6 +1346,12 @@ const TableView = ({
                       key={item.id}
                       className="hover:bg-gray-50 transition-colors"
                     >
+                      <td className="px-2 py-1 text-center">
+                        <input
+                          type="checkbox"
+                          className="rounded bg-white border-gray-300"
+                        />
+                      </td>
                       <td className="px-2 py-1 text-center">
                         <div className="flex-1 min-w-0">
                           <div
